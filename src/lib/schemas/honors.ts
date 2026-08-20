@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const HonorTierSchema = z.object({
-	id: z.string().uuid(),
+	id: z.uuid(),
 	label: z.string().min(1),
 	lowerBound: z.number(),
 	upperBound: z.number()
