@@ -3,18 +3,22 @@ import { z } from 'zod';
 export const ThemeNameSchema = z.enum([
 	'atom-one-dark',
 	'gruvbox-dark',
+	'gruvbox-light',
 	'rose-pine',
+	'rose-pine-dawn',
 	'catppuccin-mocha',
+	'catppuccin-latte',
 	'nord',
 	'dracula',
 	'tokyo-night',
+	'tokyo-light',
 	'solarized-dark',
+	'solarized-light',
 	'custom'
 ]);
 
 export const ThemeSettingsSchema = z.object({
 	active: ThemeNameSchema.default('atom-one-dark'),
-	mode: z.enum(['light', 'dark']).default('dark'),
 	custom: z
 		.object({
 			background: z.string(),
