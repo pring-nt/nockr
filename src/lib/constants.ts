@@ -20,8 +20,6 @@ export const DEFAULT_GE_LIST = [
 	{ id: 'GELITPH', label: 'GELITPH' }
 ] as const;
 
-// University Presets
-
 export const DLSU_PRESET: UniversitySettings = {
 	mode: 'dlsu',
 	gradeDirection: 'ascending',
@@ -30,6 +28,8 @@ export const DLSU_PRESET: UniversitySettings = {
 	failingGrade: 0.0,
 	deansListEnabled: true,
 	deansListLabel: "Dean's List",
+	deansListMinUnits: 12, // DLSU requires 12 units
+	deansListMinCourseGrade: 2.0, // DLSU disqualifies if below 2.0
 	deansListTiers: [
 		{ id: crypto.randomUUID(), label: 'First Honors', lowerBound: 3.4, upperBound: 4.0 },
 		{ id: crypto.randomUUID(), label: 'Second Honors', lowerBound: 3.0, upperBound: 3.399 }
@@ -46,15 +46,18 @@ export const DLSU_PRESET: UniversitySettings = {
 };
 
 export const UP_PRESET: UniversitySettings = {
-	mode: 'custom',
+	mode: 'up', // Changed from custom to up
 	gradeDirection: 'descending',
 	gradeMin: 1.0,
 	gradeMax: 5.0,
 	failingGrade: 5.0,
 	deansListEnabled: true,
 	deansListLabel: "Dean's List",
+	deansListMinUnits: 0, // UP relies on curriculum load, so no hard floor here
+	deansListMinCourseGrade: 3.0, // UP disqualifies if worse than 3.0
 	deansListTiers: [
-		{ id: crypto.randomUUID(), label: "Dean's List", lowerBound: 1.0, upperBound: 1.75 }
+		{ id: crypto.randomUUID(), label: 'University Scholar', lowerBound: 1.0, upperBound: 1.45 },
+		{ id: crypto.randomUUID(), label: 'College Scholar', lowerBound: 1.46, upperBound: 1.75 }
 	],
 	latinHonorsEnabled: true,
 	latinHonorsLabel: 'Latin Honors',

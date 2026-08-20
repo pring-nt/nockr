@@ -16,5 +16,14 @@
     });
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
-{@render children()}
+<svelte:head>
+    <link rel="icon" href={favicon} />
+</svelte:head>
+
+<!-- The animated glowing background -->
+<div class="aurora-bg"></div>
+
+<!-- Your main app content sits on top -->
+<main class="relative z-0 min-h-screen">
+    {@render children()}
+</main>
