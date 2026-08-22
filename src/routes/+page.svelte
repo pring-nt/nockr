@@ -2,6 +2,7 @@
     import { Target } from 'lucide-svelte';
     import AcademicSummaryCard from '$lib/components/summary/AcademicSummaryCard.svelte';
     import TermNavigator from "$lib/components/term/TermNavigator.svelte";
+    import ThemePicker from "$lib/components/settings/ThemePicker.svelte"
 </script>
 
 <div class="min-h-screen pb-12">
@@ -15,7 +16,7 @@
         </div>
         <div class="flex items-center gap-2">
             <!-- Settings sheet trigger goes here (Phase 3) -->
-            <!-- Theme picker goes here (Phase 5) -->
+            <ThemePicker />
         </div>
     </header>
 

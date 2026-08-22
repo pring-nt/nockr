@@ -4,25 +4,11 @@ import { DLSU_PRESET, DEFAULT_GE_LIST } from '$lib/constants';
 
 const STORAGE_KEY = 'nockr_state';
 
-function getInitialState(): AppState {
-	if (typeof localStorage === 'undefined') {
-		// SSR guard — SvelteKit can run on server, localStorage won't exist there
-		return buildFreshState();
-	}
-
-	const raw = localStorage.getItem(STORAGE_KEY);
-	if (!raw) return buildFreshState();
-
-	const parsed = AppStateSchema.safeParse(JSON.parse(raw));
-	if (parsed.success) return parsed.data;
-
-	// Data in localStorage is corrupted or outdated — fall back to fresh
-	console.warn('[Nockr] Failed to parse saved state, resetting to defaults.');
-	return buildFreshState();
-}
-
 function buildFreshState(): AppState {
 	return AppStateSchema.parse({
+		theme: {
+			active: 'rose-pine'
+		},
 		universitySettings: DLSU_PRESET,
 		geChecklist: DEFAULT_GE_LIST.map((item) => ({
 			...item,
@@ -32,20 +18,49 @@ function buildFreshState(): AppState {
 	});
 }
 
+function getInitialState(): AppState {
+	if (typeof localStorage === 'undefined') {
+		return buildFreshState();
+	}
+
+	try {
+		const raw = localStorage.getItem(STORAGE_KEY);
+		if (!raw) return buildFreshState();
+
+		const parsed = AppStateSchema.safeParse(JSON.parse(raw));
+		if (parsed.success) return parsed.data;
+
+		console.warn('[Nockr] Saved state schema mismatch, resetting to defaults.');
+	} catch (error) {
+		console.warn('[Nockr] Failed to read state from localStorage:', error);
+	}
+
+	return buildFreshState();
+}
+
 function createAppStore() {
-	const { subscribe, set, update } = writable<AppState>(getInitialState());
+	const store = writable<AppState>(getInitialState());
 
 	function persist(state: AppState) {
 		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+			try {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+			} catch (error) {
+				console.error('[Nockr] Failed to persist state:', error);
+			}
 		}
 	}
 
 	return {
-		subscribe,
+		subscribe: store.subscribe,
+
+		set(value: AppState) {
+			persist(value);
+			store.set(value);
+		},
 
 		update(fn: (state: AppState) => AppState) {
-			update((state) => {
+			store.update((state) => {
 				const next = fn(state);
 				persist(next);
 				return next;
@@ -55,7 +70,7 @@ function createAppStore() {
 		reset() {
 			const fresh = buildFreshState();
 			persist(fresh);
-			set(fresh);
+			store.set(fresh);
 		}
 	};
 }

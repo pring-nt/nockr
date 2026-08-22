@@ -40,7 +40,7 @@
                 <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Cumulative GPA
                 </span>
-                <div class="text-4xl sm:text-5xl font-bold text-primary tracking-tight font-mono">
+                <div class="text-4xl sm:text-5xl font-bold text-primary tracking-tight font-mono gradient-text">
                     {cgpa !== null ? cgpa.toFixed(3) : '—'}
                 </div>
             </div>
@@ -49,7 +49,7 @@
                 <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Earned Units
                 </span>
-                <div class="text-2xl sm:text-3xl font-semibold text-foreground font-mono">
+                <div class="text-2xl sm:text-3xl font-semibold text-foreground font-mono gradient-text">
                     {unitsEarned}
                 </div>
             </div>
@@ -58,7 +58,7 @@
                 <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Units Remaining
                 </span>
-                <div class="text-2xl sm:text-3xl font-semibold text-foreground font-mono">
+                <div class="text-2xl sm:text-3xl font-semibold text-foreground font-mono gradient-text">
                     {remainingUnits}
                 </div>
             </div>

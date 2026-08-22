@@ -145,7 +145,7 @@
             <div class="flex items-center gap-3 shrink-0">
                 <div class="text-right">
                     <p class="text-xs text-muted-foreground">TGPA</p>
-                    <p class="text-lg font-bold text-primary">
+                    <p class="text-lg font-bold text-primary gradient-text">
                         {tgpa !== null ? tgpa.toFixed(3) : '—'}
                     </p>
                 </div>
