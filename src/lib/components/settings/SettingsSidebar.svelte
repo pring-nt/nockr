@@ -1,3 +1,4 @@
+<!-- src/lib/components/settings/SettingsSidebar.svelte -->
 <script lang="ts">
     import * as Sheet from '$lib/components/ui/sheet/index.js';
     import { Button } from '$lib/components/ui/button/index.js';
@@ -6,7 +7,7 @@
     import { Switch } from '$lib/components/ui/switch/index.js';
     import { SlidersHorizontal, Plus, Trash2, Check, Award, GraduationCap, Lock } from 'lucide-svelte';
     import { appStore } from '$lib/stores/appState';
-    import { DLSU_PRESET, UP_PRESET } from '$lib/constants';
+    import { UNIVERSITY_PRESETS } from '$lib/constants';
     import type { UniversitySettings, HonorTier } from '$lib/schemas';
 
     let { open = $bindable(false) }: { open: boolean } = $props();
@@ -27,7 +28,7 @@
                 };
             }
 
-            const preset = mode === 'dlsu' ? DLSU_PRESET : UP_PRESET;
+            const preset = UNIVERSITY_PRESETS[mode];
             const customCache =
                 state.universitySettings.mode === 'custom'
                     ? { ...state.universitySettings }
@@ -36,7 +37,7 @@
             return {
                 ...state,
                 customSettingsCache: customCache,
-                universitySettings: { ...preset, mode }
+                universitySettings: { ...preset }
             };
         });
     }
@@ -122,7 +123,7 @@
 </script>
 
 <Sheet.Root bind:open>
-    <Sheet.Content class="w-full sm:max-w-md p-6 overflow-y-auto">
+    <Sheet.Content class="w-full sm:max-w-md p-4 sm:p-6 overflow-y-auto">
         <Sheet.Header class="pb-4 border-b border-border/30">
             <div class="flex items-center gap-2.5">
                 <div class="rounded-lg bg-primary/10 p-2 text-primary border border-primary/20">

@@ -53,8 +53,8 @@ export const UP_PRESET: UniversitySettings = {
 	failingGrade: 5.0,
 	deansListEnabled: true,
 	deansListLabel: "Dean's List",
-	deansListMinUnits: 0, // UP relies on curriculum load, so no hard floor here
-	deansListMinCourseGrade: 3.0, // UP disqualifies if worse than 3.0
+	deansListMinUnits: 15,
+	deansListMinCourseGrade: 3.0,
 	deansListTiers: [
 		{ id: crypto.randomUUID(), label: 'University Scholar', lowerBound: 1.0, upperBound: 1.45 },
 		{ id: crypto.randomUUID(), label: 'College Scholar', lowerBound: 1.46, upperBound: 1.75 }
