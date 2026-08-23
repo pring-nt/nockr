@@ -27,10 +27,30 @@ function getInitialState(): AppState {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (!raw) return buildFreshState();
 
-		const parsed = AppStateSchema.safeParse(JSON.parse(raw));
-		if (parsed.success) return parsed.data;
+		const json = JSON.parse(raw);
+		const parsed = AppStateSchema.safeParse(json);
 
-		console.warn('[Nockr] Saved state schema mismatch, resetting to defaults.');
+		if (parsed.success) {
+			return parsed.data;
+		}
+
+		// 1. Log exact validation issues in console for debugging
+		console.warn('[Nockr] Saved state schema mismatch:', parsed.error.format());
+
+		// 2. Soft Recovery: Merge defaults with existing JSON to salvage user terms/courses
+		const fresh = buildFreshState();
+		const merged = {
+			...fresh,
+			...json,
+			// Preserve terms if it's an array
+			terms: Array.isArray(json?.terms) ? json.terms : fresh.terms
+		};
+
+		const recovered = AppStateSchema.safeParse(merged);
+		if (recovered.success) {
+			console.info('[Nockr] Soft recovery successful. Preserved existing terms.');
+			return recovered.data;
+		}
 	} catch (error) {
 		console.warn('[Nockr] Failed to read state from localStorage:', error);
 	}
