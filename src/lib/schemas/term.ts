@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { CourseSchema } from './course';
 
 export const TermSchema = z.object({
-	id: z.uuid(),
-	name: z.string().min(1).default('Term 1'),
+	id: z.string(),
+	name: z.string().default('Term 1'),
 	courses: z.array(CourseSchema).default([])
 });
 

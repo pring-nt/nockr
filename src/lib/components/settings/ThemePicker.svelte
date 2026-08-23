@@ -44,23 +44,25 @@
         highlightHigh: string;
     };
 
-    let customColors: CustomColors = $state({
-        base: '#191724',
-        surface: '#1f1d2e',
-        overlay: '#26233a',
-        mutedColor: '#6e6a86',
-        subtle: '#908caa',
-        text: '#e0def4',
-        love: '#eb6f92',
-        gold: '#f6c177',
-        rose: '#ebbcba',
-        pine: '#31748f',
-        foam: '#9ccfd8',
-        iris: '#c4a7e7',
-        highlightLow: '#21202e',
-        highlightMed: '#403d52',
-        highlightHigh: '#524f67'
-    });
+    let customColors: CustomColors = $state(
+        $appStore.theme.custom ?? {
+            base: '#191724',
+            surface: '#1f1d2e',
+            overlay: '#26233a',
+            mutedColor: '#6e6a86',
+            subtle: '#908caa',
+            text: '#e0def4',
+            love: '#eb6f92',
+            gold: '#f6c177',
+            rose: '#ebbcba',
+            pine: '#31748f',
+            foam: '#9ccfd8',
+            iris: '#c4a7e7',
+            highlightLow: '#21202e',
+            highlightMed: '#403d52',
+            highlightHigh: '#524f67'
+        }
+    );
 
     type ColorField = {
         id: keyof CustomColors;
@@ -121,8 +123,8 @@
 
     function applyCustomTheme() {
         $appStore.theme = {
-            ...$appStore.theme,
-            active: 'custom'
+            active: 'custom',
+            custom: {...customColors}
         };
 
         const root = document.documentElement;

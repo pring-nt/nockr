@@ -4,11 +4,21 @@ import { DLSU_PRESET, DEFAULT_GE_LIST } from '$lib/constants';
 
 const STORAGE_KEY = 'nockr_state';
 
+interface UnvalidatedCourse {
+	id?: unknown;
+	name?: unknown;
+	units?: unknown;
+	grade?: unknown;
+}
+
+interface UnvalidatedTerm {
+	id?: unknown;
+	name?: unknown;
+	courses?: unknown;
+}
+
 function buildFreshState(): AppState {
 	return AppStateSchema.parse({
-		theme: {
-			active: 'rose-pine'
-		},
 		universitySettings: DLSU_PRESET,
 		geChecklist: DEFAULT_GE_LIST.map((item) => ({
 			...item,
@@ -30,27 +40,53 @@ function getInitialState(): AppState {
 		const json = JSON.parse(raw);
 		const parsed = AppStateSchema.safeParse(json);
 
+		// 1. Direct validation pass (Will now succeed smoothly with the updated schemas)
 		if (parsed.success) {
 			return parsed.data;
 		}
 
-		// 1. Log exact validation issues in console for debugging
-		console.warn('[Nockr] Saved state schema mismatch:', parsed.error.format());
+		console.warn(
+			'[Nockr] Saved state schema mismatch, running field-level recovery:',
+			parsed.error.issues
+		);
 
-		// 2. Soft Recovery: Merge defaults with existing JSON to salvage user terms/courses
-		const fresh = buildFreshState();
-		const merged = {
-			...fresh,
+		// Fallback Recovery: Reconstruct user terms and courses safely without throwing away data
+		const rawTerms = Array.isArray(json?.terms) ? (json.terms as UnvalidatedTerm[]) : [];
+		const recoveredTerms = rawTerms.map((term) => {
+			const rawCourses = Array.isArray(term?.courses) ? (term.courses as UnvalidatedCourse[]) : [];
+			return {
+				id: typeof term?.id === 'string' ? term.id : crypto.randomUUID(),
+				name: typeof term?.name === 'string' ? term.name : 'Untitled Term',
+				courses: rawCourses.map((c) => ({
+					id: typeof c?.id === 'string' ? c.id : crypto.randomUUID(),
+					name: typeof c?.name === 'string' ? c.name : '',
+					units: typeof c?.units === 'number' ? c.units : 3,
+					grade: typeof c?.grade === 'number' ? c.grade : null
+				}))
+			};
+		});
+
+		// Repass through Zod so defaults for ui, theme, and university settings are automatically injected
+		const recoveryCandidate = {
 			...json,
-			// Preserve terms if it's an array
-			terms: Array.isArray(json?.terms) ? json.terms : fresh.terms
+			terms: recoveredTerms,
+			universitySettings: json?.universitySettings ?? DLSU_PRESET,
+			geChecklist: Array.isArray(json?.geChecklist)
+				? json.geChecklist
+				: DEFAULT_GE_LIST.map((item) => ({ ...item, completed: false, isCustom: false }))
 		};
 
-		const recovered = AppStateSchema.safeParse(merged);
-		if (recovered.success) {
-			console.info('[Nockr] Soft recovery successful. Preserved existing terms.');
-			return recovered.data;
+		const secondAttempt = AppStateSchema.safeParse(recoveryCandidate);
+		if (secondAttempt.success) {
+			return secondAttempt.data;
 		}
+
+		// Final safeguard merge
+		const fresh = buildFreshState();
+		return {
+			...fresh,
+			terms: recoveredTerms
+		};
 	} catch (error) {
 		console.warn('[Nockr] Failed to read state from localStorage:', error);
 	}
