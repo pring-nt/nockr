@@ -13,7 +13,6 @@ export const UniversitySettingsSchema = z.object({
 	deansListLabel: z.string().default("Dean's List"),
 	deansListTiers: z.array(HonorTierSchema).default([]),
 
-	// NEW: Agnostic Dean's List constraints
 	deansListMinUnits: z.number().default(0),
 	deansListMinCourseGrade: z.number().nullable().default(null),
 

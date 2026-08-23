@@ -12,10 +12,11 @@ export const AppStateSchema = z.object({
 	terms: z.array(TermSchema).default([]),
 	geChecklist: z.array(GEItemSchema).default([]),
 	universitySettings: UniversitySettingsSchema.default(() => UniversitySettingsSchema.parse({})),
+	customSettingsCache: UniversitySettingsSchema.optional(),
 	theme: ThemeSettingsSchema.default(() => ThemeSettingsSchema.parse({})),
 	ui: UISettingsSchema.default(() => UISettingsSchema.parse({})),
 	totalProgramUnits: z.number().int().default(165),
-	version: z.string().default('1.0.0')
+	version: z.string().default('1.1.0')
 });
 
 export type UISettings = z.infer<typeof UISettingsSchema>;

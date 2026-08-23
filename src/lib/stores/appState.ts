@@ -20,11 +20,13 @@ interface UnvalidatedTerm {
 function buildFreshState(): AppState {
 	return AppStateSchema.parse({
 		universitySettings: DLSU_PRESET,
+		customSettingsCache: undefined,
 		geChecklist: DEFAULT_GE_LIST.map((item) => ({
 			...item,
 			completed: false,
 			isCustom: false
-		}))
+		})),
+		terms: []
 	});
 }
 
@@ -40,7 +42,7 @@ function getInitialState(): AppState {
 		const json = JSON.parse(raw);
 		const parsed = AppStateSchema.safeParse(json);
 
-		// 1. Direct validation pass (Will now succeed smoothly with the updated schemas)
+		// 1. Direct validation pass
 		if (parsed.success) {
 			return parsed.data;
 		}
@@ -50,7 +52,7 @@ function getInitialState(): AppState {
 			parsed.error.issues
 		);
 
-		// Fallback Recovery: Reconstruct user terms and courses safely without throwing away data
+		// Fallback Recovery: Reconstruct user terms and courses safely
 		const rawTerms = Array.isArray(json?.terms) ? (json.terms as UnvalidatedTerm[]) : [];
 		const recoveredTerms = rawTerms.map((term) => {
 			const rawCourses = Array.isArray(term?.courses) ? (term.courses as UnvalidatedCourse[]) : [];
@@ -66,11 +68,11 @@ function getInitialState(): AppState {
 			};
 		});
 
-		// Repass through Zod so defaults for ui, theme, and university settings are automatically injected
 		const recoveryCandidate = {
 			...json,
 			terms: recoveredTerms,
 			universitySettings: json?.universitySettings ?? DLSU_PRESET,
+			customSettingsCache: json?.customSettingsCache ?? undefined,
 			geChecklist: Array.isArray(json?.geChecklist)
 				? json.geChecklist
 				: DEFAULT_GE_LIST.map((item) => ({ ...item, completed: false, isCustom: false }))
@@ -85,7 +87,8 @@ function getInitialState(): AppState {
 		const fresh = buildFreshState();
 		return {
 			...fresh,
-			terms: recoveredTerms
+			terms: recoveredTerms,
+			customSettingsCache: json?.customSettingsCache
 		};
 	} catch (error) {
 		console.warn('[Nockr] Failed to read state from localStorage:', error);

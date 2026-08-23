@@ -3,6 +3,7 @@
     import { appStore } from '$lib/stores/appState';
     import { applyTheme } from '$lib/themes';
     import favicon from '$lib/assets/favicon.svg';
+    import Header from '$lib/components/layout/Header.svelte';
 
     let { children } = $props();
 
@@ -59,6 +60,10 @@
 
 <div class="aurora-bg"></div>
 
-<main class="relative z-0 min-h-screen">
-    {@render children()}
-</main>
+<div class="relative z-0 min-h-screen flex flex-col">
+    <Header />
+
+    <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-6">
+        {@render children()}
+    </main>
+</div>
