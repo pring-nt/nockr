@@ -4,22 +4,13 @@
     import { Button } from '$lib/components/ui/button/index.js';
     import TermCard from '$lib/components/term/TermCard.svelte';
     import { tick } from 'svelte';
+    import { fly } from 'svelte/transition';
 
-    // --- View State ---
+    // View State
     let activeTermId = $state<string | null>($appStore.terms[0]?.id ?? null);
     let viewMode = $state<'focus' | 'grid'>('focus');
 
-    // If the active term gets deleted, fall back to the first available term
-    $effect(() => {
-        const terms = $appStore.terms;
-        if (terms.length > 0 && !terms.some(t => t.id === activeTermId)) {
-            activeTermId = terms[0].id;
-        } else if (terms.length === 0) {
-            activeTermId = null;
-        }
-    });
-
-    // Scroll the active pill into view whenever it changes
+    // Scroll active pill into view when it changes
     $effect(() => {
         if (!activeTermId) return;
         tick().then(() => {
@@ -34,7 +25,7 @@
     let activeTermIndex = $derived($appStore.terms.findIndex(t => t.id === activeTermId));
     let activeTerm = $derived($appStore.terms.find(t => t.id === activeTermId));
 
-    // --- Term CRUD ---
+    // Term CRUD
     function addTerm() {
         const newId = crypto.randomUUID();
         appStore.update(state => ({
@@ -45,10 +36,26 @@
             ],
         }));
         activeTermId = newId;
-        viewMode = 'focus';
     }
 
     function deleteTerm(id: string) {
+        const terms = $appStore.terms;
+        const idx = terms.findIndex(t => t.id === id);
+
+        // Proactively move focus BEFORE the array changes
+        if (activeTermId === id) {
+            if (idx > 0) {
+                // Go to the previous term
+                activeTermId = terms[idx - 1].id;
+            } else if (idx < terms.length - 1) {
+                // Was first term, go to the one that will become first
+                activeTermId = terms[idx + 1].id;
+            } else {
+                // Last term standing, will be empty
+                activeTermId = null;
+            }
+        }
+
         appStore.update(state => ({
             ...state,
             terms: state.terms.filter(t => t.id !== id),
@@ -62,7 +69,7 @@
         }));
     }
 
-    // --- Navigation ---
+    // Navigation
     function prevTerm() {
         if (activeTermIndex > 0) activeTermId = $appStore.terms[activeTermIndex - 1].id;
     }
@@ -70,6 +77,19 @@
     function nextTerm() {
         if (activeTermIndex < $appStore.terms.length - 1)
             activeTermId = $appStore.terms[activeTermIndex + 1].id;
+    }
+
+    // Switch to grid and scroll to the currently active term's card
+    function switchToGrid() {
+        viewMode = 'grid';
+        tick().then(() => {
+            if (activeTermId) {
+                document.getElementById(`term-card-${activeTermId}`)?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                });
+            }
+        });
     }
 
     function handleWheelScroll(e: WheelEvent) {
@@ -135,7 +155,7 @@
                     variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                     size="sm"
                     class="h-7 px-2.5"
-                    onclick={() => viewMode = 'grid'}
+                    onclick={switchToGrid}
             >
                 <LayoutGrid size={14} class="mr-1.5" />
                 <span class="text-xs">All</span>
@@ -143,24 +163,23 @@
         </div>
     </div>
 
-    <!-- Focus View -->
+    <!-- Focus View — {#key} forces remount on term change, triggering the fly transition -->
     {#if viewMode === 'focus' && activeTerm}
-        {@const term = activeTerm}
-        <div class="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div class="space-y-4">
             <div class="flex items-center justify-between text-xs text-muted-foreground px-1">
                 <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="ghost" size="sm"
                         onclick={prevTerm}
                         disabled={activeTermIndex <= 0}
                         class="gap-1 h-7 px-2"
                 >
                     <ChevronLeft size={14} /> Prev
                 </Button>
-                <span class="font-medium">Term {activeTermIndex + 1} of {$appStore.terms.length}</span>
+                <span class="font-medium">
+                    Term {activeTermIndex + 1} of {$appStore.terms.length}
+                </span>
                 <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="ghost" size="sm"
                         onclick={nextTerm}
                         disabled={activeTermIndex >= $appStore.terms.length - 1}
                         class="gap-1 h-7 px-2"
@@ -169,22 +188,29 @@
                 </Button>
             </div>
 
-            <TermCard
-                    {term}
-                    onDelete={() => deleteTerm(term.id)}
-                    onRename={name => renameTerm(term.id, name)}
-            />
+            {#key activeTermId}
+                {@const term = activeTerm}
+                <div in:fly={{ y: 10, duration: 200, opacity: 0 }}>
+                    <TermCard
+                            {term}
+                            onDelete={() => deleteTerm(term.id)}
+                            onRename={name => renameTerm(term.id, name)}
+                    />
+                </div>
+            {/key}
         </div>
 
-        <!-- Grid View -->
+        <!-- Grid View — each card gets an id so switchToGrid() can scroll to the active one -->
     {:else if viewMode === 'grid'}
         <div class="space-y-6 animate-in fade-in duration-300">
             {#each $appStore.terms as term (term.id)}
-                <TermCard
-                        {term}
-                        onDelete={() => deleteTerm(term.id)}
-                        onRename={name => renameTerm(term.id, name)}
-                />
+                <div id="term-card-{term.id}">
+                    <TermCard
+                            {term}
+                            onDelete={() => deleteTerm(term.id)}
+                            onRename={name => renameTerm(term.id, name)}
+                    />
+                </div>
             {/each}
         </div>
     {/if}
