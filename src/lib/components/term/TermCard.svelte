@@ -1,11 +1,11 @@
+<!-- src/lib/components/term/TermCard.svelte -->
 <script lang="ts">
     import type { Term } from '$lib/schemas';
     import { appStore } from '$lib/stores/appState';
     import { computeTGPA } from '$lib/logic/gpa';
     import { getDeansListTier } from '$lib/logic/honors';
-    import { Plus, Trash2 } from 'lucide-svelte';
+    import { Plus, Trash2, GraduationCap } from 'lucide-svelte';
     import { Button } from '$lib/components/ui/button/index.js';
-    import { Badge } from '$lib/components/ui/badge/index.js';
     import { Card, CardHeader, CardContent } from '$lib/components/ui/card/index.js';
     import CourseRow from './CourseRow.svelte';
     import { tick } from 'svelte';
@@ -107,11 +107,10 @@
     }
 </script>
 
-<Card>
-    <!-- Responsive padding: p-3 on mobile, p-6 on desktop -->
+<Card class="glass border-border/40">
     <CardHeader class="p-3 sm:p-6 pb-3 sm:pb-3">
         <div class="flex items-center justify-between gap-2">
-            <!-- Term name + Dean's List badge -->
+            <!-- Term name + Gradient Dean's List Badge -->
             <div class="flex items-center gap-2 flex-1 min-w-0">
                 {#if isEditing}
                     <input
@@ -125,7 +124,7 @@
                 {:else}
                     <button
                             class="text-base sm:text-lg font-semibold text-foreground hover:text-primary
-                               transition-colors text-left truncate"
+                               transition-colors text-left truncate cursor-pointer"
                             ondblclick={startEditing}
                             title="Double-click to rename"
                     >
@@ -133,10 +132,13 @@
                     </button>
                 {/if}
 
-                {#if $appStore.ui?.showDeansListBadge && deansListTier}
-                    <Badge variant="secondary" class="shrink-0 text-[10px] sm:text-xs px-1.5 py-0.5">
-                        {deansListTier.label}
-                    </Badge>
+                {#if deansListTier}
+                    <span
+                            class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/35 bg-linear-to-r from-primary/20 via-primary/10 to-accent/20 px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold shadow-xs ring-1 ring-primary/20 transition-all hover:scale-105"
+                    >
+                        <GraduationCap size={13} class="shrink-0 text-primary" />
+                        <span class="gradient-text font-bold">{deansListTier.label}</span>
+                    </span>
                 {/if}
             </div>
 
@@ -161,7 +163,6 @@
     </CardHeader>
 
     <CardContent class="p-3 sm:p-6 pt-0 sm:pt-0 space-y-2">
-        <!-- Column headers matching mobile grid -->
         {#if term.courses.length > 0}
             <div class="grid grid-cols-[1fr_60px_72px_28px] sm:grid-cols-[1fr_80px_100px_36px] gap-1.5 sm:gap-2 px-0.5 sm:px-1 mb-1">
                 <p class="text-[11px] sm:text-xs text-muted-foreground">Course</p>
@@ -171,7 +172,6 @@
             </div>
         {/if}
 
-        <!-- Course rows -->
         {#each term.courses as course (course.id)}
             <CourseRow
                     {course}
@@ -181,7 +181,6 @@
             />
         {/each}
 
-        <!-- Add course button -->
         <Button
                 onclick={() => addCourse(true)}
                 variant="ghost"
