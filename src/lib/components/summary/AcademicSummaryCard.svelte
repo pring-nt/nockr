@@ -1,10 +1,11 @@
 <script lang="ts">
     import { appStore } from '$lib/stores/appState';
     import { computeCGPA, computeUnitsEarned } from '$lib/logic/gpa';
-    import { PenLine, Check } from 'lucide-svelte';
+    import { PenLine, Check, Award, ChevronRight } from 'lucide-svelte';
     import { Button } from '$lib/components/ui/button/index.js';
     import { Card, CardContent } from '$lib/components/ui/card/index.js';
     import { Input } from '$lib/components/ui/input/index.js';
+    import LatinHonorsModal from '$lib/components/honors/LatinHonorsModal.svelte';
 
     let cgpa = $derived(computeCGPA($appStore.terms));
     let unitsEarned = $derived(computeUnitsEarned($appStore.terms));
@@ -18,6 +19,7 @@
 
     let isEditingTotal = $state(false);
     let tempTotalUnits = $state(165);
+    let honorsModalOpen = $state(false);
 
     function startEditing() {
         tempTotalUnits = totalProgramUnits;
@@ -35,16 +37,30 @@
 <Card class="glass border-border/40">
     <CardContent class="p-5 sm:p-6 space-y-5">
         <!-- Stats row -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 items-baseline">
-            <div class="space-y-1">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 items-start">
+            <!-- Cumulative GPA Column -->
+            <div class="space-y-2">
                 <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Cumulative GPA
                 </span>
+
                 <div class="text-4xl sm:text-5xl font-bold text-primary tracking-tight font-mono gradient-text">
                     {cgpa !== null ? cgpa.toFixed(3) : '—'}
                 </div>
+
+                <!-- Clean Static Honors Standing Pill -->
+                <button
+                        type="button"
+                        onclick={() => (honorsModalOpen = true)}
+                        class="group inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary shadow-xs transition-all hover:bg-primary/20 hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
+                >
+                    <Award size={14} class="shrink-0 transition-transform group-hover:scale-110" />
+                    <span>Honors Standing</span>
+                    <ChevronRight size={13} class="opacity-70 transition-transform group-hover:translate-x-0.5" />
+                </button>
             </div>
 
+            <!-- Earned Units Column -->
             <div class="space-y-1 sm:border-l sm:border-border/30 sm:pl-4">
                 <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Earned Units
@@ -54,6 +70,7 @@
                 </div>
             </div>
 
+            <!-- Units Remaining Column -->
             <div class="space-y-1 sm:border-l sm:border-border/30 sm:pl-4">
                 <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Units Remaining
@@ -122,3 +139,5 @@
         </div>
     </CardContent>
 </Card>
+
+<LatinHonorsModal bind:open={honorsModalOpen} />
