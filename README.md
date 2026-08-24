@@ -161,4 +161,4 @@ Built for DLSU students, with functionality to support UP students and students 
 
 ## License
 
-MIT
+GPL 3.0
