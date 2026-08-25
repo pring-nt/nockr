@@ -3,7 +3,7 @@ import { HonorTierSchema } from './honors';
 
 export const UniversitySettingsSchema = z.object({
 	// Added 'up' to the allowed modes!
-	mode: z.enum(['dlsu', 'up', 'custom']).default('dlsu'),
+	mode: z.enum(['dlsu', 'up', 'ust', 'admu', 'custom']).default('dlsu'),
 	gradeDirection: z.enum(['ascending', 'descending']).default('ascending'),
 	gradeMin: z.number().default(0),
 	gradeMax: z.number().default(4),
@@ -23,3 +23,4 @@ export const UniversitySettingsSchema = z.object({
 });
 
 export type UniversitySettings = z.infer<typeof UniversitySettingsSchema>;
+export type UniversityMode = UniversitySettings['mode'];

@@ -1,21 +1,34 @@
 <!-- src/lib/components/settings/SettingsSidebar.svelte -->
 <script lang="ts">
     import * as Sheet from '$lib/components/ui/sheet/index.js';
+    import * as Select from '$lib/components/ui/select/index.js';
     import { Button } from '$lib/components/ui/button/index.js';
     import { Input } from '$lib/components/ui/input/index.js';
     import { Label } from '$lib/components/ui/label/index.js';
     import { Switch } from '$lib/components/ui/switch/index.js';
-    import { SlidersHorizontal, Plus, Trash2, Check, Award, GraduationCap, Lock } from 'lucide-svelte';
+    import { SlidersHorizontal, Plus, Trash2, Check, Award, GraduationCap, Lock, Copy } from 'lucide-svelte';
     import { appStore } from '$lib/stores/appState';
     import { UNIVERSITY_PRESETS } from '$lib/constants';
-    import type { UniversitySettings, HonorTier } from '$lib/schemas';
+    import type { UniversitySettings, HonorTier, UniversityMode } from '$lib/schemas';
 
     let { open = $bindable(false) }: { open: boolean } = $props();
 
     let settings = $derived($appStore.universitySettings);
     let isPreset = $derived(settings.mode !== 'custom');
+    let selectedTemplate = $state<string>('');
 
-    function selectMode(mode: 'dlsu' | 'up' | 'custom') {
+    const presetLabels: Record<string, string> = {
+        dlsu: 'DLSU (De La Salle University)',
+        up: 'UP (University of the Philippines)',
+        ust: 'UST (University of Santo Tomas)',
+        admu: 'ADMU (Ateneo de Manila University)'
+    };
+
+    let triggerLabel = $derived(
+        presetLabels[selectedTemplate] ?? 'Select preset to populate Custom...'
+    );
+
+    function selectMode(mode: UniversityMode) {
         appStore.update((state) => {
             if (mode === 'custom') {
                 const restoredCustom = state.customSettingsCache ?? {
@@ -40,6 +53,36 @@
                 universitySettings: { ...preset }
             };
         });
+    }
+
+    function loadPresetToCustom(presetKey: keyof typeof UNIVERSITY_PRESETS) {
+        const preset = UNIVERSITY_PRESETS[presetKey];
+        if (!preset) return;
+
+        const copiedSettings: UniversitySettings = {
+            ...preset,
+            mode: 'custom',
+            deansListTiers: preset.deansListTiers.map((tier) => ({
+                ...tier,
+                id: crypto.randomUUID()
+            })),
+            latinHonorsTiers: preset.latinHonorsTiers.map((tier) => ({
+                ...tier,
+                id: crypto.randomUUID()
+            }))
+        };
+
+        appStore.update((state) => ({
+            ...state,
+            universitySettings: copiedSettings,
+            customSettingsCache: copiedSettings
+        }));
+    }
+
+    function handleTemplateSelect(val: string | undefined) {
+        if (val && val in UNIVERSITY_PRESETS) {
+            loadPresetToCustom(val as keyof typeof UNIVERSITY_PRESETS);
+        }
     }
 
     function updateSetting<K extends keyof UniversitySettings>(
@@ -140,44 +183,96 @@
 
         <div class="space-y-5 pt-5 text-xs">
             <!-- Preset Selector -->
-            <div class="space-y-2">
+            <div class="space-y-2.5">
                 <Label class="text-xs font-semibold text-foreground">University Preset</Label>
-                <div class="grid grid-cols-3 gap-2">
-                    <Button
-                            variant={settings.mode === 'dlsu' ? 'default' : 'outline'}
-                            size="sm"
-                            onclick={() => selectMode('dlsu')}
-                            class="text-xs justify-between h-8"
-                    >
-                        <span>DLSU</span>
-                        {#if settings.mode === 'dlsu'}<Check size={12} />{/if}
-                    </Button>
 
-                    <Button
-                            variant={settings.mode === 'up' ? 'default' : 'outline'}
-                            size="sm"
-                            onclick={() => selectMode('up')}
-                            class="text-xs justify-between h-8"
-                    >
-                        <span>UP</span>
-                        {#if settings.mode === 'up'}<Check size={12} />{/if}
-                    </Button>
+                <div class="space-y-2">
+                    <!-- Row 1: DLSU & UP -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <Button
+                                variant={settings.mode === 'dlsu' ? 'default' : 'outline'}
+                                size="sm"
+                                onclick={() => selectMode('dlsu')}
+                                class="text-xs justify-between h-9 px-3"
+                        >
+                            <span>DLSU</span>
+                            {#if settings.mode === 'dlsu'}<Check size={14} />{/if}
+                        </Button>
 
+                        <Button
+                                variant={settings.mode === 'up' ? 'default' : 'outline'}
+                                size="sm"
+                                onclick={() => selectMode('up')}
+                                class="text-xs justify-between h-9 px-3"
+                        >
+                            <span>UP</span>
+                            {#if settings.mode === 'up'}<Check size={14} />{/if}
+                        </Button>
+                    </div>
+
+                    <!-- Row 2: UST & ADMU -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <Button
+                                variant={settings.mode === 'ust' ? 'default' : 'outline'}
+                                size="sm"
+                                onclick={() => selectMode('ust')}
+                                class="text-xs justify-between h-9 px-3"
+                        >
+                            <span>UST</span>
+                            {#if settings.mode === 'ust'}<Check size={14} />{/if}
+                        </Button>
+
+                        <Button
+                                variant={settings.mode === 'admu' ? 'default' : 'outline'}
+                                size="sm"
+                                onclick={() => selectMode('admu')}
+                                class="text-xs justify-between h-9 px-3"
+                        >
+                            <span>ADMU</span>
+                            {#if settings.mode === 'admu'}<Check size={14} />{/if}
+                        </Button>
+                    </div>
+
+                    <!-- Row 3: Custom -->
                     <Button
                             variant={settings.mode === 'custom' ? 'default' : 'outline'}
                             size="sm"
                             onclick={() => selectMode('custom')}
-                            class="text-xs justify-between h-8"
+                            class="w-full text-xs justify-between h-9 px-3"
                     >
                         <span>Custom</span>
-                        {#if settings.mode === 'custom'}<Check size={12} />{/if}
+                        {#if settings.mode === 'custom'}<Check size={14} />{/if}
                     </Button>
                 </div>
 
                 {#if isPreset}
-                    <div class="flex items-center gap-1.5 text-[11px] text-muted-foreground pt-1">
+                    <div class="flex items-center gap-1.5 text-[11px] text-muted-foreground pt-0.5">
                         <Lock size={12} class="shrink-0" />
                         <span>Presets are read-only. Select <strong>Custom</strong> to edit.</span>
+                    </div>
+                {:else}
+                    <!-- Custom Template Base Dropdown -->
+                    <div class="space-y-1.5 pt-2 border-t border-border/40">
+                        <div class="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Copy size={11} />
+                            <span>Start from a university template:</span>
+                        </div>
+
+                        <Select.Root
+                                type="single"
+                                bind:value={selectedTemplate}
+                                onValueChange={handleTemplateSelect}
+                        >
+                            <Select.Trigger class="w-full h-8 text-xs bg-background">
+                                {triggerLabel}
+                            </Select.Trigger>
+                            <Select.Content>
+                                <Select.Item value="dlsu">DLSU (De La Salle University)</Select.Item>
+                                <Select.Item value="up">UP (University of the Philippines)</Select.Item>
+                                <Select.Item value="ust">UST (University of Santo Tomas)</Select.Item>
+                                <Select.Item value="admu">ADMU (Ateneo de Manila University)</Select.Item>
+                            </Select.Content>
+                        </Select.Root>
                     </div>
                 {/if}
             </div>
