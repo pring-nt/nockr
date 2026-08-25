@@ -20,6 +20,32 @@
 	<script>
 		(function () {
 			try {
+				const canvas = document.createElement('canvas');
+				const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+				if (!gl) {
+					document.documentElement.classList.add('no-gpu');
+				} else {
+					const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+					if (debugInfo) {
+						const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase();
+						const softwareRenderers = [
+							'swiftshader',
+							'llvmpipe',
+							'software',
+							'basic render driver',
+							'mesa'
+						];
+						if (softwareRenderers.some((sr) => renderer.includes(sr))) {
+							document.documentElement.classList.add('no-gpu');
+						}
+					}
+				}
+			} catch (e) {
+				document.documentElement.classList.add('no-gpu');
+			}
+
+			/* Restore Theme State */
+			try {
 				const raw = localStorage.getItem('nockr_state');
 				if (!raw) return;
 				const state = JSON.parse(raw);

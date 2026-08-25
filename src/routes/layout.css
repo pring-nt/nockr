@@ -661,3 +661,84 @@
 	border: 1px solid color-mix(in srgb, var(--highlight-high) 40%, transparent) !important;
 	box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5) !important;
 }
+
+/* =========================================
+   NO-GPU SOFTWARE RENDER FALLBACKS
+   ========================================= */
+.no-gpu .aurora-bg::before,
+.no-gpu .aurora-bg::after {
+	animation: none !important;
+	display: none !important;
+}
+
+.no-gpu .aurora-bg {
+	background-image: radial-gradient(
+			circle at 50% 30%,
+			color-mix(in srgb, var(--primary) 12%, transparent) 0%,
+			color-mix(in srgb, var(--surface) 80%, var(--base)) 100%
+	) !important;
+}
+
+.no-gpu .glass {
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	background: var(--surface) !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+.no-gpu .gradient-text {
+	filter: none !important;
+}
+
+.no-gpu .shimmer::after {
+	animation: none !important;
+	display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.aurora-bg::before,
+	.aurora-bg::after,
+	.shimmer::after {
+		animation: none !important;
+	}
+}
+
+/* Instantly complete all component transitions & animations on CPU rendering */
+.no-gpu *,
+.no-gpu *::before,
+.no-gpu *::after {
+	animation-duration: 0.01ms !important;
+	animation-iteration-count: 1 !important;
+	transition-duration: 0.01ms !important;
+	scroll-behavior: auto !important;
+}
+
+/* Sidebar & Sheet Overlays on CPU */
+.no-gpu [data-radix-popper-content-wrapper],
+.no-gpu [role='dialog'],
+.no-gpu [data-slot='sheet-content'],
+.no-gpu [data-sheet-content],
+.no-gpu .sheet-content,
+.no-gpu aside,
+.no-gpu .sidebar {
+	/* Strip heavy diffuse shadows */
+	box-shadow: -2px 0 0 0 var(--border) !important;
+}
+
+/* Theme-aware lightweight backdrop overlays on CPU */
+.no-gpu [data-state='open'] ~ [data-state='open'],
+.no-gpu [role='dialog'] ~ div,
+.no-gpu [data-slot='sheet-overlay'],
+.no-gpu [data-slot='dialog-overlay'],
+.no-gpu .fixed.inset-0 {
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	background-color: color-mix(in srgb, var(--base) 75%, transparent) !important;
+}
+
+/* Prevent layout pushing on CPU if sidebar is inline */
+.no-gpu aside,
+.no-gpu .sidebar {
+	will-change: auto !important;
+	contain: paint layout !important;
+}
