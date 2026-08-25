@@ -1,69 +1,69 @@
 <script lang="ts">
-    import './layout.css';
-    import { appStore } from '$lib/stores/appState';
-    import { applyTheme } from '$lib/themes';
-    import favicon from '$lib/assets/favicon.svg';
-    import Header from '$lib/components/layout/Header.svelte';
+	import './layout.css';
+	import { appStore } from '$lib/stores/appState';
+	import { applyTheme } from '$lib/themes';
+	import favicon from '$lib/assets/favicon.svg';
+	import Header from '$lib/components/layout/Header.svelte';
 
-    let { children } = $props();
+	let { children } = $props();
 
-    $effect(() => {
-        if ($appStore?.theme) {
-            applyTheme($appStore.theme);
-        }
-    });
+	$effect(() => {
+		if ($appStore?.theme) {
+			applyTheme($appStore.theme);
+		}
+	});
 </script>
 
 <svelte:head>
-    <link rel="icon" href={favicon} />
+	<link rel="icon" href={favicon} />
 
-    <script>
-        (function() {
-            try {
-                const raw = localStorage.getItem('nockr_state');
-                if (!raw) return;
-                const state = JSON.parse(raw);
-                const theme = state?.theme;
-                if (!theme?.active) return;
+	<script>
+		(function () {
+			try {
+				const raw = localStorage.getItem('nockr_state');
+				if (!raw) return;
+				const state = JSON.parse(raw);
+				const theme = state?.theme;
+				if (!theme?.active) return;
 
-                const root = document.documentElement;
-                root.setAttribute('data-theme', theme.active);
+				const root = document.documentElement;
+				root.setAttribute('data-theme', theme.active);
 
-                if (theme.active === 'custom' && theme.custom) {
-                    const vars = {
-                        base: '--custom-base',
-                        surface: '--custom-surface',
-                        overlay: '--custom-overlay',
-                        mutedColor: '--custom-muted-color',
-                        subtle: '--custom-subtle',
-                        text: '--custom-text',
-                        love: '--custom-love',
-                        gold: '--custom-gold',
-                        rose: '--custom-rose',
-                        pine: '--custom-pine',
-                        foam: '--custom-foam',
-                        iris: '--custom-iris',
-                        highlightLow: '--custom-highlight-low',
-                        highlightMed: '--custom-highlight-med',
-                        highlightHigh: '--custom-highlight-high'
-                    };
-                    for (const [key, cssVar] of Object.entries(vars)) {
-                        if (theme.custom[key]) {
-                            root.style.setProperty(cssVar, theme.custom[key]);
-                        }
-                    }
-                }
-            } catch (e) {}
-        })();
-    </script>
+				if (theme.active === 'custom' && theme.custom) {
+					const vars = {
+						base: '--custom-base',
+						surface: '--custom-surface',
+						overlay: '--custom-overlay',
+						mutedColor: '--custom-muted-color',
+						subtle: '--custom-subtle',
+						text: '--custom-text',
+						love: '--custom-love',
+						gold: '--custom-gold',
+						rose: '--custom-rose',
+						pine: '--custom-pine',
+						foam: '--custom-foam',
+						iris: '--custom-iris',
+						highlightLow: '--custom-highlight-low',
+						highlightMed: '--custom-highlight-med',
+						highlightHigh: '--custom-highlight-high'
+					};
+					for (const [key, cssVar] of Object.entries(vars)) {
+						if (theme.custom[key]) {
+							root.style.setProperty(cssVar, theme.custom[key]);
+						}
+					}
+				}
+			} catch (e) {}
+		})();
+	</script>
 </svelte:head>
 
 <div class="aurora-bg"></div>
 
-<div class="relative z-0 min-h-screen flex flex-col">
-    <Header />
+<div class="relative z-0 flex min-h-screen flex-col">
+	<Header />
 
-    <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-6">
-        {@render children()}
-    </main>
+	<main class="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
+		{@render children()}
+	</main>
 </div>

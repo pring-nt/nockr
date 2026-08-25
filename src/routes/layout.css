@@ -1,14 +1,14 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
-@import "shadcn-svelte/tailwind.css";
+@import 'tw-animate-css';
+@import 'shadcn-svelte/tailwind.css';
 
 /* =========================================
    FONTS
    ========================================= */
-@import "@fontsource/dm-mono/300.css";
-@import "@fontsource/dm-mono/400.css";
-@import "@fontsource/dm-mono/500.css";
-@import "@fontsource/instrument-serif/400.css";
+@import '@fontsource/dm-mono/300.css';
+@import '@fontsource/dm-mono/400.css';
+@import '@fontsource/dm-mono/500.css';
+@import '@fontsource/instrument-serif/400.css';
 
 @layer base {
 	/* =========================================
@@ -72,12 +72,12 @@
 		--radius: 0.625rem;
 
 		/* Hide native number input spin buttons */
-		input[type="number"]::-webkit-inner-spin-button,
-		input[type="number"]::-webkit-outer-spin-button {
+		input[type='number']::-webkit-inner-spin-button,
+		input[type='number']::-webkit-outer-spin-button {
 			-webkit-appearance: none;
 			margin: 0;
 		}
-		input[type="number"] {
+		input[type='number'] {
 			-moz-appearance: textfield;
 		}
 	}
@@ -317,7 +317,7 @@
 	}
 
 	/* Nockr Custom Override */
-	[data-theme="custom"] {
+	[data-theme='custom'] {
 		--base: var(--custom-base);
 		--surface: var(--custom-surface);
 		--overlay: var(--custom-overlay);
@@ -345,7 +345,8 @@
 		@apply bg-transparent text-foreground transition-colors duration-200;
 		font-family: var(--font-family-mono), serif;
 		overflow-x: hidden;
-		padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+		padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+			env(safe-area-inset-left);
 	}
 }
 
@@ -381,7 +382,9 @@
 }
 
 @media (max-width: 639px) {
-	input, textarea, select {
+	input,
+	textarea,
+	select {
 		font-size: 16px;
 	}
 }
@@ -399,14 +402,14 @@
 
 	/* Base Ambient Core Gradient */
 	background-image:
-			radial-gradient(
-					circle at 50% 35%,
-					color-mix(in srgb, var(--primary) 18%, transparent) 0%,
-					color-mix(in srgb, var(--rose) 8%, transparent) 40%,
-					transparent 75%
-			),
-				/* Tactile SVG Noise Texture Overlay */
-			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+		radial-gradient(
+			circle at 50% 35%,
+			color-mix(in srgb, var(--primary) 18%, transparent) 0%,
+			color-mix(in srgb, var(--rose) 8%, transparent) 40%,
+			transparent 75%
+		),
+		/* Tactile SVG Noise Texture Overlay */
+		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
 .aurora-bg::before,
@@ -426,11 +429,11 @@
 	top: -20vw;
 	right: -15vw;
 	background: radial-gradient(
-			circle at center,
-			color-mix(in srgb, var(--primary) 28%, transparent) 0%,
-			color-mix(in srgb, var(--accent) 18%, transparent) 45%,
-			color-mix(in srgb, var(--love) 10%, transparent) 70%,
-			transparent 85%
+		circle at center,
+		color-mix(in srgb, var(--primary) 28%, transparent) 0%,
+		color-mix(in srgb, var(--accent) 18%, transparent) 45%,
+		color-mix(in srgb, var(--love) 10%, transparent) 70%,
+		transparent 85%
 	);
 	animation: liquid-morph-1 22s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
@@ -442,11 +445,11 @@
 	bottom: -20vw;
 	left: -15vw;
 	background: radial-gradient(
-			circle at center,
-			color-mix(in srgb, var(--foam) 24%, transparent) 0%,
-			color-mix(in srgb, var(--pine) 16%, transparent) 50%,
-			color-mix(in srgb, var(--gold) 8%, transparent) 75%,
-			transparent 90%
+		circle at center,
+		color-mix(in srgb, var(--foam) 24%, transparent) 0%,
+		color-mix(in srgb, var(--pine) 16%, transparent) 50%,
+		color-mix(in srgb, var(--gold) 8%, transparent) 75%,
+		transparent 90%
 	);
 	animation: liquid-morph-2 28s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
@@ -458,19 +461,19 @@
 	-webkit-backdrop-filter: blur(24px) saturate(180%);
 	border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
 	box-shadow:
-			0 1px 0 0 color-mix(in srgb, var(--text) 18%, transparent) inset,
-			0 20px 40px -15px rgba(0, 0, 0, 0.35);
+		0 1px 0 0 color-mix(in srgb, var(--text) 18%, transparent) inset,
+		0 20px 40px -15px rgba(0, 0, 0, 0.35);
 }
 
 /* High-Impact Ambient Text Gradients */
 .gradient-text {
 	color: var(--primary);
 	background: linear-gradient(
-			135deg,
-			var(--text) 0%,
-			var(--primary) 40%,
-			var(--foam) 70%,
-			var(--rose) 100%
+		135deg,
+		var(--text) 0%,
+		var(--primary) 40%,
+		var(--foam) 70%,
+		var(--rose) 100%
 	);
 	-webkit-background-clip: text;
 	background-clip: text;
@@ -480,9 +483,9 @@
 
 .gradient-text-subtle {
 	background: linear-gradient(
-			135deg,
-			var(--text) 0%,
-			color-mix(in srgb, var(--subtle) 85%, var(--primary)) 100%
+		135deg,
+		var(--text) 0%,
+		color-mix(in srgb, var(--subtle) 85%, var(--primary)) 100%
 	);
 	-webkit-background-clip: text;
 	background-clip: text;
@@ -532,14 +535,27 @@
 }
 
 @keyframes drift {
-	0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-	33% { transform: translate3d(40px, -60px, 0) scale(1.08); }
-	66% { transform: translate3d(-30px, 40px, 0) scale(0.95); }
+	0%,
+	100% {
+		transform: translate3d(0, 0, 0) scale(1);
+	}
+	33% {
+		transform: translate3d(40px, -60px, 0) scale(1.08);
+	}
+	66% {
+		transform: translate3d(-30px, 40px, 0) scale(0.95);
+	}
 }
 
 @keyframes fadeInUp {
-	from { opacity: 0; transform: translate3d(0, 16px, 0); }
-	to { opacity: 1; transform: translate3d(0, 0, 0); }
+	from {
+		opacity: 0;
+		transform: translate3d(0, 16px, 0);
+	}
+	to {
+		opacity: 1;
+		transform: translate3d(0, 0, 0);
+	}
 }
 
 .fade-in-up {
@@ -547,8 +563,12 @@
 }
 
 @keyframes barGrow {
-	from { clip-path: inset(0 100% 0 0); }
-	to { clip-path: inset(0 0% 0 0); }
+	from {
+		clip-path: inset(0 100% 0 0);
+	}
+	to {
+		clip-path: inset(0 0% 0 0);
+	}
 }
 
 .bar-grow {
@@ -556,8 +576,15 @@
 }
 
 @keyframes pulseDot {
-	0%, 100% { opacity: 1; transform: scale(1); }
-	50% { opacity: 0.4; transform: scale(0.8); }
+	0%,
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.4;
+		transform: scale(0.8);
+	}
 }
 
 .pulse-dot {
@@ -575,23 +602,29 @@
 .shimmer::after {
 	content: '';
 	position: absolute;
-	top: 0; bottom: 0; left: 0;
+	top: 0;
+	bottom: 0;
+	left: 0;
 	width: 30%;
 	pointer-events: none;
 	background: linear-gradient(
-			90deg,
-			transparent 0%,
-			color-mix(in srgb, var(--primary) 15%, transparent) 40%,
-			color-mix(in srgb, var(--foreground) 20%, transparent) 50%,
-			color-mix(in srgb, var(--primary) 15%, transparent) 60%,
-			transparent 100%
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--primary) 15%, transparent) 40%,
+		color-mix(in srgb, var(--foreground) 20%, transparent) 50%,
+		color-mix(in srgb, var(--primary) 15%, transparent) 60%,
+		transparent 100%
 	);
 	animation: shimmer 2.2s ease-in-out infinite;
 }
 
 @keyframes shimmer {
-	0% { transform: translateX(-100%); }
-	100% { transform: translateX(350%); }
+	0% {
+		transform: translateX(-100%);
+	}
+	100% {
+		transform: translateX(350%);
+	}
 }
 
 /* =========================================
@@ -619,8 +652,8 @@
 }
 
 /* Solidify Floating Menus (Shadcn Dropdowns, Dialogs, Sheets, Tooltips) */
-[role="dialog"],
-[role="menu"],
+[role='dialog'],
+[role='menu'],
 [data-radix-popper-content-wrapper] > div {
 	background-color: var(--surface) !important;
 	backdrop-filter: none !important;
