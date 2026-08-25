@@ -5,5 +5,38 @@ yarn.lock
 bun.lock
 bun.lockb
 
-# Miscellaneous
+# Build & Output Directories
+.svelte-kit/
+build/
+dist/
+.output/
+.vercel/
+.netlify/
+
+# Dependencies
+node_modules/
+
+# IDE & Editor Settings
+.idea/
+.vscode/
+
+# Components & Generated Code
+src/lib/components/ui/
+
+# Root Level Files (package.json, config files, markdown, etc.)
+/*.*
+
+# Test Coverage
+coverage/
+.nyc_output/
+
+# Assets & Minified Files
 /static/
+public/
+*.min.js
+*.min.css
+*.svg
+
+# Environment Files
+.env
+.env.*
