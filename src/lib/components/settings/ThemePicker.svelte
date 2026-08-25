@@ -6,45 +6,15 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { appStore } from '$lib/stores/appState';
-	import type { ThemeName } from '$lib/schemas/theme';
+	import { THEMES } from '$lib/themes';
+	import type { ThemeName, CustomTheme } from '$lib/schemas';
 
 	let customDialogOpen = $state(false);
 
-	const THEMES: { id: ThemeName; label: string }[] = [
-		{ id: 'atom-one-dark', label: 'Atom One Dark' },
-		{ id: 'gruvbox-dark', label: 'Gruvbox Dark' },
-		{ id: 'gruvbox-light', label: 'Gruvbox Light' },
-		{ id: 'rose-pine', label: 'Rosé Pine Base' },
-		{ id: 'rose-pine-dawn', label: 'Rosé Pine Dawn' },
-		{ id: 'catppuccin-mocha', label: 'Catppuccin Mocha' },
-		{ id: 'catppuccin-latte', label: 'Catppuccin Latte' },
-		{ id: 'nord', label: 'Nord' },
-		{ id: 'dracula', label: 'Dracula' },
-		{ id: 'tokyo-night', label: 'Tokyo Night' },
-		{ id: 'tokyo-light', label: 'Tokyo Light' },
-		{ id: 'solarized-dark', label: 'Solarized Dark' },
-		{ id: 'solarized-light', label: 'Solarized Light' }
-	];
+	// Filter out 'custom' since it is rendered separately at the bottom of the dropdown
+	const presetThemes = THEMES.filter((theme) => theme.name !== 'custom');
 
-	type CustomColors = {
-		base: string;
-		surface: string;
-		overlay: string;
-		mutedColor: string;
-		subtle: string;
-		text: string;
-		love: string;
-		gold: string;
-		rose: string;
-		pine: string;
-		foam: string;
-		iris: string;
-		highlightLow: string;
-		highlightMed: string;
-		highlightHigh: string;
-	};
-
-	let customColors: CustomColors = $state(
+	let customColors: CustomTheme = $state(
 		$appStore.theme.custom ?? {
 			base: '#191724',
 			surface: '#1f1d2e',
@@ -65,9 +35,8 @@
 	);
 
 	type ColorField = {
-		id: keyof CustomColors;
+		id: keyof CustomTheme;
 		label: string;
-		cssVar: string;
 		desc: string;
 	};
 
@@ -80,84 +49,44 @@
 		{
 			title: 'Backgrounds & Surfaces',
 			fields: [
-				{ id: 'base', label: 'Base', cssVar: '--custom-base', desc: 'Main app background' },
-				{
-					id: 'surface',
-					label: 'Surface',
-					cssVar: '--custom-surface',
-					desc: 'Cards, popovers, modals'
-				},
-				{
-					id: 'overlay',
-					label: 'Overlay',
-					cssVar: '--custom-overlay',
-					desc: 'Muted structural backgrounds'
-				}
+				{ id: 'base', label: 'Base', desc: 'Main app background' },
+				{ id: 'surface', label: 'Surface', desc: 'Cards, popovers, modals' },
+				{ id: 'overlay', label: 'Overlay', desc: 'Muted structural backgrounds' }
 			]
 		},
 		{
 			title: 'Highlights & Borders',
 			fields: [
-				{
-					id: 'highlightLow',
-					label: 'Highlight Low',
-					cssVar: '--custom-highlight-low',
-					desc: 'Borders and inputs'
-				},
-				{
-					id: 'highlightMed',
-					label: 'Highlight Med',
-					cssVar: '--custom-highlight-med',
-					desc: 'Secondary active states'
-				},
-				{
-					id: 'highlightHigh',
-					label: 'Highlight High',
-					cssVar: '--custom-highlight-high',
-					desc: 'Hover states'
-				}
+				{ id: 'highlightLow', label: 'Highlight Low', desc: 'Borders and inputs' },
+				{ id: 'highlightMed', label: 'Highlight Med', desc: 'Secondary active states' },
+				{ id: 'highlightHigh', label: 'Highlight High', desc: 'Hover states' }
 			]
 		},
 		{
 			title: 'Typography',
 			fields: [
-				{ id: 'text', label: 'Text', cssVar: '--custom-text', desc: 'Primary foreground text' },
-				{ id: 'subtle', label: 'Subtle', cssVar: '--custom-subtle', desc: 'Muted foreground text' },
-				{
-					id: 'mutedColor',
-					label: 'Muted',
-					cssVar: '--custom-muted-color',
-					desc: 'Disabled or faint text'
-				}
+				{ id: 'text', label: 'Text', desc: 'Primary foreground text' },
+				{ id: 'subtle', label: 'Subtle', desc: 'Muted foreground text' },
+				{ id: 'mutedColor', label: 'Muted', desc: 'Disabled or faint text' }
 			]
 		},
 		{
 			title: 'Accents & Brand',
 			fields: [
-				{
-					id: 'iris',
-					label: 'Iris (Primary)',
-					cssVar: '--custom-iris',
-					desc: 'Primary brand, rings, aurora center'
-				},
-				{
-					id: 'rose',
-					label: 'Rose (Accent)',
-					cssVar: '--custom-rose',
-					desc: 'Accent color, secondary aurora glow'
-				},
-				{ id: 'foam', label: 'Foam', cssVar: '--custom-foam', desc: 'Tertiary aurora gradient' },
-				{ id: 'love', label: 'Love', cssVar: '--custom-love', desc: 'Destructive / Error states' },
-				{ id: 'gold', label: 'Gold', cssVar: '--custom-gold', desc: 'Warning / Highlight states' },
-				{ id: 'pine', label: 'Pine', cssVar: '--custom-pine', desc: 'Success / Info states' }
+				{ id: 'iris', label: 'Iris (Primary)', desc: 'Primary brand, rings, aurora center' },
+				{ id: 'rose', label: 'Rose (Accent)', desc: 'Accent color, secondary aurora glow' },
+				{ id: 'foam', label: 'Foam', desc: 'Tertiary aurora gradient' },
+				{ id: 'love', label: 'Love', desc: 'Destructive / Error states' },
+				{ id: 'gold', label: 'Gold', desc: 'Warning / Highlight states' },
+				{ id: 'pine', label: 'Pine', desc: 'Success / Info states' }
 			]
 		}
 	];
 
-	function selectPreset(themeId: ThemeName) {
+	function selectPreset(themeName: ThemeName) {
 		$appStore.theme = {
 			...$appStore.theme,
-			active: themeId
+			active: themeName
 		};
 	}
 
@@ -166,14 +95,6 @@
 			active: 'custom',
 			custom: { ...customColors }
 		};
-
-		const root = document.documentElement;
-		colorGroups.forEach((group) => {
-			group.fields.forEach((field) => {
-				root.style.setProperty(field.cssVar, customColors[field.id]);
-			});
-		});
-
 		customDialogOpen = false;
 	}
 </script>
@@ -196,16 +117,16 @@
 			<DropdownMenu.Label>Presets</DropdownMenu.Label>
 			<DropdownMenu.Separator />
 
-			{#each THEMES as theme (theme.id)}
+			{#each presetThemes as theme (theme.name)}
 				<DropdownMenu.Item
-					onclick={() => selectPreset(theme.id)}
-					class={$appStore.theme.active === theme.id
+					onclick={() => selectPreset(theme.name)}
+					class={$appStore.theme.active === theme.name
 						? 'bg-primary/10 font-medium text-primary'
 						: ''}
 				>
 					<div class="flex w-full items-center justify-between">
 						{theme.label}
-						{#if $appStore.theme.active === theme.id}
+						{#if $appStore.theme.active === theme.name}
 							<Check size={14} />
 						{/if}
 					</div>

@@ -7,21 +7,39 @@ export interface ThemeMeta {
 }
 
 export const THEMES: ThemeMeta[] = [
-	{ name: 'atom-one-dark', label: 'Atom One Dark', isDark: true },
-	{ name: 'gruvbox-dark', label: 'Gruvbox Dark', isDark: true },
-	{ name: 'gruvbox-light', label: 'Gruvbox Light', isDark: false },
 	{ name: 'rose-pine', label: 'Rosé Pine', isDark: true },
 	{ name: 'rose-pine-dawn', label: 'Rosé Pine Dawn', isDark: false },
 	{ name: 'catppuccin-mocha', label: 'Catppuccin Mocha', isDark: true },
 	{ name: 'catppuccin-latte', label: 'Catppuccin Latte', isDark: false },
-	{ name: 'nord', label: 'Nord', isDark: true },
-	{ name: 'dracula', label: 'Dracula', isDark: true },
 	{ name: 'tokyo-night', label: 'Tokyo Night', isDark: true },
 	{ name: 'tokyo-light', label: 'Tokyo Light', isDark: false },
+	{ name: 'gruvbox-dark', label: 'Gruvbox Dark', isDark: true },
+	{ name: 'gruvbox-light', label: 'Gruvbox Light', isDark: false },
+	{ name: 'atom-one-dark', label: 'Atom One Dark', isDark: true },
+	{ name: 'dracula', label: 'Dracula', isDark: true },
+	{ name: 'nord', label: 'Nord', isDark: true },
 	{ name: 'solarized-dark', label: 'Solarized Dark', isDark: true },
 	{ name: 'solarized-light', label: 'Solarized Light', isDark: false },
 	{ name: 'custom', label: 'Custom', isDark: true }
 ];
+
+const CUSTOM_VAR_MAP: Record<keyof Required<NonNullable<ThemeSettings['custom']>>, string> = {
+	base: '--custom-base',
+	surface: '--custom-surface',
+	overlay: '--custom-overlay',
+	mutedColor: '--custom-muted-color',
+	subtle: '--custom-subtle',
+	text: '--custom-text',
+	love: '--custom-love',
+	gold: '--custom-gold',
+	rose: '--custom-rose',
+	pine: '--custom-pine',
+	foam: '--custom-foam',
+	iris: '--custom-iris',
+	highlightLow: '--custom-highlight-low',
+	highlightMed: '--custom-highlight-med',
+	highlightHigh: '--custom-highlight-high'
+};
 
 /** Apply a theme to the document root */
 export function applyTheme(settings: ThemeSettings): void {
@@ -32,18 +50,16 @@ export function applyTheme(settings: ThemeSettings): void {
 
 	// If custom theme, inject the user's CSS variables
 	if (settings.active === 'custom' && settings.custom) {
-		const c = settings.custom;
-		root.style.setProperty('--nockr-bg', c.background);
-		root.style.setProperty('--nockr-surface', c.surface);
-		root.style.setProperty('--nockr-primary', c.primary);
-		root.style.setProperty('--nockr-text', c.text);
-		root.style.setProperty('--nockr-accent', c.accent);
+		for (const [key, cssVar] of Object.entries(CUSTOM_VAR_MAP)) {
+			const value = settings.custom[key as keyof typeof settings.custom];
+			if (value) {
+				root.style.setProperty(cssVar, value);
+			}
+		}
 	} else {
 		// Clear any previously set custom vars
-		root.style.removeProperty('--nockr-bg');
-		root.style.removeProperty('--nockr-surface');
-		root.style.removeProperty('--nockr-primary');
-		root.style.removeProperty('--nockr-text');
-		root.style.removeProperty('--nockr-accent');
+		for (const cssVar of Object.values(CUSTOM_VAR_MAP)) {
+			root.style.removeProperty(cssVar);
+		}
 	}
 }
