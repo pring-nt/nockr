@@ -74,7 +74,7 @@ export function getCanvasDimensions(ratio: AspectRatio): { width: number; height
 }
 
 export function maskGpa(gpa: number): string {
-	return `${Math.floor(gpa)}.XX`;
+	return `${Math.floor(gpa)}.XXX`;
 }
 
 export function maskGrade(grade: number | null, mode: GradeDisplayMode): string | null {
