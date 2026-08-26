@@ -3,6 +3,7 @@
 	import { appStore } from '$lib/stores/appState';
 	import { Trash2, Minus, Plus } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { cn } from '$lib/utils.js';
 
 	let {
@@ -97,7 +98,7 @@
 		}
 		const formatted = Number(next.toFixed(2));
 		onUpdate('grade', formatted);
-		gradeLiveValue = formatted.toFixed(2); // Keeps focused input visually synced immediately
+		gradeLiveValue = formatted.toFixed(2);
 	}
 
 	// --- Keyboard Navigation ---
@@ -174,6 +175,7 @@
 		>
 			<Minus size={12} />
 		</button>
+
 		<input
 			id="course-{course.id}-units"
 			class="w-full bg-transparent p-0 text-center text-sm text-foreground focus:outline-none"
@@ -186,6 +188,7 @@
 			onblur={handleUnitsBlur}
 			onkeydown={onUnitsKeydown}
 		/>
+
 		<button
 			type="button"
 			tabindex="-1"
@@ -212,6 +215,7 @@
 		>
 			<Minus size={12} />
 		</button>
+
 		<input
 			id="course-{course.id}-grade"
 			class={cn(
@@ -229,6 +233,7 @@
 			onblur={handleGradeBlur}
 			onkeydown={onGradeKeydown}
 		/>
+
 		<button
 			type="button"
 			tabindex="-1"
@@ -240,12 +245,22 @@
 	</div>
 
 	<!-- Delete -->
-	<Button
-		variant="ghost"
-		size="icon"
-		onclick={onDelete}
-		class="h-7 w-7 text-muted-foreground hover:text-destructive"
-	>
-		<Trash2 size={14} />
-	</Button>
+	<Tooltip.Root>
+		<Tooltip.Trigger>
+			{#snippet child({ props })}
+				<Button
+					{...props}
+					variant="ghost"
+					size="icon"
+					onclick={onDelete}
+					class="h-7 w-7 text-muted-foreground hover:text-destructive"
+				>
+					<Trash2 size={14} />
+				</Button>
+			{/snippet}
+		</Tooltip.Trigger>
+		<Tooltip.Content>
+			<p>Delete course</p>
+		</Tooltip.Content>
+	</Tooltip.Root>
 </div>

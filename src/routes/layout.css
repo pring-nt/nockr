@@ -651,15 +651,24 @@
 	background: color-mix(in srgb, var(--overlay) 45%, transparent);
 }
 
-/* Solidify Floating Menus (Shadcn Dropdowns, Dialogs, Sheets, Tooltips) */
+/* Solidify Floating Menus (Shadcn Dropdowns, Dialogs, Sheets) */
 [role='dialog'],
 [role='menu'],
-[data-radix-popper-content-wrapper] > div {
+[data-radix-popper-content-wrapper] > div:not([role='tooltip']) {
 	background-color: var(--surface) !important;
 	backdrop-filter: none !important;
 	-webkit-backdrop-filter: none !important;
 	border: 1px solid color-mix(in srgb, var(--highlight-high) 40%, transparent) !important;
 	box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Dedicated Tooltip Styling */
+[role='tooltip'] {
+	background-color: var(--overlay) !important;
+	color: var(--text) !important;
+	border: 1px solid color-mix(in srgb, var(--highlight-high) 50%, transparent) !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+	z-index: 50;
 }
 
 /* =========================================
