@@ -5,3 +5,4 @@ export * from './university';
 export * from './ge';
 export * from './theme';
 export * from './app';
+export * from './share';

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
 	import { computeCGPA, computeUnitsEarned } from '$lib/logic/gpa';
-	import { PenLine, Check, Award, ChevronRight } from 'lucide-svelte';
+	import { PenLine, Check, Award, ChevronRight, Share2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import LatinHonorsModal from '$lib/components/honors/LatinHonorsModal.svelte';
+	import ShareModal from '$lib/components/share/ShareModal.svelte';
 
 	let cgpa = $derived(computeCGPA($appStore.terms));
 	let unitsEarned = $derived(computeUnitsEarned($appStore.terms));
@@ -18,6 +19,7 @@
 	let isEditingTotal = $state(false);
 	let tempTotalUnits = $state(165);
 	let honorsModalOpen = $state(false);
+	let shareModalOpen = $state(false);
 
 	function startEditing() {
 		tempTotalUnits = totalProgramUnits;
@@ -34,6 +36,22 @@
 
 <Card class="glass border-border/40">
 	<CardContent class="space-y-5 p-5 sm:p-6">
+		<!-- Header Row with Share Action -->
+		<div class="flex items-center justify-between border-b border-border/30 pb-3">
+			<h2 class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+				Academic Summary
+			</h2>
+			<Button
+				variant="ghost"
+				size="sm"
+				onclick={() => (shareModalOpen = true)}
+				class="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+			>
+				<Share2 size={13} />
+				<span>Export Card</span>
+			</Button>
+		</div>
+
 		<!-- Stats row -->
 		<div class="grid grid-cols-1 items-start gap-6 sm:grid-cols-3 sm:gap-4">
 			<!-- Cumulative GPA Column -->
@@ -48,7 +66,6 @@
 					{cgpa !== null ? cgpa.toFixed(3) : '—'}
 				</div>
 
-				<!-- Clean Static Honors Standing Pill -->
 				<button
 					type="button"
 					onclick={() => (honorsModalOpen = true)}
@@ -146,3 +163,4 @@
 </Card>
 
 <LatinHonorsModal bind:open={honorsModalOpen} />
+<ShareModal bind:open={shareModalOpen} />

@@ -1,13 +1,13 @@
-<!-- src/lib/components/term/TermCard.svelte -->
 <script lang="ts">
 	import type { Term } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
 	import { computeTGPA } from '$lib/logic/gpa';
 	import { getDeansListTier } from '$lib/logic/honors';
-	import { Plus, Trash2, GraduationCap } from 'lucide-svelte';
+	import { Plus, Trash2, GraduationCap, Share2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardHeader, CardContent } from '$lib/components/ui/card/index.js';
 	import CourseRow from './CourseRow.svelte';
+	import ShareModal from '$lib/components/share/ShareModal.svelte';
 	import { tick } from 'svelte';
 
 	let {
@@ -25,6 +25,7 @@
 
 	let isEditing = $state(false);
 	let editName = $state('');
+	let shareModalOpen = $state(false);
 
 	function startEditing() {
 		editName = term.name;
@@ -36,7 +37,6 @@
 		isEditing = false;
 	}
 
-	// --- Course CRUD ---
 	function addCourse(focusNew = false) {
 		const newId = crypto.randomUUID();
 		appStore.update((state) => ({
@@ -84,7 +84,6 @@
 		}));
 	}
 
-	// --- Keyboard Navigation (cross-row) ---
 	function handleNavigate(courseId: string) {
 		const idx = term.courses.findIndex((c) => c.id === courseId);
 		if (idx === -1) return;
@@ -105,7 +104,6 @@
 <Card class="glass border-border/40">
 	<CardHeader class="p-3 pb-3 sm:p-6 sm:pb-3">
 		<div class="flex items-center justify-between gap-2">
-			<!-- Term name + Gradient Dean's List Badge -->
 			<div class="flex min-w-0 flex-1 items-center gap-2">
 				{#if isEditing}
 					<input
@@ -137,7 +135,6 @@
 				{/if}
 			</div>
 
-			<!-- TGPA + delete -->
 			<div class="flex shrink-0 items-center gap-2 sm:gap-3">
 				<div class="text-right">
 					<p class="text-[10px] text-muted-foreground sm:text-xs">TGPA</p>
@@ -145,6 +142,17 @@
 						{tgpa !== null ? tgpa.toFixed(3) : '—'}
 					</p>
 				</div>
+
+				<Button
+					variant="ghost"
+					size="icon"
+					onclick={() => (shareModalOpen = true)}
+					class="h-7 w-7 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
+					title="Share Term Card"
+				>
+					<Share2 size={16} />
+				</Button>
+
 				<Button
 					variant="ghost"
 					size="icon"
@@ -189,3 +197,5 @@
 		</Button>
 	</CardContent>
 </Card>
+
+<ShareModal bind:open={shareModalOpen} {term} />
