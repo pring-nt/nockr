@@ -20,6 +20,7 @@
 	let gradeMin = $derived($appStore.universitySettings.gradeMin);
 	let gradeMax = $derived($appStore.universitySettings.gradeMax);
 	let failingGrade = $derived($appStore.universitySettings.failingGrade);
+	let gradeStep = $derived($appStore.universitySettings.gradeStep ?? 0.25);
 
 	let isFailingGrade = $derived(
 		course.grade !== null && failingGrade !== null && course.grade === failingGrade
@@ -58,18 +59,18 @@
 	let gradeLiveValue = $state('');
 
 	let gradeDisplay = $derived(
-		gradeIsFocused ? gradeLiveValue : course.grade !== null ? course.grade.toFixed(1) : ''
+		gradeIsFocused ? gradeLiveValue : course.grade !== null ? course.grade.toFixed(2) : ''
 	);
 
 	function handleGradeFocus() {
-		gradeLiveValue = course.grade !== null ? course.grade.toFixed(1) : '';
+		gradeLiveValue = course.grade !== null ? course.grade.toFixed(2) : '';
 		gradeIsFocused = true;
 	}
 
 	function handleGradeBlur() {
 		gradeIsFocused = false;
 		if (course.grade !== null) {
-			onUpdate('grade', Number(course.grade.toFixed(1)));
+			onUpdate('grade', Number(course.grade.toFixed(2)));
 		}
 	}
 
@@ -85,17 +86,18 @@
 	}
 
 	function updateGrade(delta: number) {
-		const step = 0.5;
+		const step = gradeStep;
 		let next: number;
 		if (course.grade === null) {
 			next = delta > 0 ? Math.min(gradeMax, gradeMin + step) : gradeMin;
 		} else {
-			next = Math.round((course.grade + delta * step) * 2) / 2;
+			const inverseStep = 1 / step;
+			next = Math.round((course.grade + delta * step) * inverseStep) / inverseStep;
 			next = Math.max(gradeMin, Math.min(gradeMax, next));
 		}
-		const formatted = Number(next.toFixed(1));
+		const formatted = Number(next.toFixed(2));
 		onUpdate('grade', formatted);
-		gradeLiveValue = formatted.toFixed(1); // Keeps focused input visually synced immediately
+		gradeLiveValue = formatted.toFixed(2); // Keeps focused input visually synced immediately
 	}
 
 	// --- Keyboard Navigation ---
@@ -219,7 +221,7 @@
 			type="number"
 			min={gradeMin}
 			max={gradeMax}
-			step="0.5"
+			step={gradeStep}
 			placeholder="—"
 			value={gradeDisplay}
 			onfocus={handleGradeFocus}

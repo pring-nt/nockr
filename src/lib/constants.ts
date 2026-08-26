@@ -1,4 +1,3 @@
-// src/lib/constants.ts
 import type { UniversitySettings, AspectRatio } from '$lib/schemas';
 
 // GE Checklist
@@ -27,6 +26,7 @@ export const DLSU_PRESET: UniversitySettings = {
 	gradeMin: 0,
 	gradeMax: 4,
 	failingGrade: 0.0,
+	gradeStep: 0.5,
 	deansListEnabled: true,
 	deansListLabel: "Dean's List",
 	deansListMinUnits: 12, // DLSU requires 12 units
@@ -52,6 +52,7 @@ export const UP_PRESET: UniversitySettings = {
 	gradeMin: 1.0,
 	gradeMax: 5.0,
 	failingGrade: 5.0,
+	gradeStep: 0.25,
 	deansListEnabled: true,
 	deansListLabel: "Dean's List",
 	deansListMinUnits: 15,
@@ -76,6 +77,7 @@ export const UST_PRESET: UniversitySettings = {
 	gradeMin: 1.0,
 	gradeMax: 5.0,
 	failingGrade: 5.0,
+	gradeStep: 0.25,
 	deansListEnabled: true,
 	deansListLabel: "Dean's List",
 	deansListMinUnits: 15,
@@ -99,6 +101,7 @@ export const ADMU_PRESET: UniversitySettings = {
 	gradeMin: 0.0,
 	gradeMax: 4.0,
 	failingGrade: 0.0,
+	gradeStep: 0.5,
 	deansListEnabled: true,
 	deansListLabel: "Dean's List",
 	deansListMinUnits: 15,

@@ -315,6 +315,19 @@
 
 				<div class="grid grid-cols-2 gap-2.5">
 					<div class="space-y-1">
+						<Label class="text-[11px] text-muted-foreground">Grade Step</Label>
+						<Input
+							type="number"
+							step="0.01"
+							disabled={isPreset}
+							value={settings.gradeStep}
+							onblur={(e) => commitNumericSetting('gradeStep', e.currentTarget.value, 0.25)}
+							class="h-8 bg-background font-mono text-xs"
+							placeholder="e.g. 0.25"
+						/>
+					</div>
+
+					<div class="space-y-1">
 						<Label class="text-[11px] text-muted-foreground">Failing Grade</Label>
 						<Input
 							type="number"
@@ -326,33 +339,33 @@
 							placeholder="e.g. 0.0 or 5.0"
 						/>
 					</div>
+				</div>
 
-					<div class="space-y-1">
-						<Label class="text-[11px] text-muted-foreground">Direction</Label>
-						<div class="flex h-9 items-center gap-1 rounded-lg border border-input bg-muted/40 p-1">
-							<button
-								type="button"
-								disabled={isPreset}
-								onclick={() => updateSetting('gradeDirection', 'ascending')}
-								class="h-full flex-1 rounded-md text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 {settings.gradeDirection ===
-								'ascending'
-									? 'border border-border/40 bg-background font-semibold text-primary shadow-xs'
-									: 'text-muted-foreground hover:text-foreground'}"
-							>
-								Ascending
-							</button>
-							<button
-								type="button"
-								disabled={isPreset}
-								onclick={() => updateSetting('gradeDirection', 'descending')}
-								class="h-full flex-1 rounded-md text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 {settings.gradeDirection ===
-								'descending'
-									? 'border border-border/40 bg-background font-semibold text-primary shadow-xs'
-									: 'text-muted-foreground hover:text-foreground'}"
-							>
-								Descending
-							</button>
-						</div>
+				<div class="space-y-1">
+					<Label class="text-[11px] text-muted-foreground">Direction</Label>
+					<div class="flex h-9 items-center gap-1 rounded-lg border border-input bg-muted/40 p-1">
+						<button
+							type="button"
+							disabled={isPreset}
+							onclick={() => updateSetting('gradeDirection', 'ascending')}
+							class="h-full flex-1 rounded-md text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 {settings.gradeDirection ===
+							'ascending'
+								? 'border border-border/40 bg-background font-semibold text-primary shadow-xs'
+								: 'text-muted-foreground hover:text-foreground'}"
+						>
+							Ascending
+						</button>
+						<button
+							type="button"
+							disabled={isPreset}
+							onclick={() => updateSetting('gradeDirection', 'descending')}
+							class="h-full flex-1 rounded-md text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 {settings.gradeDirection ===
+							'descending'
+								? 'border border-border/40 bg-background font-semibold text-primary shadow-xs'
+								: 'text-muted-foreground hover:text-foreground'}"
+						>
+							Descending
+						</button>
 					</div>
 				</div>
 			</div>

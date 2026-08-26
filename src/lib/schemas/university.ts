@@ -8,6 +8,7 @@ export const UniversitySettingsSchema = z.object({
 	gradeMin: z.number().default(0),
 	gradeMax: z.number().default(4),
 	failingGrade: z.number().nullable().default(0.0),
+	gradeStep: z.number().default(0.5),
 
 	deansListEnabled: z.boolean().default(true),
 	deansListLabel: z.string().default("Dean's List"),
