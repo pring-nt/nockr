@@ -1,4 +1,3 @@
-<!-- src/lib/components/share/ShareCanvas.svelte -->
 <script lang="ts">
 	import { tick } from 'svelte';
 	import type { ShareConfig, Term } from '$lib/schemas';

@@ -1,4 +1,3 @@
-<!-- src/lib/components/honors/LatinHonorsModal.svelte -->
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Award, Sparkles, TriangleAlert, CircleCheck } from 'lucide-svelte';

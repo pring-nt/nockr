@@ -1,4 +1,3 @@
-<!-- src/lib/components/settings/SettingsSidebar.svelte -->
 <script lang="ts">
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';

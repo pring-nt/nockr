@@ -1,4 +1,3 @@
-<!-- src/lib/components/share/ShareModal.svelte -->
 <script lang="ts">
 	import type { Term, ShareConfig, AspectRatio, GradeDisplayMode } from '$lib/schemas';
 	import { captureCanvas, getCanvasDimensions } from '$lib/logic/share';
