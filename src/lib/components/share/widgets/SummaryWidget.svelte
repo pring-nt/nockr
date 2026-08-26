@@ -5,7 +5,13 @@
 	import { maskGpa as maskGpaFn } from '$lib/logic/share';
 	import { Award } from 'lucide-svelte';
 
-	let { maskGpa = false }: { maskGpa?: boolean } = $props();
+	let {
+		maskGpa = false,
+		showHonors = true
+	}: {
+		maskGpa?: boolean;
+		showHonors?: boolean;
+	} = $props();
 
 	let cgpa = $derived(computeCGPA($appStore.terms));
 	let unitsEarned = $derived(computeUnitsEarned($appStore.terms));
@@ -18,7 +24,7 @@
 	let formattedCgpa = $derived(cgpa === null ? '—' : maskGpa ? maskGpaFn(cgpa) : cgpa.toFixed(3));
 
 	let latinTier = $derived(
-		$appStore.universitySettings.latinHonorsEnabled && cgpa !== null
+		showHonors && $appStore.universitySettings.latinHonorsEnabled && cgpa !== null
 			? matchTier(cgpa, $appStore.universitySettings.latinHonorsTiers)
 			: null
 	);

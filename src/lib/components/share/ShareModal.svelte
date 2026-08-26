@@ -22,14 +22,10 @@
 	let canvasEl = $state<HTMLElement | undefined>();
 	let isCapturing = $state(false);
 
-	// Read terms from store
 	let terms = $derived($appStore.terms ?? []);
 	let latestTerm = $derived(terms.length > 0 ? terms[terms.length - 1] : undefined);
 
-	// Track currently selected term ID inside the modal
 	let selectedTermId = $state<string>('');
-
-	// Resolve active term object from selection or fallback to latest term
 	let activeTerm = $derived(terms.find((t) => t.id === selectedTermId) ?? latestTerm);
 
 	let activeTermLabel = $derived(
@@ -43,7 +39,8 @@
 			academicSummary: true,
 			termHeader: true,
 			courseList: true,
-			deansListBadge: true
+			deansListBadge: true,
+			latinHonorsBadge: true
 		},
 		privacy: {
 			maskGPA: false,
@@ -54,7 +51,6 @@
 		showWatermark: true
 	});
 
-	// Sync term selection when modal opens
 	$effect(() => {
 		if (open) {
 			if (initialTerm) {
@@ -66,6 +62,8 @@
 			config.widgets.academicSummary = true;
 			config.widgets.termHeader = true;
 			config.widgets.courseList = true;
+			config.widgets.deansListBadge = true;
+			config.widgets.latinHonorsBadge = true;
 		}
 	});
 
@@ -132,7 +130,7 @@
 		<div class="my-4 grid grid-cols-1 items-start gap-8 md:grid-cols-12">
 			<!-- Controls Column -->
 			<div class="space-y-5 text-xs md:col-span-5 lg:col-span-4">
-				<!-- Shadcn Term Selector -->
+				<!-- Term Selector -->
 				{#if terms.length > 0}
 					<div>
 						<Label class="mb-2 block font-semibold text-(--subtle)">Active Term Context</Label>
@@ -204,6 +202,11 @@
 					<div class="flex items-center justify-between">
 						<span class="text-xs">Academic Summary</span>
 						<Switch bind:checked={config.widgets.academicSummary} />
+					</div>
+
+					<div class="flex items-center justify-between">
+						<span class="text-xs">Latin Honors Badge</span>
+						<Switch bind:checked={config.widgets.latinHonorsBadge} />
 					</div>
 
 					{#if activeTerm}

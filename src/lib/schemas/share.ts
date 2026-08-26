@@ -21,10 +21,11 @@ export const ShareConfigSchema = z.object({
 		academicSummary: z.boolean().default(false),
 		termHeader: z.boolean().default(true),
 		courseList: z.boolean().default(true),
-		deansListBadge: z.boolean().default(true) // own toggle, ignores ui store
+		deansListBadge: z.boolean().default(true),
+		latinHonorsBadge: z.boolean().default(true)
 	}),
 	privacy: z.object({
-		maskGPA: z.boolean().default(false), // 3.83 → 3.XX
+		maskGPA: z.boolean().default(false), // 3.83 -> 3.XX
 		courseGradeDisplay: GradeDisplayModeSchema.default('full')
 	}),
 	aspectRatio: AspectRatioSchema.default('3:4'),

@@ -107,7 +107,10 @@
 			{#if showSummary && (showHeader || showCourses)}
 				<div class="grid w-full grid-cols-12 items-start gap-6">
 					<div class="col-span-7">
-						<SummaryWidget maskGpa={config.privacy.maskGPA} />
+						<SummaryWidget
+							maskGpa={config.privacy.maskGPA}
+							showHonors={config.widgets.latinHonorsBadge}
+						/>
 					</div>
 					<div class="col-span-5 space-y-6">
 						{#if showHeader}
@@ -128,7 +131,10 @@
 			{:else}
 				<div class="mx-auto w-full max-w-3xl space-y-6">
 					{#if showSummary}
-						<SummaryWidget maskGpa={config.privacy.maskGPA} />
+						<SummaryWidget
+							maskGpa={config.privacy.maskGPA}
+							showHonors={config.widgets.latinHonorsBadge}
+						/>
 					{/if}
 					{#if showHeader}
 						<TermHeaderWidget
@@ -149,7 +155,10 @@
 			<div class="w-full space-y-5">
 				<div class="grid grid-cols-12 items-start gap-5">
 					<div class="col-span-7">
-						<SummaryWidget maskGpa={config.privacy.maskGPA} />
+						<SummaryWidget
+							maskGpa={config.privacy.maskGPA}
+							showHonors={config.widgets.latinHonorsBadge}
+						/>
 					</div>
 					{#if showHeader}
 						<div class="col-span-5">
@@ -171,7 +180,10 @@
 		{:else}
 			<div class="mx-auto w-full max-w-2xl space-y-6">
 				{#if showSummary}
-					<SummaryWidget maskGpa={config.privacy.maskGPA} />
+					<SummaryWidget
+						maskGpa={config.privacy.maskGPA}
+						showHonors={config.widgets.latinHonorsBadge}
+					/>
 				{/if}
 				{#if showHeader}
 					<TermHeaderWidget
