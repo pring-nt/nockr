@@ -111,6 +111,7 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Content
+			onCloseAutoFocus={(e) => e.preventDefault()}
 		class="max-h-[92vh] max-w-5xl overflow-y-auto border-border bg-(--surface) p-6 text-(--text) lg:max-w-6xl"
 	>
 		<Dialog.Header

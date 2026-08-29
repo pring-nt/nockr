@@ -102,129 +102,127 @@
 	}
 </script>
 
-<Tooltip.Provider>
-	<Card class="glass border-border/40">
-		<CardHeader class="p-3 pb-3 sm:p-6 sm:pb-3">
-			<div class="flex items-center justify-between gap-2">
-				<div class="flex min-w-0 flex-1 items-center gap-2">
-					{#if isEditing}
-						<input
-							class="min-w-0 flex-1 border-b border-primary bg-transparent text-base font-semibold text-foreground focus:outline-none sm:text-lg"
-							bind:value={editName}
-							onblur={commitRename}
-							onkeydown={(e) => e.key === 'Enter' && commitRename()}
-							use:focusOnMount
-						/>
-					{:else}
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										class="cursor-pointer truncate text-left text-base font-semibold text-foreground transition-colors hover:text-primary sm:text-lg"
-										ondblclick={startEditing}
-									>
-										{term.name}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>
-								<p>Double-click to rename</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					{/if}
-
-					{#if deansListTier}
-						<span
-							class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/35 bg-linear-to-r from-primary/20 via-primary/10 to-accent/20 px-2.5 py-0.5 text-[10px] font-semibold shadow-xs ring-1 ring-primary/20 transition-all hover:scale-105 sm:text-xs"
-						>
-							<GraduationCap size={13} class="shrink-0 text-primary" />
-							<span class="gradient-text font-bold">{deansListTier.label}</span>
-						</span>
-					{/if}
-				</div>
-
-				<div class="flex shrink-0 items-center gap-2 sm:gap-3">
-					<div class="text-right">
-						<p class="text-[10px] text-muted-foreground sm:text-xs">TGPA</p>
-						<p class="gradient-text text-base font-bold text-primary sm:text-lg">
-							{tgpa !== null ? tgpa.toFixed(3) : '—'}
-						</p>
-					</div>
-
+<Card class="glass border-border/40">
+	<CardHeader class="p-3 pb-3 sm:p-6 sm:pb-3">
+		<div class="flex items-center justify-between gap-2">
+			<div class="flex min-w-0 flex-1 items-center gap-2">
+				{#if isEditing}
+					<input
+						class="min-w-0 flex-1 border-b border-primary bg-transparent text-base font-semibold text-foreground focus:outline-none sm:text-lg"
+						bind:value={editName}
+						onblur={commitRename}
+						onkeydown={(e) => e.key === 'Enter' && commitRename()}
+						use:focusOnMount
+					/>
+				{:else}
 					<Tooltip.Root>
 						<Tooltip.Trigger>
 							{#snippet child({ props })}
-								<Button
+								<button
 									{...props}
-									variant="ghost"
-									size="icon"
-									onclick={() => (shareModalOpen = true)}
-									class="h-7 w-7 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
+									class="cursor-pointer truncate text-left text-base font-semibold text-foreground transition-colors hover:text-primary sm:text-lg"
+									ondblclick={startEditing}
 								>
-									<Share2 size={16} />
-								</Button>
+									{term.name}
+								</button>
 							{/snippet}
 						</Tooltip.Trigger>
 						<Tooltip.Content>
-							<p>Share term card</p>
+							<p>Double-click to rename</p>
 						</Tooltip.Content>
 					</Tooltip.Root>
+				{/if}
 
-					<Tooltip.Root>
-						<Tooltip.Trigger>
-							{#snippet child({ props })}
-								<Button
-									{...props}
-									variant="ghost"
-									size="icon"
-									onclick={onDelete}
-									class="h-7 w-7 text-muted-foreground hover:text-destructive sm:h-8 sm:w-8"
-								>
-									<Trash2 size={16} />
-								</Button>
-							{/snippet}
-						</Tooltip.Trigger>
-						<Tooltip.Content>
-							<p>Delete term</p>
-						</Tooltip.Content>
-					</Tooltip.Root>
-				</div>
+				{#if deansListTier}
+					<span
+						class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/35 bg-linear-to-r from-primary/20 via-primary/10 to-accent/20 px-2.5 py-0.5 text-[10px] font-semibold shadow-xs ring-1 ring-primary/20 transition-all hover:scale-105 sm:text-xs"
+					>
+						<GraduationCap size={13} class="shrink-0 text-primary" />
+						<span class="gradient-text font-bold">{deansListTier.label}</span>
+					</span>
+				{/if}
 			</div>
-		</CardHeader>
 
-		<CardContent class="space-y-2 p-3 pt-0 sm:p-6 sm:pt-0">
-			{#if term.courses.length > 0}
-				<div
-					class="mb-1 grid grid-cols-[1fr_60px_72px_28px] gap-1.5 px-0.5 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:px-1"
-				>
-					<p class="text-[11px] text-muted-foreground sm:text-xs">Course</p>
-					<p class="text-center text-[11px] text-muted-foreground sm:text-xs">Units</p>
-					<p class="text-center text-[11px] text-muted-foreground sm:text-xs">Grade</p>
-					<span></span>
+			<div class="flex shrink-0 items-center gap-2 sm:gap-3">
+				<div class="text-right">
+					<p class="text-[10px] text-muted-foreground sm:text-xs">TGPA</p>
+					<p class="gradient-text text-base font-bold text-primary sm:text-lg">
+						{tgpa !== null ? tgpa.toFixed(3) : '—'}
+					</p>
 				</div>
-			{/if}
 
-			{#each term.courses as course (course.id)}
-				<CourseRow
-					{course}
-					onDelete={() => deleteCourse(course.id)}
-					onUpdate={(field, value) => updateCourse(course.id, field, value)}
-					onNavigate={() => handleNavigate(course.id)}
-				/>
-			{/each}
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								variant="ghost"
+								size="icon"
+								onclick={() => (shareModalOpen = true)}
+								class="h-7 w-7 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
+							>
+								<Share2 size={16} />
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>
+						<p>Share term card</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
 
-			<Button
-				onclick={() => addCourse(true)}
-				variant="ghost"
-				size="sm"
-				class="mt-1 h-8 w-full gap-2 text-xs text-muted-foreground hover:text-foreground sm:h-9 sm:text-sm"
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								variant="ghost"
+								size="icon"
+								onclick={onDelete}
+								class="h-7 w-7 text-muted-foreground hover:text-destructive sm:h-8 sm:w-8"
+							>
+								<Trash2 size={16} />
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>
+						<p>Delete term</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			</div>
+		</div>
+	</CardHeader>
+
+	<CardContent class="space-y-2 p-3 pt-0 sm:p-6 sm:pt-0">
+		{#if term.courses.length > 0}
+			<div
+				class="mb-1 grid grid-cols-[1fr_60px_72px_28px] gap-1.5 px-0.5 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:px-1"
 			>
-				<Plus size={14} />
-				Add Course
-			</Button>
-		</CardContent>
-	</Card>
-</Tooltip.Provider>
+				<p class="text-[11px] text-muted-foreground sm:text-xs">Course</p>
+				<p class="text-center text-[11px] text-muted-foreground sm:text-xs">Units</p>
+				<p class="text-center text-[11px] text-muted-foreground sm:text-xs">Grade</p>
+				<span></span>
+			</div>
+		{/if}
+
+		{#each term.courses as course (course.id)}
+			<CourseRow
+				{course}
+				onDelete={() => deleteCourse(course.id)}
+				onUpdate={(field, value) => updateCourse(course.id, field, value)}
+				onNavigate={() => handleNavigate(course.id)}
+			/>
+		{/each}
+
+		<Button
+			onclick={() => addCourse(true)}
+			variant="ghost"
+			size="sm"
+			class="mt-1 h-8 w-full gap-2 text-xs text-muted-foreground hover:text-foreground sm:h-9 sm:text-sm"
+		>
+			<Plus size={14} />
+			Add Course
+		</Button>
+	</CardContent>
+</Card>
 
 <ShareModal bind:open={shareModalOpen} {term} />

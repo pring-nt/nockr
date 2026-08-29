@@ -1,5 +1,6 @@
 <script lang="ts">
 	import './layout.css';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { appStore } from '$lib/stores/appState';
 	import { applyTheme } from '$lib/themes';
 	import Header from '$lib/components/layout/Header.svelte';
@@ -81,12 +82,14 @@
 	</script>
 </svelte:head>
 
-<div class="aurora-bg"></div>
+<Tooltip.Provider delayDuration={300} disableHoverableContent>
+	<div class="aurora-bg"></div>
 
-<div class="relative z-0 flex min-h-screen flex-col">
-	<Header />
+	<div class="relative z-0 flex min-h-screen flex-col">
+		<Header />
 
-	<main class="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
-		{@render children()}
-	</main>
-</div>
+		<main class="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
+			{@render children()}
+		</main>
+	</div>
+</Tooltip.Provider>
