@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Palette, Plus, Check } from 'lucide-svelte';
+	import { Palette, Plus, Check, Download, Upload } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
@@ -34,6 +34,24 @@
 			highlightHigh: '#524f67'
 		}
 	);
+
+	const CSS_VAR_MAP: Record<keyof CustomTheme, string> = {
+		base:         '--base',
+		surface:      '--surface',
+		overlay:      '--overlay',
+		mutedColor:   '--muted-color',
+		subtle:       '--subtle',
+		text:         '--text',
+		love:         '--love',
+		gold:         '--gold',
+		rose:         '--rose',
+		pine:         '--pine',
+		foam:         '--foam',
+		iris:         '--iris',
+		highlightLow: '--highlight-low',
+		highlightMed: '--highlight-med',
+		highlightHigh:'--highlight-high',
+	};
 
 	type ColorField = {
 		id: keyof CustomTheme;
@@ -97,6 +115,48 @@
 			custom: { ...customColors }
 		};
 		customDialogOpen = false;
+	}
+
+	const CSS_VAR_REVERSE_MAP = Object.fromEntries(
+			Object.entries(CSS_VAR_MAP).map(([key, varName]) => [varName, key as keyof CustomTheme])
+	);
+
+	let fileInputEl: HTMLInputElement;
+
+	function exportThemeCSS() {
+		const vars = (Object.entries(CSS_VAR_MAP) as [keyof CustomTheme, string][])
+				.map(([key, varName]) => `  ${varName}: ${customColors[key]};`)
+				.join('\n');
+
+		const css = `[data-theme="custom"] {\n${vars}\n}`;
+		const blob = new Blob([css], { type: 'text/css' });
+		const url = URL.createObjectURL(blob);
+
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'nockr-theme.css';
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	function importThemeCSS(event: Event) {
+		const file = (event.target as HTMLInputElement).files?.[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			const css = e.target?.result as string;
+			// Matches lines like:  --base: #191724;
+			const varRegex = /(--[\w-]+):\s*(#[0-9a-fA-F]{3,8})/g;
+			let match;
+			while ((match = varRegex.exec(css)) !== null) {
+				const key = CSS_VAR_REVERSE_MAP[match[1]];
+				if (key) customColors[key] = match[2];
+			}
+		};
+		reader.readAsText(file);
+		// Reset so the same file can be re-imported if needed
+		(event.target as HTMLInputElement).value = '';
 	}
 </script>
 
@@ -215,8 +275,32 @@
 			</div>
 
 			<Dialog.Footer class="border-t border-border pt-4">
-				<Button variant="outline" onclick={() => (customDialogOpen = false)}>Cancel</Button>
-				<Button onclick={applyCustomTheme}>Apply Custom Theme</Button>
+				<!-- Hidden file input triggered by the Import button -->
+				<input
+						bind:this={fileInputEl}
+						type="file"
+						accept=".css"
+						class="hidden"
+						onchange={importThemeCSS}
+				/>
+
+				<!-- Left side: import / export -->
+				<div class="flex flex-1 gap-2">
+					<Button variant="outline" size="sm" onclick={() => fileInputEl.click()}>
+						<Upload size={14} class="mr-1.5" />
+						Import
+					</Button>
+					<Button variant="outline" size="sm" onclick={exportThemeCSS}>
+						<Download size={14} class="mr-1.5" />
+						Export
+					</Button>
+				</div>
+
+				<!-- Right side: cancel / apply -->
+				<div class="flex gap-2">
+					<Button variant="outline" onclick={() => (customDialogOpen = false)}>Cancel</Button>
+					<Button onclick={applyCustomTheme}>Apply Custom Theme</Button>
+				</div>
 			</Dialog.Footer>
 		</Dialog.Content>
 	</Dialog.Root>
