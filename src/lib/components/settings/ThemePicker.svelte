@@ -226,8 +226,8 @@
 	</DropdownMenu.Root>
 
 	<Dialog.Content
-			onCloseAutoFocus={(e) => e.preventDefault()}
-			class="max-h-[85vh] overflow-y-auto sm:max-w-150"
+		onCloseAutoFocus={(e) => e.preventDefault()}
+		class="max-h-[85vh] overflow-y-auto sm:max-w-150"
 	>
 		<Dialog.Header>
 			<Dialog.Title>Build Custom Theme</Dialog.Title>
