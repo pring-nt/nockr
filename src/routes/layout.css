@@ -751,3 +751,24 @@
 	will-change: auto !important;
 	contain: paint layout !important;
 }
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+	width: 8px; /* Vertical scrollbar width */
+	height: 8px; /* Horizontal scrollbar height */
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--highlight-med, rgba(255, 255, 255, 0.2));
+	border-radius: 9999px;
+}
+
+/* Firefox */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--highlight-med, rgba(255, 255, 255, 0.2)) transparent;
+}

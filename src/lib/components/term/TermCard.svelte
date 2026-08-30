@@ -8,7 +8,6 @@
 	import { Card, CardHeader, CardContent } from '$lib/components/ui/card/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import CourseRow from './CourseRow.svelte';
-	import ShareModal from '$lib/components/share/ShareModal.svelte';
 	import { tick } from 'svelte';
 
 	let {
@@ -26,7 +25,6 @@
 
 	let isEditing = $state(false);
 	let editName = $state('');
-	let shareModalOpen = $state(false);
 
 	function startEditing() {
 		editName = term.name;
@@ -156,9 +154,9 @@
 						{#snippet child({ props })}
 							<Button
 								{...props}
+								href="/export?termId=${term.id}"
 								variant="ghost"
 								size="icon"
-								onclick={() => (shareModalOpen = true)}
 								class="h-7 w-7 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
 							>
 								<Share2 size={16} />
@@ -166,7 +164,7 @@
 						{/snippet}
 					</Tooltip.Trigger>
 					<Tooltip.Content>
-						<p>Share term card</p>
+						<p>Export term card</p>
 					</Tooltip.Content>
 				</Tooltip.Root>
 
@@ -224,5 +222,3 @@
 		</Button>
 	</CardContent>
 </Card>
-
-<ShareModal bind:open={shareModalOpen} {term} />

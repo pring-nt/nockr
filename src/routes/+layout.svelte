@@ -88,7 +88,7 @@
 	<div class="relative z-0 flex min-h-screen flex-col">
 		<Header />
 
-		<main class="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
+		<main class="w-full flex-1">
 			{@render children()}
 		</main>
 	</div>

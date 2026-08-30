@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { SlidersHorizontal, Download, Upload, Target } from 'lucide-svelte';
+	import { SlidersHorizontal, Download, Upload, Target, Share2 } from 'lucide-svelte';
 	import SettingsSidebar from '$lib/components/settings/SettingsSidebar.svelte';
 	import ThemePicker from '$lib/components/settings/ThemePicker.svelte';
 	import { appStore } from '$lib/stores/appState';
@@ -46,22 +47,44 @@
 >
 	<!-- Nockr Brand & Mode Tag -->
 	<div class="flex items-center gap-2.5">
-		<div class="rounded-lg border border-primary/20 bg-primary/10 p-1.5 text-primary">
-			<Target size={18} />
-		</div>
-		<div class="flex items-center gap-2">
-			<span class="gradient-text text-lg leading-none font-semibold tracking-tight">Nockr</span>
-			<span
-				class="rounded-md border border-border/40 bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] tracking-wider text-muted-foreground uppercase"
-			>
-				{$appStore.universitySettings.mode}
-			</span>
-		</div>
+		<a href={resolve('/')} class="flex items-center gap-2.5 no-underline">
+			<div class="rounded-lg border border-primary/20 bg-primary/10 p-1.5 text-primary">
+				<Target size={18} />
+			</div>
+			<div class="flex items-center gap-2">
+				<span class="gradient-text text-lg leading-none font-semibold tracking-tight">Nockr</span>
+				<span
+					class="rounded-md border border-border/40 bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] tracking-wider text-muted-foreground uppercase"
+				>
+					{$appStore.universitySettings.mode}
+				</span>
+			</div>
+		</a>
 	</div>
 
 	<!-- Quick Action Controls -->
 	<div class="flex items-center gap-1 sm:gap-1.5">
 		<ThemePicker />
+
+		<Tooltip.Root>
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						href="/export"
+						variant="ghost"
+						size="icon"
+						aria-label="Export Card"
+						class="h-8 w-8 text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
+					>
+						<Share2 size={16} />
+					</Button>
+				{/snippet}
+			</Tooltip.Trigger>
+			<Tooltip.Content side="bottom">
+				<p>Export academic summary</p>
+			</Tooltip.Content>
+		</Tooltip.Root>
 
 		<!-- Backup Export -->
 		<Tooltip.Root>

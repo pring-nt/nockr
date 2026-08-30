@@ -20,7 +20,6 @@
 
 	let themeStyles = $state<Record<string, string>>({});
 
-	// Reactive theme tracking for DOM update synchronicity
 	$effect(() => {
 		const _activeTheme = $appStore.theme;
 		if (_activeTheme) {
@@ -34,6 +33,7 @@
 
 	let isLandscape = $derived(config.aspectRatio === '4:3' || config.aspectRatio === '16:9');
 	let isSquare = $derived(config.aspectRatio === '1:1');
+	let isTallPortrait = $derived(config.aspectRatio === '9:16');
 
 	let showSummary = $derived(config.widgets.academicSummary);
 	let showHeader = $derived(!!term && config.widgets.termHeader);
@@ -52,7 +52,7 @@
 <div
 	bind:this={canvasRef}
 	style={styleString}
-	class="relative flex flex-col justify-between overflow-hidden p-12 font-sans text-(--text) select-none
+	class="relative flex flex-col justify-between overflow-hidden p-10 font-sans text-(--text) select-none
     {config.background === 'solid' ? 'bg-(--surface)' : ''}
     {config.background === 'theme' ? 'bg-(--base)' : ''}
     {config.background === 'transparent' ? 'bg-transparent' : ''}"
@@ -84,35 +84,60 @@
 		></div>
 	{/if}
 
-	<!-- Optional Header Branding -->
-	{#if config.showWatermark ?? true}
-		<div class="relative z-10 flex items-center justify-between border-b-2 border-border/80 pb-6">
-			<div class="flex items-center gap-4">
-				<div
-					class="rounded-2xl border-2 border-(--iris)/30 bg-(--iris)/15 p-3 text-(--iris) shadow-md"
-				>
-					<Target size={32} />
-				</div>
-				<div>
-					<h2 class="text-3xl font-black tracking-tight text-(--text)">Nockr</h2>
-					<p class="text-sm font-semibold text-(--subtle)">Academic Performance Tracker</p>
-				</div>
-			</div>
-		</div>
-	{/if}
-
-	<!-- Body Content -->
-	<div class="relative z-10 my-auto w-full py-6">
-		{#if isLandscape}
-			{#if showSummary && (showHeader || showCourses)}
-				<div class="grid w-full grid-cols-12 items-start gap-6">
-					<div class="col-span-7">
-						<SummaryWidget
-							maskGpa={config.privacy.maskGPA}
-							showHonors={config.widgets.latinHonorsBadge}
-						/>
+	<!-- Main Content Stack (Watermark + Widgets grouped together) -->
+	<div class="relative z-10 my-auto flex w-full flex-col gap-6">
+		<!-- Enlarged Watermark Logo Header -->
+		{#if config.showWatermark ?? true}
+			<div class="flex flex-col items-center justify-center gap-1.5 text-center">
+				<div class="flex items-center gap-3.5">
+					<div class="rounded-2xl bg-(--iris)/15 p-2.5 text-(--iris) shadow-sm">
+						<Target size={40} />
 					</div>
-					<div class="col-span-5 space-y-6">
+					<h2 class="gradient-text text-5xl font-black tracking-wider">Nockr</h2>
+				</div>
+				<p class="text-xs font-bold tracking-widest text-(--subtle)/80 uppercase">
+					Academic Performance Tracker
+				</p>
+			</div>
+		{/if}
+
+		<!-- Body Widgets Layout -->
+		<div class="w-full">
+			{#if isLandscape}
+				{#if showCourses && (showSummary || showHeader)}
+					<!-- Balanced 2-Column Landscape Layout -->
+					<div class="grid w-full grid-cols-12 items-start gap-6">
+						<div class="col-span-5 space-y-6">
+							{#if showSummary}
+								<SummaryWidget
+									maskGpa={config.privacy.maskGPA}
+									showHonors={config.widgets.latinHonorsBadge}
+								/>
+							{/if}
+							{#if showHeader}
+								<TermHeaderWidget
+									{term}
+									maskGpa={config.privacy.maskGPA}
+									showDeansListBadge={config.widgets.deansListBadge}
+								/>
+							{/if}
+						</div>
+
+						<div class="col-span-7">
+							<CourseListWidget
+								courses={term?.courses ?? []}
+								gradeDisplay={config.privacy.courseGradeDisplay}
+							/>
+						</div>
+					</div>
+				{:else}
+					<div class="mx-auto w-full max-w-3xl space-y-6">
+						{#if showSummary}
+							<SummaryWidget
+								maskGpa={config.privacy.maskGPA}
+								showHonors={config.widgets.latinHonorsBadge}
+							/>
+						{/if}
 						{#if showHeader}
 							<TermHeaderWidget
 								{term}
@@ -127,8 +152,34 @@
 							/>
 						{/if}
 					</div>
+				{/if}
+			{:else if isSquare && activeCount === 3}
+				<div class="w-full space-y-5">
+					<div class="grid grid-cols-12 items-start gap-5">
+						<div class="col-span-6">
+							<SummaryWidget
+								maskGpa={config.privacy.maskGPA}
+								showHonors={config.widgets.latinHonorsBadge}
+							/>
+						</div>
+						{#if showHeader}
+							<div class="col-span-6">
+								<TermHeaderWidget
+									{term}
+									maskGpa={config.privacy.maskGPA}
+									showDeansListBadge={config.widgets.deansListBadge}
+								/>
+							</div>
+						{/if}
+					</div>
+					{#if showCourses}
+						<CourseListWidget
+							courses={term?.courses ?? []}
+							gradeDisplay={config.privacy.courseGradeDisplay}
+						/>
+					{/if}
 				</div>
-			{:else}
+			{:else if isTallPortrait}
 				<div class="mx-auto w-full max-w-3xl space-y-6">
 					{#if showSummary}
 						<SummaryWidget
@@ -150,62 +201,36 @@
 						/>
 					{/if}
 				</div>
-			{/if}
-		{:else if isSquare && activeCount === 3}
-			<div class="w-full space-y-5">
-				<div class="grid grid-cols-12 items-start gap-5">
-					<div class="col-span-7">
+			{:else}
+				<div class="mx-auto w-full max-w-2xl space-y-5">
+					{#if showSummary}
 						<SummaryWidget
 							maskGpa={config.privacy.maskGPA}
 							showHonors={config.widgets.latinHonorsBadge}
 						/>
-					</div>
+					{/if}
 					{#if showHeader}
-						<div class="col-span-5">
-							<TermHeaderWidget
-								{term}
-								maskGpa={config.privacy.maskGPA}
-								showDeansListBadge={config.widgets.deansListBadge}
-							/>
-						</div>
+						<TermHeaderWidget
+							{term}
+							maskGpa={config.privacy.maskGPA}
+							showDeansListBadge={config.widgets.deansListBadge}
+						/>
+					{/if}
+					{#if showCourses}
+						<CourseListWidget
+							courses={term?.courses ?? []}
+							gradeDisplay={config.privacy.courseGradeDisplay}
+						/>
 					{/if}
 				</div>
-				{#if showCourses}
-					<CourseListWidget
-						courses={term?.courses ?? []}
-						gradeDisplay={config.privacy.courseGradeDisplay}
-					/>
-				{/if}
-			</div>
-		{:else}
-			<div class="mx-auto w-full max-w-2xl space-y-6">
-				{#if showSummary}
-					<SummaryWidget
-						maskGpa={config.privacy.maskGPA}
-						showHonors={config.widgets.latinHonorsBadge}
-					/>
-				{/if}
-				{#if showHeader}
-					<TermHeaderWidget
-						{term}
-						maskGpa={config.privacy.maskGPA}
-						showDeansListBadge={config.widgets.deansListBadge}
-					/>
-				{/if}
-				{#if showCourses}
-					<CourseListWidget
-						courses={term?.courses ?? []}
-						gradeDisplay={config.privacy.courseGradeDisplay}
-					/>
-				{/if}
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 
-	<!-- Optional Footer Watermark -->
+	<!-- Transparent Footer Watermark -->
 	{#if config.showWatermark ?? true}
 		<div
-			class="relative z-10 flex items-center justify-between border-t-2 border-border/80 pt-6 text-sm font-bold text-(--subtle)"
+			class="relative z-10 flex items-center justify-between text-xs font-medium text-(--subtle)/60"
 		>
 			<span>Generated with Nockr</span>
 			<span class="font-mono">nockr.vercel.app</span>

@@ -7,7 +7,6 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import LatinHonorsModal from '$lib/components/honors/LatinHonorsModal.svelte';
-	import ShareModal from '$lib/components/share/ShareModal.svelte';
 
 	let cgpa = $derived(computeCGPA($appStore.terms));
 	let unitsEarned = $derived(computeUnitsEarned($appStore.terms));
@@ -20,7 +19,6 @@
 	let isEditingTotal = $state(false);
 	let tempTotalUnits = $state(165);
 	let honorsModalOpen = $state(false);
-	let shareModalOpen = $state(false);
 
 	function startEditing() {
 		tempTotalUnits = totalProgramUnits;
@@ -48,9 +46,9 @@
 					{#snippet child({ props })}
 						<Button
 							{...props}
+							href="/export"
 							variant="ghost"
 							size="sm"
-							onclick={() => (shareModalOpen = true)}
 							class="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
 						>
 							<Share2 size={13} />
@@ -206,4 +204,3 @@
 </Card>
 
 <LatinHonorsModal bind:open={honorsModalOpen} />
-<ShareModal bind:open={shareModalOpen} />

@@ -3,7 +3,7 @@
 	import TermNavigator from '$lib/components/term/TermNavigator.svelte';
 </script>
 
-<div class="space-y-6 pb-12">
+<div class="mx-auto max-w-3xl space-y-6 px-4 py-6 pb-12">
 	<AcademicSummaryCard />
 	<TermNavigator />
 </div>
