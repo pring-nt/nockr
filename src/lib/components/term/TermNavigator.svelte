@@ -5,10 +5,55 @@
 	import TermCard from '$lib/components/term/TermCard.svelte';
 	import { tick } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import { page } from '$app/state';
+	import { replaceState } from '$app/navigation';
 
-	// View State
-	let activeTermId = $state<string | null>($appStore.terms[0]?.id ?? null);
+	// View State initialized from URL or store fallback
+	let activeTermId = $state<string | null>(null);
 	let viewMode = $state<'focus' | 'grid'>('focus');
+
+	// Helper to update URL search parameter without triggering full page reloads
+	function syncUrl(termId: string | null) {
+		const url = new URL(page.url);
+		if (termId) {
+			url.searchParams.set('termId', termId);
+		} else {
+			url.searchParams.delete('termId');
+		}
+		if (url.search !== page.url.search) {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
+			replaceState(url, page.state);
+		}
+	}
+
+	function setTerm(id: string) {
+		activeTermId = id;
+		syncUrl(id);
+	}
+
+	// Sync active term ID with URL parameter and store changes
+	$effect(() => {
+		const terms = $appStore.terms;
+		if (terms.length === 0) {
+			if (activeTermId !== null) {
+				activeTermId = null;
+				syncUrl(null);
+			}
+			return;
+		}
+
+		const urlTermId = page.url.searchParams.get('termId');
+
+		if (urlTermId && terms.some((t) => t.id === urlTermId)) {
+			if (activeTermId !== urlTermId) {
+				activeTermId = urlTermId;
+			}
+		} else if (!activeTermId || !terms.some((t) => t.id === activeTermId)) {
+			const fallbackId = terms[0].id;
+			activeTermId = fallbackId;
+			syncUrl(fallbackId);
+		}
+	});
 
 	// Scroll active pill into view when it changes
 	$effect(() => {
@@ -32,24 +77,21 @@
 			...state,
 			terms: [...state.terms, { id: newId, name: `Term ${state.terms.length + 1}`, courses: [] }]
 		}));
-		activeTermId = newId;
+		setTerm(newId);
 	}
 
 	function deleteTerm(id: string) {
 		const terms = $appStore.terms;
 		const idx = terms.findIndex((t) => t.id === id);
 
-		// Proactively move focus BEFORE the array changes
 		if (activeTermId === id) {
 			if (idx > 0) {
-				// Go to the previous term
-				activeTermId = terms[idx - 1].id;
+				setTerm(terms[idx - 1].id);
 			} else if (idx < terms.length - 1) {
-				// Was first term, go to the one that will become first
-				activeTermId = terms[idx + 1].id;
+				setTerm(terms[idx + 1].id);
 			} else {
-				// Last term standing, will be empty
 				activeTermId = null;
+				syncUrl(null);
 			}
 		}
 
@@ -68,12 +110,15 @@
 
 	// Navigation
 	function prevTerm() {
-		if (activeTermIndex > 0) activeTermId = $appStore.terms[activeTermIndex - 1].id;
+		if (activeTermIndex > 0) {
+			setTerm($appStore.terms[activeTermIndex - 1].id);
+		}
 	}
 
 	function nextTerm() {
-		if (activeTermIndex < $appStore.terms.length - 1)
-			activeTermId = $appStore.terms[activeTermIndex + 1].id;
+		if (activeTermIndex < $appStore.terms.length - 1) {
+			setTerm($appStore.terms[activeTermIndex + 1].id);
+		}
 	}
 
 	// Switch to grid and scroll to the currently active term's card
@@ -130,7 +175,7 @@
 				<button
 					id="term-pill-{term.id}"
 					onclick={() => {
-						activeTermId = String(term.id);
+						setTerm(String(term.id));
 						viewMode = 'focus';
 					}}
 					class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all
@@ -167,7 +212,7 @@
 		</div>
 	</div>
 
-	<!-- Focus View — {#key} forces remount on term change, triggering the fly transition -->
+	<!-- Focus View -->
 	{#if viewMode === 'focus' && activeTerm}
 		<div class="space-y-4">
 			<div class="flex items-center justify-between px-1 text-xs text-muted-foreground">
@@ -206,7 +251,7 @@
 			{/key}
 		</div>
 
-		<!-- Grid View — each card gets an id so switchToGrid() can scroll to the active one -->
+		<!-- Grid View -->
 	{:else if viewMode === 'grid'}
 		<div class="animate-in space-y-6 duration-300 fade-in">
 			{#each $appStore.terms as term (term.id)}

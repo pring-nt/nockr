@@ -154,7 +154,7 @@
 						{#snippet child({ props })}
 							<Button
 								{...props}
-								href="/export?termId=${term.id}"
+								href="/export?termId={term.id}"
 								variant="ghost"
 								size="icon"
 								class="h-7 w-7 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"

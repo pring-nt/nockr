@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { replaceState } from '$app/navigation';
 	import type { ShareConfig, AspectRatio, GradeDisplayMode } from '$lib/schemas';
 	import { captureCanvas, getCanvasDimensions } from '$lib/logic/share';
 	import { appStore } from '$lib/stores/appState';
@@ -35,6 +36,18 @@
 			selectedTermId = urlTermId;
 		} else if (latestTerm && !selectedTermId) {
 			selectedTermId = latestTerm.id;
+		}
+	});
+
+	// Keep URL parameter in sync when user changes the active term selection
+	$effect(() => {
+		if (selectedTermId) {
+			const url = new URL(page.url);
+			if (url.searchParams.get('termId') !== selectedTermId) {
+				url.searchParams.set('termId', selectedTermId);
+				// eslint-disable-next-line svelte/no-navigation-without-resolve
+				replaceState(url, page.state);
+			}
 		}
 	});
 
@@ -144,7 +157,12 @@
 		class="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4 sm:mb-8 sm:pb-6"
 	>
 		<div class="flex items-center gap-3 sm:gap-4">
-			<Button href="/" variant="ghost" size="icon" class="size-8 rounded-full sm:size-9">
+			<Button
+				href={selectedTermId ? `/?termId=${selectedTermId}` : '/'}
+				variant="ghost"
+				size="icon"
+				class="size-8 rounded-full sm:size-9"
+			>
 				<ArrowLeft class="size-4 sm:size-5" />
 			</Button>
 			<div>
