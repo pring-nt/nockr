@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { replaceState } from '$app/navigation';
+	import { goto, afterNavigate } from '$app/navigation';
 	import type { ShareConfig, AspectRatio, GradeDisplayMode } from '$lib/schemas';
 	import { captureCanvas, getCanvasDimensions } from '$lib/logic/share';
 	import { appStore } from '$lib/stores/appState';
@@ -27,29 +27,35 @@
 	let terms = $derived($appStore.terms ?? []);
 	let latestTerm = $derived(terms.length > 0 ? terms[terms.length - 1] : undefined);
 
-	// Read ?termId= query param or fallback to latest term
-	let urlTermId = $derived(page.url.searchParams.get('termId'));
-	let selectedTermId = $state<string>('');
+	// Track termId from the previous page URL
+	let previousTermId = $state<string | null>(null);
 
-	$effect(() => {
-		if (urlTermId && terms.some((t) => t.id === urlTermId)) {
-			selectedTermId = urlTermId;
-		} else if (latestTerm && !selectedTermId) {
-			selectedTermId = latestTerm.id;
-		}
-	});
-
-	// Keep URL parameter in sync when user changes the active term selection
-	$effect(() => {
-		if (selectedTermId) {
-			const url = new URL(page.url);
-			if (url.searchParams.get('termId') !== selectedTermId) {
-				url.searchParams.set('termId', selectedTermId);
-				// eslint-disable-next-line svelte/no-navigation-without-resolve
-				replaceState(url, page.state);
+	afterNavigate((navigation) => {
+		if (navigation.from) {
+			const fromTermId = navigation.from.url.searchParams.get('termId');
+			if (fromTermId) {
+				previousTermId = fromTermId;
 			}
 		}
 	});
+
+	// Selected term derived from current URL -> previous page URL -> latest term fallback
+	let selectedTermId = $derived.by(() => {
+		const urlTermId = page.url.searchParams.get('termId');
+		if (urlTermId && terms.some((t) => t.id === urlTermId)) {
+			return urlTermId;
+		}
+		if (previousTermId && terms.some((t) => t.id === previousTermId)) {
+			return previousTermId;
+		}
+		return latestTerm?.id ?? '';
+	});
+
+	function setSelectTerm(id: string) {
+		if (!id) return;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		goto(`?termId=${id}`, { replaceState: true, noScroll: true, keepFocus: true });
+	}
 
 	let activeTerm = $derived(terms.find((t) => t.id === selectedTermId) ?? latestTerm);
 
@@ -283,7 +289,7 @@
 			{#if terms.length > 0}
 				<div>
 					<Label class="mb-2 block font-semibold text-(--subtle)">Active Term Context</Label>
-					<Select.Root type="single" bind:value={selectedTermId}>
+					<Select.Root type="single" value={selectedTermId} onValueChange={setSelectTerm}>
 						<Select.Trigger class="w-full border-border bg-(--highlight-low) text-xs">
 							{activeTermLabel}
 						</Select.Trigger>

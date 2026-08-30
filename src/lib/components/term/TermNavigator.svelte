@@ -6,13 +6,21 @@
 	import { tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { page } from '$app/state';
-	import { replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 
-	// View mode state
-	let viewMode = $state<'focus' | 'grid'>('focus');
-	let userSelectedTermId = $state<string | null>(null);
+	let viewMode = $derived($appStore.ui?.cardViewMode ?? 'focus');
 
-	// Derived active term ID: URL param -> manual user selection -> fallback to first term
+	function setViewMode(mode: 'focus' | 'grid') {
+		appStore.update((state) => ({
+			...state,
+			ui: {
+				...state.ui,
+				cardViewMode: mode
+			}
+		}));
+	}
+
+	// Active term derived directly from SvelteKit's reactive page.url
 	let activeTermId = $derived.by(() => {
 		const terms = $appStore.terms;
 		if (terms.length === 0) return null;
@@ -22,44 +30,55 @@
 			return urlTermId;
 		}
 
-		if (userSelectedTermId && terms.some((t) => t.id === userSelectedTermId)) {
-			return userSelectedTermId;
-		}
-
 		return terms[0].id;
 	});
 
 	let activeTermIndex = $derived($appStore.terms.findIndex((t) => t.id === activeTermId));
 	let activeTerm = $derived($appStore.terms.find((t) => t.id === activeTermId));
 
-	// Helper to update URL search parameter without triggering full page reloads
-	function syncUrl(termId: string | null) {
-		const url = new URL(page.url);
-		if (termId) {
-			url.searchParams.set('termId', termId);
-		} else {
-			url.searchParams.delete('termId');
-		}
-		if (url.search !== page.url.search) {
-			// eslint-disable-next-line svelte/no-navigation-without-resolve
-			replaceState(url, page.state);
-		}
+	// Update URL parameter via SvelteKit router without full page reloads
+	function setTerm(id: string | null) {
+		const target = id ? `?termId=${id}` : page.url.pathname;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		goto(target, { replaceState: true, noScroll: true, keepFocus: true });
 	}
 
-	function setTerm(id: string) {
-		userSelectedTermId = id;
-		syncUrl(id);
-	}
+	// Track initial load to prevent browser scroll restoration conflicts
+	let isInitialLoad = $state(true);
 
-	// Scroll active pill into view when it changes
+	// Scroll active item into view when term or view mode changes
 	$effect(() => {
-		if (!activeTermId) return;
+		const id = activeTermId;
+		const mode = viewMode;
+		const hasExplicitUrlTermId = Boolean(page.url.searchParams.get('termId'));
+
+		if (!id) return;
+
+		// In grid mode, do not auto-scroll unless a termId parameter is explicitly in the URL
+		if (mode === 'grid' && !hasExplicitUrlTermId) {
+			isInitialLoad = false;
+			return;
+		}
+
+		const scrollBehavior = isInitialLoad ? 'auto' : 'smooth';
+
 		tick().then(() => {
-			document.getElementById(`term-pill-${activeTermId}`)?.scrollIntoView({
-				behavior: 'smooth',
-				block: 'nearest',
-				inline: 'center'
-			});
+			setTimeout(
+				() => {
+					const targetId = mode === 'grid' ? `term-card-${id}` : `term-pill-${id}`;
+					const element = document.getElementById(targetId);
+
+					if (element) {
+						element.scrollIntoView({
+							behavior: scrollBehavior,
+							block: mode === 'grid' ? 'start' : 'nearest',
+							inline: 'center'
+						});
+					}
+					isInitialLoad = false;
+				},
+				isInitialLoad ? 100 : 50
+			);
 		});
 	});
 
@@ -83,8 +102,7 @@
 			} else if (idx < terms.length - 1) {
 				setTerm(terms[idx + 1].id);
 			} else {
-				userSelectedTermId = null;
-				syncUrl(null);
+				setTerm(null);
 			}
 		}
 
@@ -114,22 +132,12 @@
 		}
 	}
 
-	// Switch to grid and scroll to the currently active term's card
 	function switchToGrid() {
-		viewMode = 'grid';
-		tick().then(() => {
-			if (activeTermId) {
-				document.getElementById(`term-card-${activeTermId}`)?.scrollIntoView({
-					behavior: 'smooth',
-					block: 'start'
-				});
-			}
-		});
+		setViewMode('grid');
 	}
 
 	function handleWheelScroll(e: WheelEvent) {
 		if (e.deltaY === 0) return;
-
 		const container = e.currentTarget as HTMLElement;
 		const scrollAmount = e.deltaY;
 
@@ -169,7 +177,7 @@
 					id="term-pill-{term.id}"
 					onclick={() => {
 						setTerm(String(term.id));
-						viewMode = 'focus';
+						setViewMode('focus');
 					}}
 					class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all
                         {activeTermId === term.id && viewMode === 'focus'
@@ -188,7 +196,7 @@
 				variant={viewMode === 'focus' ? 'secondary' : 'ghost'}
 				size="sm"
 				class="h-7 px-2.5"
-				onclick={() => (viewMode = 'focus')}
+				onclick={() => setViewMode('focus')}
 			>
 				<Eye size={14} class="mr-1.5" />
 				<span class="text-xs">Focus</span>
@@ -248,7 +256,7 @@
 	{:else if viewMode === 'grid'}
 		<div class="animate-in space-y-6 duration-300 fade-in">
 			{#each $appStore.terms as term (term.id)}
-				<div id="term-card-{term.id}">
+				<div id="term-card-{term.id}" class="scroll-mt-20">
 					<TermCard
 						{term}
 						onDelete={() => deleteTerm(term.id)}

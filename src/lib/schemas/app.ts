@@ -5,7 +5,7 @@ import { UniversitySettingsSchema } from './university';
 import { ThemeSettingsSchema } from './theme';
 
 export const UISettingsSchema = z.object({
-	showDeansListBadge: z.boolean().default(true)
+	cardViewMode: z.enum(['focus', 'grid']).default('focus')
 });
 
 export const AppStateSchema = z.object({
