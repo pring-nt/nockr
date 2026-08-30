@@ -8,9 +8,29 @@
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
 
-	// View State initialized from URL or store fallback
-	let activeTermId = $state<string | null>(null);
+	// View mode state
 	let viewMode = $state<'focus' | 'grid'>('focus');
+	let userSelectedTermId = $state<string | null>(null);
+
+	// Derived active term ID: URL param -> manual user selection -> fallback to first term
+	let activeTermId = $derived.by(() => {
+		const terms = $appStore.terms;
+		if (terms.length === 0) return null;
+
+		const urlTermId = page.url.searchParams.get('termId');
+		if (urlTermId && terms.some((t) => t.id === urlTermId)) {
+			return urlTermId;
+		}
+
+		if (userSelectedTermId && terms.some((t) => t.id === userSelectedTermId)) {
+			return userSelectedTermId;
+		}
+
+		return terms[0].id;
+	});
+
+	let activeTermIndex = $derived($appStore.terms.findIndex((t) => t.id === activeTermId));
+	let activeTerm = $derived($appStore.terms.find((t) => t.id === activeTermId));
 
 	// Helper to update URL search parameter without triggering full page reloads
 	function syncUrl(termId: string | null) {
@@ -27,33 +47,9 @@
 	}
 
 	function setTerm(id: string) {
-		activeTermId = id;
+		userSelectedTermId = id;
 		syncUrl(id);
 	}
-
-	// Sync active term ID with URL parameter and store changes
-	$effect(() => {
-		const terms = $appStore.terms;
-		if (terms.length === 0) {
-			if (activeTermId !== null) {
-				activeTermId = null;
-				syncUrl(null);
-			}
-			return;
-		}
-
-		const urlTermId = page.url.searchParams.get('termId');
-
-		if (urlTermId && terms.some((t) => t.id === urlTermId)) {
-			if (activeTermId !== urlTermId) {
-				activeTermId = urlTermId;
-			}
-		} else if (!activeTermId || !terms.some((t) => t.id === activeTermId)) {
-			const fallbackId = terms[0].id;
-			activeTermId = fallbackId;
-			syncUrl(fallbackId);
-		}
-	});
 
 	// Scroll active pill into view when it changes
 	$effect(() => {
@@ -66,9 +62,6 @@
 			});
 		});
 	});
-
-	let activeTermIndex = $derived($appStore.terms.findIndex((t) => t.id === activeTermId));
-	let activeTerm = $derived($appStore.terms.find((t) => t.id === activeTermId));
 
 	// Term CRUD
 	function addTerm() {
@@ -90,7 +83,7 @@
 			} else if (idx < terms.length - 1) {
 				setTerm(terms[idx + 1].id);
 			} else {
-				activeTermId = null;
+				userSelectedTermId = null;
 				syncUrl(null);
 			}
 		}
