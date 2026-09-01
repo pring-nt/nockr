@@ -19,7 +19,7 @@
 		}
 
 		if (lastTime === null) lastTime = timestamp;
-		const dt = Math.min((timestamp - lastTime) / 1000, 0.1); // Cap delta time at 100ms
+		const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
 		lastTime = timestamp;
 
 		const current = mainRef.scrollLeft;
@@ -32,7 +32,6 @@
 			return;
 		}
 
-		// Exponential dampening for framerate independence (~20 dampening factor for snappy, smooth easing)
 		const lerp = 1 - Math.exp(-20 * dt);
 		mainRef.scrollLeft = current + diff * lerp;
 
@@ -46,16 +45,13 @@
 
 		const container = e.currentTarget as HTMLElement;
 
-		// Ancestor check to allow vertical scrolling inside course lists
+		// Prevent horizontal panning if cursor is over any vertically scrollable container
 		let target = e.target as HTMLElement | null;
 		while (target && target !== container) {
 			if (target.scrollHeight > target.clientHeight) {
 				const overflowY = getComputedStyle(target).overflowY;
 				if (overflowY === 'auto' || overflowY === 'scroll') {
-					const canScrollDown =
-						e.deltaY > 0 && target.scrollTop + target.clientHeight < target.scrollHeight - 1;
-					const canScrollUp = e.deltaY < 0 && target.scrollTop > 1;
-					if (canScrollDown || canScrollUp) return;
+					return;
 				}
 			}
 			target = target.parentElement;
@@ -63,7 +59,6 @@
 
 		e.preventDefault();
 
-		// Normalize delta modes (Firefox line scrolling vs Chrome pixel scrolling)
 		let delta = e.deltaY;
 		if (e.deltaMode === 1) {
 			delta *= 16;
@@ -71,12 +66,10 @@
 			delta *= container.clientWidth;
 		}
 
-		// Anchor target to current position if starting a fresh scroll gesture
 		if (animationFrameId === null) {
 			targetScrollLeft = container.scrollLeft;
 		}
 
-		// Accumulate total target distance without dropping rapid wheel ticks
 		const maxScroll = container.scrollWidth - container.clientWidth;
 		targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + delta));
 
@@ -113,11 +106,11 @@
 <main
 	bind:this={mainRef}
 	onwheel={handleWheelScroll}
-	class="flex-1 overflow-x-auto overflow-y-auto overscroll-x-contain p-3 sm:p-6"
+	class="flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain p-3 sm:p-6"
 >
-	<div class="flex h-full items-start gap-3 sm:gap-4" style="width: max-content">
+	<div class="flex h-full gap-3 sm:gap-4" style="width: max-content">
 		{#each $appStore.terms as term (term.id)}
-			<div>
+			<div class="h-full shrink-0">
 				<TermColumn {term} />
 			</div>
 		{/each}
