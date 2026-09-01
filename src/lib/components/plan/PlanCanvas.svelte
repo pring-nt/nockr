@@ -1,10 +1,40 @@
 <script lang="ts">
+    import { tick } from 'svelte';
     import { appStore } from '$lib/stores/appState';
     import TermColumn from '$lib/components/plan/TermColumn.svelte';
     import { Button } from '$lib/components/ui/button';
     import { Plus } from 'lucide-svelte';
 
-    function addTerm() {
+    let mainRef = $state<HTMLElement | null>(null);
+
+    function handleWheelScroll(e: WheelEvent) {
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+        if (e.deltaY === 0) return;
+
+        const container = e.currentTarget as HTMLElement;
+
+        let target = e.target as HTMLElement | null;
+        while (target && target !== container) {
+            const style = window.getComputedStyle(target);
+            const isScrollable =
+                (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+                target.scrollHeight > target.clientHeight;
+
+            if (isScrollable) {
+                const canScrollDown =
+                    e.deltaY > 0 && target.scrollTop + target.clientHeight < target.scrollHeight - 1;
+                const canScrollUp = e.deltaY < 0 && target.scrollTop > 1;
+
+                if (canScrollDown || canScrollUp) return;
+            }
+            target = target.parentElement;
+        }
+        const scrollAmount = e.deltaY;
+        container.scrollLeft += scrollAmount;
+        e.preventDefault();
+    }
+
+    async function addTerm() {
         const newId = crypto.randomUUID();
         appStore.update((state) => ({
             ...state,
@@ -17,17 +47,31 @@
                 }
             ]
         }));
+
+        await tick();
+        if (mainRef) {
+            mainRef.scrollTo({
+                left: mainRef.scrollWidth,
+                behavior: 'smooth'
+            });
+        }
     }
 </script>
 
-<main class="flex-1 overflow-x-auto overflow-y-auto p-6">
-    <div class="flex h-full items-start gap-4" style="width: max-content">
+<main
+        bind:this={mainRef}
+        onwheel={handleWheelScroll}
+        class="flex-1 overflow-x-auto overflow-y-auto p-3 sm:p-6 overscroll-x-contain snap-x snap-mandatory sm:snap-none"
+>
+    <div class="flex h-full items-start gap-3 sm:gap-4" style="width: max-content">
         {#each $appStore.terms as term (term.id)}
-            <TermColumn {term} />
+            <div class="snap-start">
+                <TermColumn {term} />
+            </div>
         {/each}
 
         <!-- Add New Term Column Trigger -->
-        <div class="flex h-full w-50 shrink-0 items-start">
+        <div class="flex h-full w-50 shrink-0 items-start snap-start">
             <Button
                     variant="outline"
                     onclick={addTerm}

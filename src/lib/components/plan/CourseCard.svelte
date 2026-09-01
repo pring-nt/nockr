@@ -160,11 +160,11 @@
 
 <div
         class={cn(
-      'group relative flex flex-col gap-2 rounded-lg border p-2.5 shadow-xs transition-all backdrop-blur-xs',
-      course.grade === null
-         ? 'border-dashed border-border/60 bg-background/20 opacity-75 hover:opacity-100'
-         : 'border-border/60 bg-card/60 text-card-foreground opacity-100'
-   )}
+    'group relative flex flex-col gap-2 rounded-lg border p-2.5 shadow-2xs transition-all duration-200 backdrop-blur-xs',
+    course.grade === null
+      ? 'border-border/80 bg-card/90 text-card-foreground shadow-xs hover:border-primary/50'
+      : 'border-border/40 bg-muted/30 text-muted-foreground hover:border-border/70'
+  )}
 >
     <!-- Top Row: Grip + Course Name + Delete -->
     <div class="flex items-center gap-1.5">
@@ -176,9 +176,13 @@
         <input
                 id="plan-course-{course.id}-name"
                 class={cn(
-            'w-full border-b border-transparent bg-transparent text-sm font-medium text-foreground',
-            'truncate pb-0.5 transition-colors hover:border-border focus:border-primary focus:outline-none'
-         )}
+        'w-full border-b border-transparent bg-transparent text-sm transition-colors focus:outline-none',
+        'placeholder:text-muted-foreground/50',
+        course.grade === null
+          ? 'font-semibold text-foreground hover:border-border focus:border-primary'
+          : 'font-medium text-muted-foreground hover:border-border/60 focus:border-primary',
+        course.grade !== null && 'focus:text-foreground'
+      )}
                 value={course.name}
                 placeholder="Course name"
                 oninput={handleNameInput}
@@ -212,9 +216,9 @@
             <span class="text-[10px] text-muted-foreground">Units</span>
             <div
                     class={cn(
-               'flex items-center justify-between border-b border-border/60',
-               'pb-0.5 transition-colors focus-within:border-primary'
-            )}
+          'flex items-center justify-between border-b border-border/60',
+          'pb-0.5 transition-colors focus-within:border-primary'
+        )}
             >
                 <button
                         type="button"
@@ -227,7 +231,10 @@
 
                 <input
                         id="plan-course-{course.id}-units"
-                        class="w-full bg-transparent p-0 text-center text-xs text-foreground focus:outline-none"
+                        class={cn(
+            'w-full bg-transparent p-0 text-center text-xs focus:outline-none',
+            course.grade === null ? 'font-medium text-foreground' : 'text-muted-foreground'
+          )}
                         type="number"
                         min="1"
                         max="12"
@@ -254,10 +261,10 @@
             <span class="text-[10px] text-muted-foreground">Grade</span>
             <div
                     class={cn(
-               'flex items-center justify-between border-b pb-0.5 transition-colors',
-               isFailingGrade ? 'border-destructive' : 'border-border/60',
-               !isFailingGrade && 'focus-within:border-primary'
-            )}
+          'flex items-center justify-between border-b pb-0.5 transition-colors',
+          isFailingGrade ? 'border-destructive' : 'border-border/60',
+          !isFailingGrade && 'focus-within:border-primary'
+        )}
             >
                 <button
                         type="button"
@@ -271,9 +278,13 @@
                 <input
                         id="plan-course-{course.id}-grade"
                         class={cn(
-                  'w-full bg-transparent p-0 text-center text-xs font-mono focus:outline-none',
-                  isFailingGrade ? 'font-semibold text-destructive' : 'text-foreground'
-               )}
+            'w-full bg-transparent p-0 text-center text-xs font-mono focus:outline-none',
+            isFailingGrade
+              ? 'font-semibold text-destructive'
+              : course.grade !== null
+                ? 'font-medium text-foreground'
+                : 'text-muted-foreground/60'
+          )}
                         type="number"
                         min={gradeMin}
                         max={gradeMax}

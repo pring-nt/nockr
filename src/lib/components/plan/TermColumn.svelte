@@ -110,82 +110,95 @@
   )}
 >
     <!-- Column Header -->
-    <div class="mb-3 flex items-center justify-between border-b border-border/40 pb-2">
-        <div class="flex min-w-0 flex-1 flex-col pr-1">
-            {#if isEditingTerm}
-                <input
-                        class="min-w-0 border-b border-primary bg-transparent text-sm font-semibold text-foreground focus:outline-none"
-                        bind:value={termNameEdit}
-                        onblur={commitRename}
-                        onkeydown={(e) => e.key === 'Enter' && commitRename()}
-                        use:focusOnMount
-                />
-            {:else}
+    <div class="mb-3 border-b border-border/40 pb-2.5">
+        <div class="flex items-start justify-between gap-1">
+            <div class="min-w-0 flex-1">
+                {#if isEditingTerm}
+                    <input
+                            class="w-full border-b border-primary bg-transparent text-sm font-semibold text-foreground focus:outline-none"
+                            bind:value={termNameEdit}
+                            onblur={commitRename}
+                            onkeydown={(e) => e.key === 'Enter' && commitRename()}
+                            use:focusOnMount
+                    />
+                {:else}
+                    <Tooltip.Root>
+                        <Tooltip.Trigger>
+                            {#snippet child({ props })}
+                                <button
+                                        {...props}
+                                        class="cursor-pointer truncate text-left text-sm font-semibold text-foreground transition-colors hover:text-primary"
+                                        ondblclick={startEditing}
+                                >
+                                    {term.name}
+                                </button>
+                            {/snippet}
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                            <p>Double-click to rename</p>
+                        </Tooltip.Content>
+                    </Tooltip.Root>
+                {/if}
+            </div>
+
+            <div class="flex shrink-0 items-center gap-0.5">
                 <Tooltip.Root>
                     <Tooltip.Trigger>
                         {#snippet child({ props })}
-                            <button
+                            <Button
                                     {...props}
-                                    class="cursor-pointer truncate text-left text-sm font-semibold text-foreground transition-colors hover:text-primary"
-                                    ondblclick={startEditing}
+                                    href="/export?termId={term.id}"
+                                    variant="ghost"
+                                    size="icon"
+                                    class="h-6 w-6 text-muted-foreground hover:text-foreground"
                             >
-                                {term.name}
-                            </button>
+                                <Share2 size={13} />
+                            </Button>
                         {/snippet}
                     </Tooltip.Trigger>
                     <Tooltip.Content>
-                        <p>Double-click to rename</p>
+                        <p>Export term card</p>
                     </Tooltip.Content>
                 </Tooltip.Root>
-            {/if}
 
-            <span class="text-[11px] text-muted-foreground">
-        {#if tgpa !== null}
-          TGPA: <strong class="text-foreground">{tgpa.toFixed(3)}</strong> ({totalUnits} u)
-        {:else}
-          Planned ({totalUnits} u)
-        {/if}
-      </span>
+                <Tooltip.Root>
+                    <Tooltip.Trigger>
+                        {#snippet child({ props })}
+                            <Button
+                                    {...props}
+                                    variant="ghost"
+                                    size="icon"
+                                    onclick={deleteTerm}
+                                    class="h-6 w-6 text-muted-foreground hover:text-destructive"
+                            >
+                                <Trash2 size={13} />
+                            </Button>
+                        {/snippet}
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>
+                        <p>Delete term</p>
+                    </Tooltip.Content>
+                </Tooltip.Root>
+            </div>
         </div>
 
-        <div class="flex shrink-0 items-center gap-1">
-            <Tooltip.Root>
-                <Tooltip.Trigger>
-                    {#snippet child({ props })}
-                        <Button
-                                {...props}
-                                href="/export?termId={term.id}"
-                                variant="ghost"
-                                size="icon"
-                                class="h-7 w-7 text-muted-foreground hover:text-foreground"
-                        >
-                            <Share2 size={13} />
-                        </Button>
-                    {/snippet}
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                    <p>Export term card</p>
-                </Tooltip.Content>
-            </Tooltip.Root>
+        <!-- Prominent Stats Badges -->
+        <div class="mt-2 flex items-center gap-1.5">
+            <!-- Total Units Display -->
+            <span
+                    class="inline-flex items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
+            >
+        {totalUnits} {totalUnits === 1 ? 'unit' : 'units'}
+      </span>
 
-            <Tooltip.Root>
-                <Tooltip.Trigger>
-                    {#snippet child({ props })}
-                        <Button
-                                {...props}
-                                variant="ghost"
-                                size="icon"
-                                onclick={deleteTerm}
-                                class="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        >
-                            <Trash2 size={13} />
-                        </Button>
-                    {/snippet}
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                    <p>Delete term</p>
-                </Tooltip.Content>
-            </Tooltip.Root>
+            <!-- TGPA Display -->
+            {#if tgpa !== null}
+        <span
+                class="inline-flex items-center rounded-md border border-border/50 bg-muted/60 px-2 py-0.5 font-mono text-[11px] font-semibold text-foreground"
+        >
+          TGPA {tgpa.toFixed(3)}
+        </span>
+            {/if}
         </div>
     </div>
 
