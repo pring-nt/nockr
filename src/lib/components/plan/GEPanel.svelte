@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { SvelteSet } from 'svelte/reactivity';
     import { appStore } from '$lib/stores/appState';
     import type { GEItem } from '$lib/schemas';
     import GEItemRow from '$lib/components/plan/GEItemRow.svelte';
@@ -11,7 +12,25 @@
     let geItems = $derived($appStore.geChecklist ?? []);
 
     let newItemLabel = $state('');
-    let completedCount = $derived(geItems.filter((i) => i.completed).length);
+
+    let takenCoursesSet = $derived.by(() => {
+        const set = new SvelteSet<string>();
+        for (const term of $appStore.terms) {
+            for (const course of term.courses) {
+                const name = course.name.trim().toLowerCase();
+                if (name && course.grade !== null && course.grade !== undefined && String(course.grade).trim() !== '') {
+                    set.add(name);
+                }
+            }
+        }
+        return set;
+    });
+
+    let completedCount = $derived(
+        geItems.filter(
+            (i) => i.completed || takenCoursesSet.has(i.label.trim().toLowerCase())
+        ).length
+    );
 
     function togglePanel() {
         appStore.update((state) => ({
@@ -53,8 +72,7 @@
         const item: GEItem = {
             id: crypto.randomUUID(),
             label: newItemLabel.trim(),
-            completed: false,
-            isCustom: true
+            completed: false
         };
         appStore.update((state) => ({
             ...state,
@@ -112,6 +130,7 @@
             {#each geItems as item (item.id)}
                 <GEItemRow
                         {item}
+                        isAutoCompleted={takenCoursesSet.has(item.label.trim().toLowerCase())}
                         onToggle={() => toggleItem(item.id)}
                         onDelete={() => deleteItem(item.id)}
                         onUpdateLabel={(newLabel) => updateItemLabel(item.id, newLabel)}

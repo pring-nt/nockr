@@ -1,22 +1,27 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import type { GEItem } from '$lib/schemas';
     import { SquareCheck, Square, Trash2, Pencil } from 'lucide-svelte';
     import { cn } from '$lib/utils.js';
 
     let {
         item,
+        isAutoCompleted = false,
         onToggle,
         onDelete,
         onUpdateLabel
     }: {
         item: GEItem;
+        isAutoCompleted?: boolean;
         onToggle: () => void;
         onDelete: () => void;
         onUpdateLabel: (newLabel: string) => void;
     } = $props();
 
     let isEditing = $state(false);
-    let editLabel = $state(item.label);
+    let editLabel = $state(untrack(() => item.label));
+
+    let isChecked = $derived(item.completed || isAutoCompleted);
 
     function startEditing() {
         editLabel = item.label;
@@ -24,7 +29,7 @@
     }
 
     function commitEdit() {
-        if (editLabel.trim()) {
+        if (editLabel.trim() && editLabel.trim() !== item.label) {
             onUpdateLabel(editLabel.trim());
         }
         isEditing = false;
@@ -46,8 +51,8 @@
 
 <div
         class={cn(
-    'group flex items-center justify-between gap-1.5 rounded-md border p-2 text-xs transition-colors',
-    item.completed
+    'group flex items-center justify-between gap-2.5 rounded-lg border px-3 py-2.5 text-xs transition-colors',
+    isChecked
       ? 'border-primary/30 bg-primary/5 text-foreground'
       : 'border-border/50 bg-card text-muted-foreground hover:text-foreground'
   )}
@@ -62,33 +67,37 @@
         />
     {:else}
         <button
+                type="button"
                 onclick={onToggle}
-                class="flex min-w-0 flex-1 items-center gap-2 truncate text-left"
+                ondblclick={startEditing}
+                class="flex min-w-0 flex-1 items-center gap-2.5 truncate text-left"
         >
-            {#if item.completed}
-                <SquareCheck size={14} class="shrink-0 text-primary" />
+            {#if isChecked}
+                <SquareCheck size={16} class="shrink-0 text-primary" />
             {:else}
-                <Square size={14} class="shrink-0 text-muted-foreground/60" />
+                <Square size={16} class="shrink-0 text-muted-foreground/60" />
             {/if}
-            <span class={cn('truncate', item.completed && 'line-through opacity-80')}>
+            <span class={cn('truncate font-medium', isChecked && 'line-through opacity-80')}>
         {item.label}
       </span>
         </button>
 
-        <div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div class="flex shrink-0 items-center gap-2.5 opacity-0 transition-opacity group-hover:opacity-100">
             <button
+                    type="button"
                     onclick={startEditing}
-                    class="text-muted-foreground hover:text-foreground"
+                    class="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                     title="Edit label"
             >
-                <Pencil size={12} />
+                <Pencil size={13} />
             </button>
             <button
+                    type="button"
                     onclick={onDelete}
-                    class="text-muted-foreground hover:text-destructive"
+                    class="rounded p-0.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                     title="Delete GE"
             >
-                <Trash2 size={12} />
+                <Trash2 size={13} />
             </button>
         </div>
     {/if}

@@ -1,4 +1,3 @@
-// src/lib/stores/appState.ts
 import { writable } from 'svelte/store';
 import { AppStateSchema, type AppState } from '$lib/schemas';
 import { DLSU_PRESET, DEFAULT_GE_LIST } from '$lib/constants';
@@ -24,8 +23,7 @@ function buildFreshState(): AppState {
 		customSettingsCache: undefined,
 		geChecklist: DEFAULT_GE_LIST.map((item) => ({
 			...item,
-			completed: false,
-			isCustom: false
+			completed: false
 		})),
 		terms: []
 	});
@@ -133,8 +131,7 @@ function createAppStore() {
 					...state,
 					geChecklist: DEFAULT_GE_LIST.map((item) => ({
 						...item,
-						completed: false,
-						isCustom: false
+						completed: false
 					}))
 				};
 				persist(next);
