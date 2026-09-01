@@ -25,7 +25,16 @@
 
 	// Terms from app store
 	let terms = $derived($appStore.terms ?? []);
-	let latestTerm = $derived(terms.length > 0 ? terms[terms.length - 1] : undefined);
+
+	// Latest term with all course grades encoded (fallback to last term if none match)
+	let latestTerm = $derived.by(() => {
+		if (terms.length === 0) return undefined;
+		const latestCompleted = terms.findLast(
+			(t) =>
+				t.courses.length > 0 && t.courses.every((c) => c.grade !== null && c.grade !== undefined)
+		);
+		return latestCompleted ?? terms[terms.length - 1];
+	});
 
 	// Track termId from the previous page URL
 	let previousTermId = $state<string | null>(null);
