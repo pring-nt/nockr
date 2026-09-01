@@ -9,6 +9,11 @@
 	import { goto } from '$app/navigation';
 
 	let viewMode = $derived($appStore.ui?.cardViewMode ?? 'focus');
+	let pillsNavRef = $state<HTMLElement | null>(null);
+
+	let targetScrollLeft = 0;
+	let animationFrameId: number | null = null;
+	let lastTime: number | null = null;
 
 	function setViewMode(mode: 'focus' | 'grid') {
 		appStore.update((state) => ({
@@ -136,14 +141,59 @@
 		setViewMode('grid');
 	}
 
-	function handleWheelScroll(e: WheelEvent) {
-		if (e.deltaY === 0) return;
-		const container = e.currentTarget as HTMLElement;
-		const scrollAmount = e.deltaY;
+	function stepScroll(timestamp: number) {
+		if (!pillsNavRef) {
+			animationFrameId = null;
+			lastTime = null;
+			return;
+		}
 
-		container.scrollLeft += scrollAmount;
+		if (lastTime === null) lastTime = timestamp;
+		const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+		lastTime = timestamp;
+
+		const current = pillsNavRef.scrollLeft;
+		const diff = targetScrollLeft - current;
+
+		if (Math.abs(diff) < 0.5) {
+			pillsNavRef.scrollLeft = targetScrollLeft;
+			animationFrameId = null;
+			lastTime = null;
+			return;
+		}
+
+		const lerp = 1 - Math.exp(-20 * dt);
+		pillsNavRef.scrollLeft = current + diff * lerp;
+
+		animationFrameId = requestAnimationFrame(stepScroll);
+	}
+
+	function handleWheelScroll(e: WheelEvent) {
+		if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+		if (e.deltaY === 0) return;
+
+		const container = e.currentTarget as HTMLElement;
 
 		e.preventDefault();
+
+		let delta = e.deltaY;
+		if (e.deltaMode === 1) {
+			delta *= 16;
+		} else if (e.deltaMode === 2) {
+			delta *= container.clientWidth;
+		}
+
+		if (animationFrameId === null) {
+			targetScrollLeft = container.scrollLeft;
+		}
+
+		const maxScroll = container.scrollWidth - container.clientWidth;
+		targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + delta));
+
+		if (animationFrameId === null) {
+			lastTime = null;
+			animationFrameId = requestAnimationFrame(stepScroll);
+		}
 	}
 </script>
 
@@ -169,6 +219,7 @@
 	<!-- Pill Nav + View Toggle -->
 	<div class="flex flex-col justify-between gap-4 pt-2 sm:flex-row sm:items-center">
 		<div
+			bind:this={pillsNavRef}
 			onwheel={handleWheelScroll}
 			class="-mx-4 flex flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent items-center gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
 		>
@@ -180,7 +231,7 @@
 						setViewMode('focus');
 					}}
 					class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all
-                        {activeTermId === term.id && viewMode === 'focus'
+                  {activeTermId === term.id && viewMode === 'focus'
 						? 'bg-primary text-primary-foreground shadow-sm'
 						: 'bg-muted/50 text-muted-foreground hover:bg-muted'}"
 				>
