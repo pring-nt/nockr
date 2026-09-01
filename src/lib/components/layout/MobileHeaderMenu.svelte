@@ -2,7 +2,7 @@
     import { resolve } from '$app/paths';
     import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
     import { Button } from '$lib/components/ui/button/index.js';
-    import { MoreVertical, Share2, Download, Upload } from 'lucide-svelte';
+    import { EllipsisVertical, Share2, Download, Upload } from 'lucide-svelte';
     import { cn } from '$lib/utils.js';
 
     let {
@@ -24,7 +24,7 @@
                     aria-label="More options"
                     class="h-8 w-8 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
             >
-                <MoreVertical size={16} />
+                <EllipsisVertical size={16} />
             </Button>
         {/snippet}
     </DropdownMenu.Trigger>
@@ -35,7 +35,7 @@
                 <a
                         {...props}
                         href={resolve('/export')}
-                        class={cn(props.class as string, 'flex cursor-pointer items-center gap-2.5 text-xs')}
+                        class={cn(String(props.class ?? ''), 'flex cursor-pointer items-center gap-2.5 text-xs')}
                 >
                     <Share2 size={14} class="text-muted-foreground" />
                     <span>Export Card</span>
