@@ -33,26 +33,30 @@
 		}
 
 		const lerp = 1 - Math.exp(-20 * dt);
-		mainRef.scrollLeft = current + diff * lerp;
+		const intended = current + diff * lerp;
+		mainRef.scrollLeft = intended;
+
+		if (Math.abs(mainRef.scrollLeft - intended) > 0.5) {
+			targetScrollLeft = mainRef.scrollLeft;
+			animationFrameId = null;
+			lastTime = null;
+			return;
+		}
 
 		animationFrameId = requestAnimationFrame(stepScroll);
 	}
 
 	function handleWheelScroll(e: WheelEvent) {
-		// Ignore native trackpad horizontal scrolls
 		if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
 		if (e.deltaY === 0) return;
 
 		const container = e.currentTarget as HTMLElement;
 
-		// Prevent horizontal panning if cursor is over any vertically scrollable container
 		let target = e.target as HTMLElement | null;
 		while (target && target !== container) {
 			if (target.scrollHeight > target.clientHeight) {
 				const overflowY = getComputedStyle(target).overflowY;
-				if (overflowY === 'auto' || overflowY === 'scroll') {
-					return;
-				}
+				if (overflowY === 'auto' || overflowY === 'scroll') return;
 			}
 			target = target.parentElement;
 		}
@@ -60,18 +64,14 @@
 		e.preventDefault();
 
 		let delta = e.deltaY;
-		if (e.deltaMode === 1) {
-			delta *= 16;
-		} else if (e.deltaMode === 2) {
-			delta *= container.clientWidth;
-		}
+		if (e.deltaMode === 1) delta *= 16;
+		else if (e.deltaMode === 2) delta *= container.clientWidth;
 
 		if (animationFrameId === null) {
 			targetScrollLeft = container.scrollLeft;
 		}
 
-		const maxScroll = container.scrollWidth - container.clientWidth;
-		targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + delta));
+		targetScrollLeft = targetScrollLeft + delta;
 
 		if (animationFrameId === null) {
 			lastTime = null;

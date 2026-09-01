@@ -59,7 +59,6 @@
 
 		if (!id) return;
 
-		// In grid mode, do not auto-scroll unless a termId parameter is explicitly in the URL
 		if (mode === 'grid' && !hasExplicitUrlTermId) {
 			isInitialLoad = false;
 			return;
@@ -77,7 +76,7 @@
 						element.scrollIntoView({
 							behavior: scrollBehavior,
 							block: mode === 'grid' ? 'start' : 'nearest',
-							inline: 'center'
+							inline: 'nearest'
 						});
 					}
 					isInitialLoad = false;
@@ -163,7 +162,15 @@
 		}
 
 		const lerp = 1 - Math.exp(-20 * dt);
-		pillsNavRef.scrollLeft = current + diff * lerp;
+		const intended = current + diff * lerp;
+		pillsNavRef.scrollLeft = intended;
+
+		if (Math.abs(pillsNavRef.scrollLeft - intended) > 0.5) {
+			targetScrollLeft = pillsNavRef.scrollLeft;
+			animationFrameId = null;
+			lastTime = null;
+			return;
+		}
 
 		animationFrameId = requestAnimationFrame(stepScroll);
 	}
@@ -173,22 +180,17 @@
 		if (e.deltaY === 0) return;
 
 		const container = e.currentTarget as HTMLElement;
-
 		e.preventDefault();
 
 		let delta = e.deltaY;
-		if (e.deltaMode === 1) {
-			delta *= 16;
-		} else if (e.deltaMode === 2) {
-			delta *= container.clientWidth;
-		}
+		if (e.deltaMode === 1) delta *= 16;
+		else if (e.deltaMode === 2) delta *= container.clientWidth;
 
 		if (animationFrameId === null) {
 			targetScrollLeft = container.scrollLeft;
 		}
 
-		const maxScroll = container.scrollWidth - container.clientWidth;
-		targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + delta));
+		targetScrollLeft = targetScrollLeft + delta;
 
 		if (animationFrameId === null) {
 			lastTime = null;
@@ -221,7 +223,7 @@
 		<div
 			bind:this={pillsNavRef}
 			onwheel={handleWheelScroll}
-			class="-mx-4 flex flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent items-center gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+			class="flex flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent items-center gap-2 overflow-x-auto overscroll-x-contain pb-2"
 		>
 			{#each $appStore.terms as term (term.id)}
 				<button
