@@ -51,6 +51,7 @@
 		"@vercel/analytics": "^2.0.1",
 		"html-to-image": "^1.11.13",
 		"lucide-svelte": "^1.0.1",
+		"svelte-dnd-action": "^0.9.79",
 		"zod": "^4.4.3"
 	}
 }

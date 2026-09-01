@@ -5,7 +5,8 @@ import { UniversitySettingsSchema } from './university';
 import { ThemeSettingsSchema } from './theme';
 
 export const UISettingsSchema = z.object({
-	cardViewMode: z.enum(['focus', 'grid']).default('focus')
+	cardViewMode: z.enum(['focus', 'grid']).default('focus'),
+	gePanelOpen: z.boolean().default(true)
 });
 
 export const AppStateSchema = z.object({

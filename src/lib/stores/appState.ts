@@ -1,3 +1,4 @@
+// src/lib/stores/appState.ts
 import { writable } from 'svelte/store';
 import { AppStateSchema, type AppState } from '$lib/schemas';
 import { DLSU_PRESET, DEFAULT_GE_LIST } from '$lib/constants';
@@ -121,6 +122,21 @@ function createAppStore() {
 		update(fn: (state: AppState) => AppState) {
 			store.update((state) => {
 				const next = fn(state);
+				persist(next);
+				return next;
+			});
+		},
+
+		resetGEChecklist() {
+			store.update((state) => {
+				const next: AppState = {
+					...state,
+					geChecklist: DEFAULT_GE_LIST.map((item) => ({
+						...item,
+						completed: false,
+						isCustom: false
+					}))
+				};
 				persist(next);
 				return next;
 			});
