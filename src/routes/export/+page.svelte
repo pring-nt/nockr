@@ -278,17 +278,16 @@
 					<ZoomIn class="size-3.5" />
 				</Button>
 
-				{#if userZoom !== 1}
-					<Button
-						variant="ghost"
-						size="icon"
-						class="size-7"
-						onclick={resetZoom}
-						title="Fit to Container"
-					>
-						<RotateCcw class="size-3.5" />
-					</Button>
-				{/if}
+				<Button
+					variant="ghost"
+					size="icon"
+					class="size-7"
+					onclick={resetZoom}
+					disabled={userZoom === 1}
+					title="Fit to Container"
+				>
+					<RotateCcw class="size-3.5" />
+				</Button>
 			</div>
 		</div>
 
