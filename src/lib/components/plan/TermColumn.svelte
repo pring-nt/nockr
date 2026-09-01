@@ -1,6 +1,7 @@
 <script lang="ts">
     import { tick, untrack } from 'svelte';
-    import { dndzone } from 'svelte-dnd-action';
+    import { flip } from 'svelte/animate';
+    import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, type DndEvent } from 'svelte-dnd-action';
     import { appStore } from '$lib/stores/appState';
     import type { Term, Course } from '$lib/schemas';
     import { computeTGPA } from '$lib/logic/gpa';
@@ -8,25 +9,30 @@
     import { Button } from '$lib/components/ui/button/index.js';
     import * as Tooltip from '$lib/components/ui/tooltip/index.js';
     import { Plus, Trash2, Share2 } from 'lucide-svelte';
+    import { cn } from '$lib/utils.js';
 
     let { term }: { term: Term } = $props();
 
-    // Local DnD state using untrack to capture initial value safely in Svelte 5
     let localCourses = $state<Course[]>(untrack(() => [...term.courses]));
     let isEditingTerm = $state(false);
     let termNameEdit = $state(untrack(() => term.name));
+    let isHovered = $state(false);
+    let isDndActive = $state(false);
 
-    // Keep local states in sync when store updates
     $effect(() => {
-        localCourses = [...term.courses];
+        if (!isDndActive) {
+            localCourses = [...term.courses];
+        }
         termNameEdit = term.name;
     });
 
-    // Derived values using standard GPA utility
     let tgpa = $derived(computeTGPA(term));
     let totalUnits = $derived(term.courses.reduce((acc, c) => acc + c.units, 0));
 
-    // --- Term Renaming ---
+    function isShadowItem(item: Course): boolean {
+        return Boolean((item as Record<string, unknown>)[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+    }
+
     function startEditing() {
         termNameEdit = term.name;
         isEditingTerm = true;
@@ -48,7 +54,6 @@
         node.focus();
     }
 
-    // --- Term CRUD ---
     function deleteTerm() {
         appStore.update((state) => ({
             ...state,
@@ -77,12 +82,17 @@
         }
     }
 
-    // --- DnD Handlers ---
-    function handleConsider(e: CustomEvent<{ items: Course[] }>) {
+    function handleConsider(e: CustomEvent<DndEvent<Course>>) {
+        isDndActive = true;
+        if (e.detail.info.trigger === 'draggedEntered') isHovered = true;
+        else if (e.detail.info.trigger === 'draggedLeft') isHovered = false;
+
         localCourses = e.detail.items;
     }
 
-    function handleFinalize(e: CustomEvent<{ items: Course[] }>) {
+    function handleFinalize(e: CustomEvent<DndEvent<Course>>) {
+        isHovered = false;
+        isDndActive = false;
         localCourses = e.detail.items;
         appStore.update((state) => ({
             ...state,
@@ -92,7 +102,12 @@
 </script>
 
 <div
-        class="flex h-full w-70 shrink-0 flex-col rounded-xl border border-border/60 bg-muted/20 p-3 shadow-xs"
+        class={cn(
+    'flex h-full w-70 shrink-0 flex-col rounded-xl border p-3 shadow-xs backdrop-blur-md transition-all duration-200',
+    isHovered
+      ? 'border-primary/60 bg-primary/10 ring-2 ring-primary/40 shadow-lg shadow-primary/5'
+      : 'border-border/50 bg-background/25'
+  )}
 >
     <!-- Column Header -->
     <div class="mb-3 flex items-center justify-between border-b border-border/40 pb-2">
@@ -125,12 +140,12 @@
             {/if}
 
             <span class="text-[11px] text-muted-foreground">
-            {#if tgpa !== null}
-               TGPA: <strong class="text-foreground">{tgpa.toFixed(3)}</strong> ({totalUnits} u)
-            {:else}
-               Planned ({totalUnits} u)
-            {/if}
-         </span>
+        {#if tgpa !== null}
+          TGPA: <strong class="text-foreground">{tgpa.toFixed(3)}</strong> ({totalUnits} u)
+        {:else}
+          Planned ({totalUnits} u)
+        {/if}
+      </span>
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
@@ -182,7 +197,15 @@
             class="min-h-30 flex-1 space-y-2 overflow-y-auto p-0.5"
     >
         {#each localCourses as course (course.id)}
-            <CourseCard {course} termId={term.id} />
+            <div animate:flip={{ duration: 200 }}>
+                {#if isShadowItem(course)}
+                    <div
+                            class="h-18.5 w-full rounded-lg border-2 border-dashed border-primary/40 bg-primary/10 backdrop-blur-xs transition-all duration-150"
+                    ></div>
+                {:else}
+                    <CourseCard {course} termId={term.id} />
+                {/if}
+            </div>
         {/each}
     </div>
 
@@ -190,7 +213,7 @@
     <Button
             variant="outline"
             size="sm"
-            class="mt-3 w-full gap-1.5 border-dashed text-xs text-muted-foreground hover:text-foreground"
+            class="mt-3 w-full gap-1.5 border-dashed bg-background/20 text-xs text-muted-foreground backdrop-blur-xs hover:bg-background/40 hover:text-foreground"
             onclick={() => addCourse(true)}
     >
         <Plus size={14} /> Add Course

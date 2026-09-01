@@ -64,9 +64,9 @@
     }
 </script>
 
-<div class="relative flex h-full flex-col bg-background">
+<div class="relative flex h-full flex-col bg-background/20 backdrop-blur-md">
     <!-- Top Bar / Header -->
-    <div class="flex h-12 items-center justify-between border-b border-border/50 px-3">
+    <div class="flex h-12 items-center justify-between border-b border-border/40 px-3">
         {#if isOpen}
             <div class="flex items-center gap-2 overflow-hidden">
                 <h2 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">GE Checklist</h2>
@@ -120,7 +120,7 @@
         </div>
 
         <!-- Add Custom GE Input -->
-        <div class="border-t border-border/50 p-3">
+        <div class="border-t border-border/40 p-3">
             <form
                     onsubmit={(e) => {
           e.preventDefault();
@@ -132,7 +132,7 @@
                         type="text"
                         bind:value={newItemLabel}
                         placeholder="Add custom GE..."
-                        class="h-8 text-xs"
+                        class="h-8 bg-background/40 text-xs backdrop-blur-xs"
                 />
                 <Button type="submit" size="sm" class="h-8 px-2.5">
                     <Plus size={14} />

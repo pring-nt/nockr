@@ -160,10 +160,10 @@
 
 <div
         class={cn(
-      'group relative flex flex-col gap-2 rounded-lg border p-2.5 shadow-xs transition-all',
+      'group relative flex flex-col gap-2 rounded-lg border p-2.5 shadow-xs transition-all backdrop-blur-xs',
       course.grade === null
-         ? 'border-dashed border-border/80 bg-background/50 opacity-70 hover:opacity-100'
-         : 'border-border bg-card text-card-foreground opacity-100'
+         ? 'border-dashed border-border/60 bg-background/20 opacity-75 hover:opacity-100'
+         : 'border-border/60 bg-card/60 text-card-foreground opacity-100'
    )}
 >
     <!-- Top Row: Grip + Course Name + Delete -->
@@ -212,7 +212,7 @@
             <span class="text-[10px] text-muted-foreground">Units</span>
             <div
                     class={cn(
-               'flex items-center justify-between border-b border-border',
+               'flex items-center justify-between border-b border-border/60',
                'pb-0.5 transition-colors focus-within:border-primary'
             )}
             >
@@ -255,7 +255,7 @@
             <div
                     class={cn(
                'flex items-center justify-between border-b pb-0.5 transition-colors',
-               isFailingGrade ? 'border-destructive' : 'border-border',
+               isFailingGrade ? 'border-destructive' : 'border-border/60',
                !isFailingGrade && 'focus-within:border-primary'
             )}
             >
@@ -272,7 +272,7 @@
                         id="plan-course-{course.id}-grade"
                         class={cn(
                   'w-full bg-transparent p-0 text-center text-xs font-mono focus:outline-none',
-                  isFailingGrade ? 'text-destructive font-semibold' : 'text-foreground'
+                  isFailingGrade ? 'font-semibold text-destructive' : 'text-foreground'
                )}
                         type="number"
                         min={gradeMin}
