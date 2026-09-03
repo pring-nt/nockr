@@ -65,8 +65,8 @@ export const UP_PRESET: UniversitySettings = {
 	latinHonorsLabel: 'Latin Honors',
 	latinHonorsTiers: [
 		{ id: crypto.randomUUID(), label: 'Summa Cum Laude', lowerBound: 1.0, upperBound: 1.25 },
-		{ id: crypto.randomUUID(), label: 'Magna Cum Laude', lowerBound: 1.26, upperBound: 1.5 },
-		{ id: crypto.randomUUID(), label: 'Cum Laude', lowerBound: 1.51, upperBound: 1.75 }
+		{ id: crypto.randomUUID(), label: 'Magna Cum Laude', lowerBound: 1.26, upperBound: 1.45 },
+		{ id: crypto.randomUUID(), label: 'Cum Laude', lowerBound: 1.46, upperBound: 1.75 }
 	],
 	latinHonorsNoFailPolicy: false
 };

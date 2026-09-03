@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { AppStateSchema, type AppState } from '$lib/schemas';
-import { DLSU_PRESET, DEFAULT_GE_LIST } from '$lib/constants';
+import { DLSU_PRESET, DEFAULT_GE_LIST, UNIVERSITY_PRESETS } from '$lib/constants';
 
 const STORAGE_KEY = 'nockr_state';
 
@@ -15,6 +15,49 @@ interface UnvalidatedTerm {
 	id?: unknown;
 	name?: unknown;
 	courses?: unknown;
+}
+
+/**
+ * Hydrates and syncs saved university settings with master preset definitions.
+ * Automatically updates preset values for existing users without resetting custom modes.
+ */
+function syncUniversitySettings(rawSettings: unknown): AppState['universitySettings'] {
+	if (!rawSettings || typeof rawSettings !== 'object') {
+		return DLSU_PRESET;
+	}
+
+	const settings = rawSettings as Record<string, unknown>;
+
+	// If user configured a custom preset, preserve their settings with schema fallback
+	if (settings.mode === 'custom') {
+		const parsed = AppStateSchema.shape.universitySettings.safeParse(settings);
+		if (parsed.success) return parsed.data;
+
+		return AppStateSchema.shape.universitySettings.parse({
+			...DLSU_PRESET,
+			...settings,
+			mode: 'custom'
+		});
+	}
+
+	// Match preset by `mode` ('dlsu' | 'up' | 'ust' | 'admu') against UNIVERSITY_PRESETS
+	const modeKey = (
+		typeof settings.mode === 'string' ? settings.mode : 'dlsu'
+	) as keyof typeof UNIVERSITY_PRESETS;
+	const matchedPreset = UNIVERSITY_PRESETS[modeKey];
+
+	if (matchedPreset) {
+		return AppStateSchema.shape.universitySettings.parse(matchedPreset);
+	}
+
+	// Safe fallback merge with DLSU_PRESET defaults
+	const merged = {
+		...DLSU_PRESET,
+		...settings
+	};
+
+	const parsed = AppStateSchema.shape.universitySettings.safeParse(merged);
+	return parsed.success ? parsed.data : DLSU_PRESET;
 }
 
 function buildFreshState(): AppState {
@@ -41,9 +84,12 @@ function getInitialState(): AppState {
 		const json = JSON.parse(raw);
 		const parsed = AppStateSchema.safeParse(json);
 
-		// 1. Direct validation pass
+		// 1. Direct validation pass with setting hydration
 		if (parsed.success) {
-			return parsed.data;
+			return {
+				...parsed.data,
+				universitySettings: syncUniversitySettings(parsed.data.universitySettings)
+			};
 		}
 
 		console.warn(
@@ -67,10 +113,12 @@ function getInitialState(): AppState {
 			};
 		});
 
+		const syncedSettings = syncUniversitySettings(json?.universitySettings);
+
 		const recoveryCandidate = {
 			...json,
 			terms: recoveredTerms,
-			universitySettings: json?.universitySettings ?? DLSU_PRESET,
+			universitySettings: syncedSettings,
 			customSettingsCache: json?.customSettingsCache ?? undefined,
 			geChecklist: Array.isArray(json?.geChecklist)
 				? json.geChecklist
@@ -87,7 +135,8 @@ function getInitialState(): AppState {
 		return {
 			...fresh,
 			terms: recoveredTerms,
-			customSettingsCache: json?.customSettingsCache
+			customSettingsCache: json?.customSettingsCache,
+			universitySettings: syncedSettings
 		};
 	} catch (error) {
 		console.warn('[Nockr] Failed to read state from localStorage:', error);
@@ -97,7 +146,8 @@ function getInitialState(): AppState {
 }
 
 function createAppStore() {
-	const store = writable<AppState>(getInitialState());
+	const initialState = getInitialState();
+	const store = writable<AppState>(initialState);
 
 	function persist(state: AppState) {
 		if (typeof localStorage !== 'undefined') {
@@ -108,6 +158,9 @@ function createAppStore() {
 			}
 		}
 	}
+
+	// Persist synchronized state immediately to migrate legacy localStorage values
+	persist(initialState);
 
 	return {
 		subscribe: store.subscribe,
