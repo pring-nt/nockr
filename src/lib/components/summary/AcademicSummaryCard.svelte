@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
 	import { computeCGPA, computeUnitsEarned } from '$lib/logic/gpa';
-	import { PenLine, Check, Award, ChevronRight, Share2 } from 'lucide-svelte';
+	import { PenLine, Check, Award, ChevronRight, Share2, Calculator } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import LatinHonorsModal from '$lib/components/honors/LatinHonorsModal.svelte';
+	import UnitCalculatorModal from '$lib/components/summary/UnitCalculatorModal.svelte';
 
 	let cgpa = $derived(computeCGPA($appStore.terms));
 	let unitsEarned = $derived(computeUnitsEarned($appStore.terms));
@@ -19,6 +20,7 @@
 	let isEditingTotal = $state(false);
 	let tempTotalUnits = $state(165);
 	let honorsModalOpen = $state(false);
+	let unitCalcModalOpen = $state(false);
 
 	function startEditing() {
 		tempTotalUnits = totalProgramUnits;
@@ -76,28 +78,59 @@
 					{cgpa !== null ? cgpa.toFixed(3) : '—'}
 				</div>
 
-				<Tooltip.Root>
-					<Tooltip.Trigger>
-						{#snippet child({ props })}
-							<button
-								{...props}
-								type="button"
-								onclick={() => (honorsModalOpen = true)}
-								class="group inline-flex cursor-pointer items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary shadow-xs transition-all hover:border-primary/50 hover:bg-primary/20 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
-							>
-								<Award size={14} class="shrink-0 transition-transform group-hover:scale-110" />
-								<span>Honors Standing</span>
-								<ChevronRight
-									size={13}
-									class="opacity-70 transition-transform group-hover:translate-x-0.5"
-								/>
-							</button>
-						{/snippet}
-					</Tooltip.Trigger>
-					<Tooltip.Content>
-						<p>View Latin honors standing</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
+				<!-- Parallel Modal Action Pills -->
+				<div class="flex flex-wrap items-center gap-2">
+					<!-- Honors Standing Pill -->
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props })}
+								<button
+									{...props}
+									type="button"
+									onclick={() => (honorsModalOpen = true)}
+									class="group inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary shadow-xs transition-all hover:border-primary/50 hover:bg-primary/20 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+								>
+									<Award size={14} class="shrink-0 transition-transform group-hover:scale-110" />
+									<span>Honors Standing</span>
+									<ChevronRight
+										size={13}
+										class="opacity-70 transition-transform group-hover:translate-x-0.5"
+									/>
+								</button>
+							{/snippet}
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							<p>View Latin honors standing</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
+
+					<!-- Unit Runway Pill (Matched directly to Honors Standing) -->
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props })}
+								<button
+									{...props}
+									type="button"
+									onclick={() => (unitCalcModalOpen = true)}
+									class="group inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary shadow-xs transition-all hover:border-primary/50 hover:bg-primary/20 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+								>
+									<Calculator
+										size={14}
+										class="shrink-0 transition-transform group-hover:scale-110"
+									/>
+									<span>Unit Runway</span>
+									<ChevronRight
+										size={13}
+										class="opacity-70 transition-transform group-hover:translate-x-0.5"
+									/>
+								</button>
+							{/snippet}
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							<p>Calculate unit runway for target honors</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
+				</div>
 			</div>
 
 			<!-- Earned Units Column -->
@@ -204,3 +237,4 @@
 </Card>
 
 <LatinHonorsModal bind:open={honorsModalOpen} />
+<UnitCalculatorModal bind:open={unitCalcModalOpen} />
