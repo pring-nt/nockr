@@ -79,7 +79,10 @@
 				dropZoneRef.scrollTop = dropZoneRef.scrollHeight;
 			}
 			if (focusNew) {
-				document.getElementById(`plan-course-${newId}-name`)?.focus();
+				const input =
+					document.getElementById(`course-${newId}-name`) ??
+					document.getElementById(`plan-course-${newId}-name`);
+				input?.focus();
 			}
 		});
 	}
@@ -219,7 +222,7 @@
 						style="visibility: visible !important; opacity: 1 !important;"
 					></div>
 				{:else}
-					<CourseCard {course} termId={term.id} />
+					<CourseCard {course} termId={term.id} onNavigate={() => addCourse(true)} />
 				{/if}
 			</div>
 		{/each}

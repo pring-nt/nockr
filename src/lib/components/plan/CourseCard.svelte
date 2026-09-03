@@ -8,10 +8,12 @@
 
 	let {
 		course,
-		termId
+		termId,
+		onNavigate
 	}: {
 		course: Course;
 		termId: string;
+		onNavigate?: () => void;
 	} = $props();
 
 	let gradeMin = $derived($appStore.universitySettings.gradeMin);
@@ -143,6 +145,10 @@
 	}
 
 	function onGradeKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			onNavigate?.();
+		}
 		if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			updateGrade(1);
