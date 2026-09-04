@@ -97,7 +97,7 @@ bun run format      # Prettier
 | Validation | Zod |
 | Icons | Lucide Svelte |
 | Drag and Drop | svelte-dnd-action |
-| Image Export | html-to-image *(in progress)* |
+| Image Export | html-to-image |
 | Storage | localStorage |
 | Package Manager | Bun |
 
