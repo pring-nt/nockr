@@ -190,11 +190,11 @@
 
 		<div class="flex items-center gap-2 sm:gap-3">
 			<Button
-				variant="outline"
+				variant="ghost"
 				onclick={handleCopy}
 				disabled={isCapturing}
 				size="sm"
-				class="gap-1.5 sm:gap-2"
+				class="gap-1.5 border-none bg-(--highlight-low) text-(--text) hover:bg-(--highlight-med) sm:gap-2"
 			>
 				{#if isCapturing}
 					<LoaderCircle class="size-4 animate-spin" />
@@ -207,7 +207,7 @@
 				onclick={handleDownload}
 				disabled={isCapturing}
 				size="sm"
-				class="gap-1.5 bg-(--iris) text-(--base) hover:bg-(--iris)/90 sm:gap-2"
+				class="gap-1.5 border-none bg-(--iris) text-(--base) shadow-xs hover:bg-(--iris)/90 sm:gap-2"
 			>
 				{#if isCapturing}
 					<LoaderCircle class="size-4 animate-spin" />
@@ -222,7 +222,7 @@
 	<div class="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12">
 		<!-- Live Canvas Preview Target -->
 		<div
-			class="relative order-1 flex h-95 w-full flex-col overflow-hidden rounded-2xl border border-border bg-(--base)/60 sm:h-125 lg:sticky lg:top-6 lg:order-2 lg:col-span-8 lg:h-160"
+			class="relative order-1 flex h-95 w-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-(--base)/60 sm:h-125 lg:sticky lg:top-6 lg:order-2 lg:col-span-8 lg:h-160"
 		>
 			<!-- Scrollable Viewport -->
 			<div
@@ -246,12 +246,12 @@
 
 			<!-- Floating Zoom Toolbar Controls -->
 			<div
-				class="absolute right-3 bottom-3 z-10 flex items-center gap-1 rounded-lg border border-border/60 bg-(--surface)/90 p-1 shadow-md backdrop-blur-xs"
+				class="absolute right-3 bottom-3 z-10 flex items-center gap-1 rounded-xl border border-border/40 bg-(--surface)/90 p-1 shadow-md backdrop-blur-xs"
 			>
 				<Button
 					variant="ghost"
 					size="icon"
-					class="size-7"
+					class="size-7 border-none"
 					onclick={zoomOut}
 					disabled={userZoom <= 0.5}
 					title="Zoom Out"
@@ -270,7 +270,7 @@
 				<Button
 					variant="ghost"
 					size="icon"
-					class="size-7"
+					class="size-7 border-none"
 					onclick={zoomIn}
 					disabled={userZoom >= 3}
 					title="Zoom In"
@@ -281,7 +281,7 @@
 				<Button
 					variant="ghost"
 					size="icon"
-					class="size-7"
+					class="size-7 border-none"
 					onclick={resetZoom}
 					disabled={userZoom === 1}
 					title="Fit to Container"
@@ -298,7 +298,9 @@
 				<div>
 					<Label class="mb-2 block font-semibold text-(--subtle)">Active Term Context</Label>
 					<Select.Root type="single" value={selectedTermId} onValueChange={setSelectTerm}>
-						<Select.Trigger class="w-full border-border bg-(--highlight-low) text-xs">
+						<Select.Trigger
+							class="w-full border-none bg-(--highlight-low) text-xs shadow-none hover:bg-(--highlight-med)"
+						>
 							{activeTermLabel}
 						</Select.Trigger>
 						<Select.Content>
@@ -323,13 +325,13 @@
 					{#each aspectRatios as ratio (ratio)}
 						<Button
 							type="button"
-							variant={config.aspectRatio === ratio ? 'default' : 'outline'}
+							variant="ghost"
 							size="sm"
 							onclick={() => (config.aspectRatio = ratio)}
-							class="h-8 px-1 text-xs font-medium transition-all
+							class="h-8 border-none px-1 text-xs font-medium transition-all
                {config.aspectRatio === ratio
-								? 'border-(--iris) bg-(--iris) font-bold text-(--base) hover:bg-(--iris)/90'
-								: 'border-border bg-(--highlight-low) text-(--subtle) hover:text-(--text)'}"
+								? 'bg-(--iris) font-bold text-(--base) shadow-xs'
+								: 'bg-(--highlight-low) text-(--subtle) hover:bg-(--highlight-med) hover:text-(--text)'}"
 						>
 							{ratio}
 						</Button>
@@ -338,7 +340,7 @@
 			</div>
 
 			<!-- Background & Theme Controls -->
-			<div class="space-y-3 border-t border-border pt-4">
+			<div class="space-y-3 border-t border-border/50 pt-4">
 				<div class="flex items-center justify-between">
 					<Label class="font-semibold text-(--subtle)">Site Theme</Label>
 					<ThemePicker />
@@ -350,13 +352,13 @@
 						{#each backgroundOptions as bg (bg)}
 							<Button
 								type="button"
-								variant={config.background === bg ? 'default' : 'outline'}
+								variant="ghost"
 								size="sm"
 								onclick={() => (config.background = bg)}
-								class="h-8 truncate px-1 text-[11px] font-medium capitalize transition-all
+								class="h-8 truncate border-none px-1 text-[11px] font-medium capitalize transition-all
                {config.background === bg
-									? 'border-(--iris) bg-(--iris) font-bold text-(--base) hover:bg-(--iris)/90'
-									: 'border-border bg-(--highlight-low) text-(--subtle) hover:text-(--text)'}"
+									? 'bg-(--iris) font-bold text-(--base) shadow-xs'
+									: 'bg-(--highlight-low) text-(--subtle) hover:bg-(--highlight-med) hover:text-(--text)'}"
 							>
 								{bg}
 							</Button>
@@ -366,7 +368,7 @@
 			</div>
 
 			<!-- Widget Toggles -->
-			<div class="space-y-3 border-t border-border pt-4">
+			<div class="space-y-3 border-t border-border/50 pt-4">
 				<Label class="block font-semibold text-(--subtle)">Included Widgets</Label>
 
 				<div class="flex items-center justify-between">
@@ -396,14 +398,14 @@
 					</div>
 				{/if}
 
-				<div class="flex items-center justify-between border-t border-border/50 pt-2">
+				<div class="flex items-center justify-between border-t border-border/40 pt-2">
 					<span class="text-xs">Watermark</span>
 					<Switch bind:checked={config.showWatermark} />
 				</div>
 			</div>
 
 			<!-- Privacy Settings -->
-			<div class="space-y-3 border-t border-border pt-4">
+			<div class="space-y-3 border-t border-border/50 pt-4">
 				<Label class="block font-semibold text-(--subtle)">Privacy</Label>
 
 				<div class="flex items-center justify-between">
@@ -418,13 +420,13 @@
 							{#each gradeDisplayModes as mode (mode.value)}
 								<Button
 									type="button"
-									variant={config.privacy.courseGradeDisplay === mode.value ? 'default' : 'outline'}
+									variant="ghost"
 									size="sm"
 									onclick={() => (config.privacy.courseGradeDisplay = mode.value)}
-									class="h-8 px-1 text-[11px] font-medium transition-all
+									class="h-8 border-none px-1 text-[11px] font-medium transition-all
                    {config.privacy.courseGradeDisplay === mode.value
-										? 'border-(--iris) bg-(--iris) font-bold text-(--base) hover:bg-(--iris)/90'
-										: 'border-border bg-(--highlight-low) text-(--subtle) hover:text-(--text)'}"
+										? 'bg-(--iris) font-bold text-(--base) shadow-xs'
+										: 'bg-(--highlight-low) text-(--subtle) hover:bg-(--highlight-med) hover:text-(--text)'}"
 								>
 									{mode.label}
 								</Button>

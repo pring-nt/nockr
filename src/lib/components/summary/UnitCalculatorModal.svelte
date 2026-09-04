@@ -220,7 +220,7 @@
 				<span class="block truncate text-[10px] font-medium text-muted-foreground sm:text-[11px]"
 					>Units Remaining</span
 				>
-				<p class="text-sm font-bold text-primary sm:text-base">{stats.remainingUnits} u</p>
+				<p class="text-sm font-bold text-primary sm:text-base">{stats.remainingUnits}</p>
 			</div>
 		</div>
 
@@ -237,7 +237,7 @@
 			<!-- Target Threshold Config Section -->
 			<div class="space-y-3 rounded-xl border border-border/60 bg-background p-3 sm:p-3.5">
 				<div class="flex flex-wrap items-center justify-between gap-2">
-					<Label class="text-xs font-bold text-foreground">1. Target CGPA Threshold</Label>
+					<Label class="text-xs font-bold text-foreground">Target CGPA Threshold</Label>
 
 					<!-- Segmented Control Mode Switch -->
 					{#if honorTiers.length > 0}
@@ -324,7 +324,7 @@
 			{:else}
 				<div class="space-y-3 pt-1">
 					<div class="flex flex-col justify-between gap-0.5 sm:flex-row sm:items-center">
-						<Label class="text-xs font-bold text-foreground">2. Select Course Grade</Label>
+						<Label class="text-xs font-bold text-foreground">Select Course Grade</Label>
 						<span class="text-[11px] text-muted-foreground">
 							Assumes <strong class="text-foreground">{bestGrade.toFixed(1)}</strong> for remaining units
 						</span>

@@ -21,6 +21,7 @@
 	} = $props();
 
 	let tgpa = $derived(computeTGPA(term));
+	let totalUnits = $derived(term.courses.reduce((acc, c) => acc + (c.units || 0), 0));
 	let deansListTier = $derived(getDeansListTier(term, tgpa, $appStore.universitySettings));
 
 	let isEditing = $state(false);
@@ -102,45 +103,58 @@
 
 <Card class="glass border-border/40">
 	<CardHeader class="p-3 pb-3 sm:p-6 sm:pb-3">
-		<div class="flex items-center justify-between gap-2">
-			<div class="flex min-w-0 flex-1 items-center gap-2">
-				{#if isEditing}
-					<input
-						class="min-w-0 flex-1 border-b border-primary bg-transparent text-base font-semibold text-foreground focus:outline-none sm:text-lg"
-						bind:value={editName}
-						onblur={commitRename}
-						onkeydown={(e) => e.key === 'Enter' && commitRename()}
-						use:focusOnMount
-					/>
-				{:else}
-					<Tooltip.Root>
-						<Tooltip.Trigger>
-							{#snippet child({ props })}
-								<button
-									{...props}
-									class="cursor-pointer truncate text-left text-base font-semibold text-foreground transition-colors hover:text-primary sm:text-lg"
-									ondblclick={startEditing}
-								>
-									{term.name}
-								</button>
-							{/snippet}
-						</Tooltip.Trigger>
-						<Tooltip.Content>
-							<p>Double-click to rename</p>
-						</Tooltip.Content>
-					</Tooltip.Root>
-				{/if}
+		<div class="flex items-start justify-between gap-2">
+			<!-- Left section: Term Name + Units on top, Dean's List Badge underneath -->
+			<div class="flex min-w-0 flex-1 flex-col gap-1.5">
+				<div class="flex min-w-0 items-center gap-2">
+					{#if isEditing}
+						<input
+							class="min-w-0 flex-1 border-b border-primary bg-transparent text-base font-semibold text-foreground focus:outline-none sm:text-lg"
+							bind:value={editName}
+							onblur={commitRename}
+							onkeydown={(e) => e.key === 'Enter' && commitRename()}
+							use:focusOnMount
+						/>
+					{:else}
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										class="cursor-pointer truncate text-left text-base font-semibold text-foreground transition-colors hover:text-primary sm:text-lg"
+										ondblclick={startEditing}
+									>
+										{term.name}
+									</button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>
+								<p>Double-click to rename</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					{/if}
+
+					<span
+						class="inline-flex shrink-0 items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
+					>
+						{totalUnits}
+						{totalUnits === 1 ? 'unit' : 'units'}
+					</span>
+				</div>
 
 				{#if deansListTier}
-					<span
-						class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/35 bg-linear-to-r from-primary/20 via-primary/10 to-accent/20 px-2.5 py-0.5 text-[10px] font-semibold shadow-xs ring-1 ring-primary/20 transition-all hover:scale-105 sm:text-xs"
-					>
-						<GraduationCap size={13} class="shrink-0 text-primary" />
-						<span class="gradient-text font-bold">{deansListTier.label}</span>
-					</span>
+					<div>
+						<span
+							class="inline-flex items-center gap-1.5 rounded-full border border-primary/35 bg-linear-to-r from-primary/20 via-primary/10 to-accent/20 px-2.5 py-0.5 text-[10px] font-semibold shadow-xs ring-1 ring-primary/20 transition-all hover:scale-105 sm:text-xs"
+						>
+							<GraduationCap size={13} class="shrink-0 text-primary" />
+							<span class="gradient-text font-bold">{deansListTier.label}</span>
+						</span>
+					</div>
 				{/if}
 			</div>
 
+			<!-- Right section: TGPA & Actions -->
 			<div class="flex shrink-0 items-center gap-2 sm:gap-3">
 				<div class="text-right">
 					<p class="text-[10px] text-muted-foreground sm:text-xs">TGPA</p>
