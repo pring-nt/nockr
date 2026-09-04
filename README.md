@@ -1,73 +1,65 @@
 # 🏹 Nockr
 
-**A local-first, university-agnostic GPA tracker built for students who actually care about their standing.**
+A GPA tracker for university students. No account, no backend, no data leaves your browser.
 
-Track your grades per term, watch your CGPA update in real time, monitor Dean's List eligibility, and project your Latin Honors trajectory — all without an account, a server, or giving your data to anyone.
+> **Disclaimer:** Nockr is an independent student project and is not affiliated with, endorsed by, or connected to De La Salle University, the University of the Philippines, the University of Santo Tomas, Ateneo de Manila University, or any other academic institution. University presets are community-sourced approximations — always verify your institution's official policies.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Data & Privacy](#data--privacy)
+- [Contributing](#contributing)
+    - [Commit Convention](#commit-convention)
+    - [Branching Convention](#branching-convention)
+- [License](#license)
 
 ---
 
 ## Features
 
 ### Core Tracking
-- **Term-based grade tracking** — add as many terms as you need, each with renamable courses
-- **Live TGPA and CGPA** — computed in real time as you enter grades
-- **Degree progress bar** — tracks units earned vs your total program units (editable inline)
-- **Focus and Grid views** — browse one term at a time or see everything at once
+- Term-based grade entry with live TGPA and CGPA
+- Degree progress bar against a configurable total unit count
+- Focus view (one term at a time) and Grid view (all terms)
+- Keyboard inputs on term cards — `Enter` flows through fields, `↑↓` steps grades, `Escape` clears
 
-### Keyboard-First Input
-- `Enter` flows through course name -> units -> grade -> next course (or adds one)
-- `↑ ↓` steps grades and units without touching the mouse
-- `Escape` clears a grade back to ungraded
+### Honors
+- Dean's List badge per term with configurable tiers, unit minimums, and course grade floors
+- Latin Honors modal with projected standing based on current CGPA
+- No-fail policy flag — alerts when any course grade would disqualify Latin Honors eligibility
 
-### Honors Standing
-- **Dean's List badge** per term with configurable tier labels and GPA thresholds
-- **Latin Honors modal** — check your projected standing on demand, not shoved in your face
-- Configurable minimum unit load and minimum course grade constraints for Dean's List eligibility
-- No-fail policy toggle — flags if any course grade would disqualify Latin Honors
-
-### University Agnostic
-Ships with two presets and fully customizable rules for any university:
+### University Settings
+Ships with presets for four Philippine universities and a fully custom mode:
 
 | Preset | Scale | Direction | Failing Grade |
 |---|---|---|---|
-| **DLSU** | 0.0 – 4.0 | Ascending (4.0 best) | 0.0 |
-| **UP** | 1.0 – 5.0 | Descending (1.0 best) | 5.0 |
-| **Custom** | You decide | You decide | You decide |
+| **DLSU** | 0.0 – 4.0 | Ascending | 0.0 |
+| **UP** | 1.0 – 5.0 | Descending | 5.0 |
+| **UST** | 1.0 – 5.0 | Descending | 5.0 |
+| **ADMU** | 0.0 – 4.0 | Ascending | 0.0 |
+| **Custom** | Configurable | Configurable | Configurable |
 
-Custom mode lets you define your own honor tier labels, GPA bounds, unit constraints, and policies.
+Custom mode exposes full control over grade bounds, direction, step size, honor tier labels and thresholds, unit constraints, and honor policies.
+
+### Plan Page
+A separate full-screen flowchart view of all terms. Courses can be dragged between terms — the move carries the full course object (name, units, grade). Changes sync back to the main tracker immediately.
+
+### GE Checklist
+A collapsible panel on the Plan page listing general education requirements. Ships with a DLSU preset list; custom items can be added and removed. Completion state is persisted.
+
+### Unit Calculator
+Answers the question: given your current CGPA and remaining units, how many units of a given grade can you still afford before dropping below your target Latin Honor? Calculates for every grade step defined in your university settings, including the failing grade where applicable.
 
 ### Theme System
-13 built-in themes, each a fixed palette — no awkward light/dark toggle per theme:
+13 built-in themes (dark and light variants) plus a custom 15-token palette editor. Themes apply before the first paint — no flash of unstyled content. Custom themes can be exported as a `.css` file and imported back.
 
-| Dark | Light |
-|---|---|
-| Atom One Dark | Gruvbox Light |
-| Gruvbox Dark | Rosé Pine Dawn |
-| Rosé Pine | Catppuccin Latte |
-| Catppuccin Mocha | Tokyo Light |
-| Nord | Solarized Light |
-| Dracula | |
-| Tokyo Night | |
-| Solarized Dark | |
-
-Plus a fully custom 15-token palette editor if none of the presets fit.
-
-### Aesthetic
-- Aurora mesh gradient background that responds to your active theme colors
-- Glassmorphic cards with specular highlights
-- DM Mono for numbers and grades, Instrument Serif for the big CGPA display
-- Zero flash of unstyled content — theme is applied before the first paint
-
-### Privacy
-Everything is stored in `localStorage`. No account. No backend. No analytics. Nothing leaves your browser.
-
----
-
-## Planned Features
-
-- **Unit Calculator** — "how many units of X grade can I still get before dropping out of Summa?"
-- **GE Checklist** — track your general education requirements with a preset DLSU list + custom items
-- **Share / Export** — generate a styled PNG card of your academic summary to share, with multiple aspect ratios (1:1, 4:5, 9:16, 16:9)
+### Export Page
+Generate a styled PNG card of your academic summary or a specific term. Widget visibility is toggleable (summary, term header, course list, Dean's List badge). Grade values can be masked or hidden for privacy. Multiple aspect ratios supported.
 
 ---
 
@@ -76,25 +68,18 @@ Everything is stored in `localStorage`. No account. No backend. No analytics. No
 **Prerequisites:** [Bun](https://bun.sh)
 
 ```bash
-# Clone
 git clone https://github.com/yourusername/nockr.git
 cd nockr
-
-# Install dependencies
 bun install
-
-# Start dev server
 bun run dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173).
-
-### Other commands
+Open [http://localhost:5173](http://localhost:5173).
 
 ```bash
 bun run build       # Production build
-bun run preview     # Preview production build locally
-bun run check       # Run svelte-check + TypeScript
+bun run preview     # Preview production build
+bun run check       # svelte-check + TypeScript
 bun run lint        # ESLint
 bun run format      # Prettier
 ```
@@ -111,7 +96,8 @@ bun run format      # Prettier
 | UI Components | shadcn-svelte |
 | Validation | Zod |
 | Icons | Lucide Svelte |
-| Image Export | html2canvas *(planned)* |
+| Drag and Drop | svelte-dnd-action |
+| Image Export | html-to-image *(in progress)* |
 | Storage | localStorage |
 | Package Manager | Bun |
 
@@ -125,37 +111,101 @@ src/
 │   ├── components/
 │   │   ├── honors/         # Latin Honors modal
 │   │   ├── layout/         # Header shell
-│   │   ├── settings/       # Settings sidebar + theme picker
-│   │   ├── summary/        # Academic summary card
+│   │   ├── plan/           # TermColumn, CourseCard, GEPanel (Plan page)
+│   │   ├── settings/       # Settings sidebar, theme picker
+│   │   ├── share/          # Share canvas, widgets
+│   │   ├── summary/        # Academic summary card & unit calculator
 │   │   ├── term/           # TermCard, CourseRow, TermNavigator
-│   │   └── ui/             # shadcn-svelte components
+│   │   └── ui/             # shadcn-svelte primitives
 │   ├── logic/
 │   │   ├── gpa.ts          # TGPA, CGPA, units earned
 │   │   ├── honors.ts       # Tier matching, Dean's List, Latin Honors
-│   │   └── unitCalc.ts     # Projection solver
+│   │   ├── share.ts        # Canvas capture, theme injection, grade masking
+│   │   └── unitCalc.ts     # Unit calculator solver
 │   ├── schemas/            # Zod schemas for all data types
 │   ├── stores/             # localStorage-backed Svelte store
-│   ├── themes/             # Theme metadata + CSS var applicator
-│   └── constants.ts        # DLSU/UP presets, GE list
+│   ├── themes/             # Theme metadata + CSS variable applicator
+│   └── constants.ts        # University presets, GE list, aspect ratio dimensions
 └── routes/
-    ├── +layout.svelte      # Theme hydration + aurora background
-    ├── +page.svelte        # Main app shell
-    └── layout.css          # Theme variables, glass/aurora utilities
+    ├── +layout.svelte      # Theme hydration, aurora background, GPU detection
+    ├── +page.svelte        # Main tracker (summary + term navigator)
+    ├── plan/
+    │   └── +page.svelte    # Plan page (flowchart + GE checklist)
+    ├── export/
+    │   └── +page.svelte    # Export page (toggleable widgets, aspect ratios)
+    └── layout.css          # Theme variables, glass/aurora utilities, .no-gpu fallbacks
 ```
 
 ---
 
 ## Data & Privacy
 
-Nockr stores everything in your browser's `localStorage` under the key `nockr_state`. Your grades never leave your device. Clearing site data or using private/incognito mode will reset the app.
+Nockr uses no database and has no backend. All data is stored locally in your browser's `localStorage` under the key `nockr_state`. Nothing is transmitted anywhere.
 
-There is no sync, no backup, and no account system — intentionally. If you want to preserve your data, you may export your data via JSON file to have a local backup you can upload when your data is lost.
+Clearing your browser's site data or using private/incognito mode will reset the app. If you want to back up your data, use the JSON export option to save a local copy you can restore later.
 
 ---
 
-## Acknowledgements
+## Contributing
 
-Built for DLSU students, with functionality to support UP students and students from other universities through the custom calculator settings. The name comes from the *nock* — the notch at the end of an arrow where it meets the bowstring. Do not throw away your shot.
+Contributions are welcome. Please follow the conventions below for a consistent history.
+
+### Commit Convention
+
+Format: `<type>(<scope>): <subject>`
+
+The scope is optional but encouraged for larger codebases.
+
+```
+feat(plan): add drag-and-drop course reordering
+fix(scroll): correct sub-pixel edge snap in TermNavigator
+chore: update dependencies
+```
+
+#### Types
+
+| Type | When to use |
+|---|---|
+| `feat` | New feature or user-facing addition |
+| `fix` | Bug fix |
+| `refactor` | Code change with no behavior difference |
+| `style` | Formatting, whitespace, visual-only changes |
+| `chore` | Tooling, dependencies, config, non-src changes |
+| `docs` | README or documentation only |
+| `perf` | Performance improvement |
+| `test` | Adding or updating tests |
+
+#### Rules
+- Use the imperative mood in the subject: "add X", not "added X" or "adds X"
+- Keep the subject line under 72 characters
+- No period at the end of the subject line
+- If a commit needs more context, add a body after a blank line
+
+### Branching Convention
+
+Format: `<type>/<short-description>`
+
+```
+feat/unit-calculator
+fix/scroll-edge-snap
+refactor/share-canvas-theme-injection
+```
+
+#### Branch Types
+
+| Type | When to use |
+|---|---|
+| `feat` | New feature work |
+| `fix` | Bug fix |
+| `refactor` | Restructuring existing code |
+| `chore` | Tooling, config, dependency updates |
+| `docs` | Documentation only |
+
+#### Rules
+- Use kebab-case for the description
+- Keep it short — 2 to 4 words is enough
+- Branch off `main` for all work
+- Delete branches after merging
 
 ---
 
