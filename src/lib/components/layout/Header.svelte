@@ -10,16 +10,19 @@
 		Target,
 		Share2,
 		LayoutDashboard,
-		Calendar
+		Calendar,
+		FileSpreadsheet
 	} from 'lucide-svelte';
 	import SettingsSidebar from '$lib/components/settings/SettingsSidebar.svelte';
 	import ThemePicker from '$lib/components/settings/ThemePicker.svelte';
 	import MobileHeaderMenu from '$lib/components/layout/MobileHeaderMenu.svelte';
+	import ImportModal from '$lib/components/layout/ImportModal.svelte';
 	import { appStore } from '$lib/stores/appState';
 	import { cn } from '$lib/utils.js';
 
 	let settingsOpen = $state(false);
-	let fileInput = $state<HTMLInputElement | null>(null);
+	let importModalOpen = $state(false);
+	let fileInputEl = $state<HTMLInputElement | null>(null);
 
 	function exportState() {
 		const dataStr =
@@ -103,10 +106,10 @@
 
 	<!-- Quick Action Controls -->
 	<div class="flex items-center gap-1 sm:gap-1.5">
-		<ThemePicker />
-
 		<!-- Desktop Secondary Actions -->
 		<div class="hidden items-center gap-1 sm:flex">
+			<ThemePicker />
+
 			<Tooltip.Root>
 				<Tooltip.Trigger>
 					{#snippet child({ props })}
@@ -124,6 +127,27 @@
 				</Tooltip.Trigger>
 				<Tooltip.Content side="bottom">
 					<p>Export academic summary</p>
+				</Tooltip.Content>
+			</Tooltip.Root>
+
+			<!-- Archers.Hub Grade Import -->
+			<Tooltip.Root>
+				<Tooltip.Trigger>
+					{#snippet child({ props })}
+						<Button
+							{...props}
+							variant="ghost"
+							size="icon"
+							onclick={() => (importModalOpen = true)}
+							aria-label="Import Grades from Archers.Hub"
+							class="h-8 w-8 text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
+						>
+							<FileSpreadsheet size={16} />
+						</Button>
+					{/snippet}
+				</Tooltip.Trigger>
+				<Tooltip.Content side="bottom">
+					<p>Import grades (Archers.Hub)</p>
 				</Tooltip.Content>
 			</Tooltip.Root>
 
@@ -156,7 +180,7 @@
 							{...props}
 							variant="ghost"
 							size="icon"
-							onclick={() => fileInput?.click()}
+							onclick={() => fileInputEl?.click()}
 							aria-label="Import Backup"
 							class="h-8 w-8 text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
 						>
@@ -172,11 +196,12 @@
 
 		<!-- Mobile Overflow Dropdown -->
 		<div class="sm:hidden">
-			<MobileHeaderMenu onExportBackup={exportState} onImportBackup={() => fileInput?.click()} />
+			<MobileHeaderMenu
+				onImportGrades={() => (importModalOpen = true)}
+				onExportBackup={exportState}
+				onImportBackup={() => fileInputEl?.click()}
+			/>
 		</div>
-
-		<!-- Hidden file input for import -->
-		<input bind:this={fileInput} type="file" accept=".json" class="hidden" onchange={importState} />
 
 		<div class="mx-0.5 h-4 w-px bg-border/60 sm:mx-1"></div>
 
@@ -203,4 +228,6 @@
 	</div>
 </header>
 
+<input bind:this={fileInputEl} type="file" accept=".json" class="hidden" onchange={importState} />
 <SettingsSidebar bind:open={settingsOpen} />
+<ImportModal bind:open={importModalOpen} />
