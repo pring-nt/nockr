@@ -19,6 +19,7 @@
 		ZoomOut,
 		RotateCcw
 	} from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
 
 	let canvasEl = $state<HTMLElement | undefined>();
 	let isCapturing = $state(false);
@@ -146,8 +147,10 @@
 			const dataUrl = await captureCanvas(canvasEl, config);
 			const blob = await (await fetch(dataUrl)).blob();
 			await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+			toast.success('Image copied to clipboard');
 		} catch (err) {
 			console.error('Copy to clipboard failed:', err);
+			toast.error('Failed to copy email');
 		} finally {
 			isCapturing = false;
 		}

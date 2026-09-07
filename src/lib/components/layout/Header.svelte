@@ -5,55 +5,34 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import {
 		SlidersHorizontal,
-		Download,
-		Upload,
 		Target,
 		Share2,
 		LayoutDashboard,
 		Calendar,
-		FileSpreadsheet
+		CircleQuestionMark,
+		Info
 	} from 'lucide-svelte';
 	import SettingsSidebar from '$lib/components/settings/SettingsSidebar.svelte';
 	import ThemePicker from '$lib/components/settings/ThemePicker.svelte';
 	import MobileHeaderMenu from '$lib/components/layout/MobileHeaderMenu.svelte';
-	import ImportModal from '$lib/components/layout/ImportModal.svelte';
+	import GettingStartedModal from '$lib/components/layout/GettingStartedModal.svelte';
+	import AboutModal from '$lib/components/layout/AboutModal.svelte';
 	import { appStore } from '$lib/stores/appState';
 	import { cn } from '$lib/utils.js';
 
 	let settingsOpen = $state(false);
-	let importModalOpen = $state(false);
-	let fileInputEl = $state<HTMLInputElement | null>(null);
+	let gettingStartedOpen = $state(false);
+	let aboutOpen = $state(false);
 
-	function exportState() {
-		const dataStr =
-			'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify($appStore, null, 2));
-		const downloadAnchor = document.createElement('a');
-		downloadAnchor.setAttribute('href', dataStr);
-		downloadAnchor.setAttribute(
-			'download',
-			`nockr-backup-${new Date().toISOString().split('T')[0]}.json`
-		);
-		document.body.appendChild(downloadAnchor);
-		downloadAnchor.click();
-		downloadAnchor.remove();
-	}
-
-	function importState(event: Event) {
-		const target = event.target as HTMLInputElement;
-		const file = target.files?.[0];
-		if (!file) return;
-
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			try {
-				const parsed = JSON.parse(e.target?.result as string);
-				appStore.set(parsed);
-			} catch {
-				alert('Invalid JSON backup file.');
-			}
-		};
-		reader.readAsText(file);
-	}
+	$effect(() => {
+		if (!$appStore.ui.hasSeenOnboarding) {
+			gettingStartedOpen = true;
+			appStore.update((state) => ({
+				...state,
+				ui: { ...state.ui, hasSeenOnboarding: true }
+			}));
+		}
+	});
 </script>
 
 <header
@@ -130,7 +109,7 @@
 				</Tooltip.Content>
 			</Tooltip.Root>
 
-			<!-- Archers.Hub Grade Import -->
+			<!-- Getting Started -->
 			<Tooltip.Root>
 				<Tooltip.Trigger>
 					{#snippet child({ props })}
@@ -138,20 +117,20 @@
 							{...props}
 							variant="ghost"
 							size="icon"
-							onclick={() => (importModalOpen = true)}
-							aria-label="Import Grades from Archers.Hub"
+							onclick={() => (gettingStartedOpen = true)}
+							aria-label="Getting Started"
 							class="h-8 w-8 text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
 						>
-							<FileSpreadsheet size={16} />
+							<CircleQuestionMark size={16} />
 						</Button>
 					{/snippet}
 				</Tooltip.Trigger>
 				<Tooltip.Content side="bottom">
-					<p>Import grades (Archers.Hub)</p>
+					<p>Getting started</p>
 				</Tooltip.Content>
 			</Tooltip.Root>
 
-			<!-- Backup Export -->
+			<!-- About -->
 			<Tooltip.Root>
 				<Tooltip.Trigger>
 					{#snippet child({ props })}
@@ -159,47 +138,26 @@
 							{...props}
 							variant="ghost"
 							size="icon"
-							onclick={exportState}
-							aria-label="Export Backup"
+							onclick={() => (aboutOpen = true)}
+							aria-label="About Nockr"
 							class="h-8 w-8 text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
 						>
-							<Download size={16} />
+							<Info size={16} />
 						</Button>
 					{/snippet}
 				</Tooltip.Trigger>
 				<Tooltip.Content side="bottom">
-					<p>Export backup (JSON)</p>
-				</Tooltip.Content>
-			</Tooltip.Root>
-
-			<!-- Backup Import -->
-			<Tooltip.Root>
-				<Tooltip.Trigger>
-					{#snippet child({ props })}
-						<Button
-							{...props}
-							variant="ghost"
-							size="icon"
-							onclick={() => fileInputEl?.click()}
-							aria-label="Import Backup"
-							class="h-8 w-8 text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
-						>
-							<Upload size={16} />
-						</Button>
-					{/snippet}
-				</Tooltip.Trigger>
-				<Tooltip.Content side="bottom">
-					<p>Import backup (JSON)</p>
+					<p>About Nockr</p>
 				</Tooltip.Content>
 			</Tooltip.Root>
 		</div>
 
 		<!-- Mobile Overflow Dropdown -->
-		<div class="sm:hidden">
+		<div class="flex items-center gap-1 sm:hidden">
+			<ThemePicker />
 			<MobileHeaderMenu
-				onImportGrades={() => (importModalOpen = true)}
-				onExportBackup={exportState}
-				onImportBackup={() => fileInputEl?.click()}
+				onGettingStarted={() => (gettingStartedOpen = true)}
+				onAbout={() => (aboutOpen = true)}
 			/>
 		</div>
 
@@ -228,6 +186,6 @@
 	</div>
 </header>
 
-<input bind:this={fileInputEl} type="file" accept=".json" class="hidden" onchange={importState} />
 <SettingsSidebar bind:open={settingsOpen} />
-<ImportModal bind:open={importModalOpen} />
+<GettingStartedModal bind:open={gettingStartedOpen} />
+<AboutModal bind:open={aboutOpen} />

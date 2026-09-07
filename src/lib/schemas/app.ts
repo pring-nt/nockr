@@ -6,7 +6,8 @@ import { ThemeSettingsSchema } from './theme';
 
 export const UISettingsSchema = z.object({
 	cardViewMode: z.enum(['focus', 'grid']).default('focus'),
-	gePanelOpen: z.boolean().default(true)
+	gePanelOpen: z.boolean().default(true),
+	hasSeenOnboarding: z.boolean().default(false)
 });
 
 export const AppStateSchema = z.object({

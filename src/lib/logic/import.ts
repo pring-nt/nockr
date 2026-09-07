@@ -102,7 +102,7 @@ export async function parseGradeExport(file: File): Promise<ImportResult> {
 		if (!html.trim().toLowerCase().startsWith('<')) {
 			return {
 				status: 'error',
-				message: 'File does not appear to be a valid Archers.Hub grade export.'
+				message: 'File does not appear to be a valid ArchersHub grade export.'
 			};
 		}
 

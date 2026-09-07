@@ -13,8 +13,13 @@
 		Award,
 		GraduationCap,
 		Lock,
-		Copy
+		Copy,
+		Download,
+		Upload,
+		FileSpreadsheet,
+		Database
 	} from 'lucide-svelte';
+	import ImportModal from '$lib/components/settings/ImportModal.svelte';
 	import { appStore } from '$lib/stores/appState';
 	import { UNIVERSITY_PRESETS } from '$lib/constants';
 	import type { UniversitySettings, HonorTier, UniversityMode } from '$lib/schemas';
@@ -24,6 +29,8 @@
 	let settings = $derived($appStore.universitySettings);
 	let isPreset = $derived(settings.mode !== 'custom');
 	let selectedTemplate = $state<string>('');
+	let importModalOpen = $state(false);
+	let fileInputEl = $state<HTMLInputElement | null>(null);
 
 	const presetLabels: Record<string, string> = {
 		dlsu: 'DLSU (De La Salle University)',
@@ -35,6 +42,38 @@
 	let triggerLabel = $derived(
 		presetLabels[selectedTemplate] ?? 'Select preset to populate Custom...'
 	);
+
+	function exportState() {
+		const dataStr =
+			'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify($appStore, null, 2));
+		const downloadAnchor = document.createElement('a');
+		downloadAnchor.setAttribute('href', dataStr);
+		downloadAnchor.setAttribute(
+			'download',
+			`nockr-backup-${new Date().toISOString().split('T')[0]}.json`
+		);
+		document.body.appendChild(downloadAnchor);
+		downloadAnchor.click();
+		downloadAnchor.remove();
+	}
+
+	function importState(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			try {
+				const parsed = JSON.parse(e.target?.result as string);
+				appStore.set(parsed);
+				if (fileInputEl) fileInputEl.value = '';
+			} catch {
+				alert('Invalid JSON backup file.');
+			}
+		};
+		reader.readAsText(file);
+	}
 
 	function selectMode(mode: UniversityMode) {
 		appStore.update((state) => {
@@ -180,7 +219,7 @@
 				<div>
 					<Sheet.Title class="text-base font-semibold">University Settings</Sheet.Title>
 					<Sheet.Description class="text-xs">
-						Configure grading scale, Dean's List, and Latin Honors policies.
+						Configure grading scale, honor policies, and backup data.
 					</Sheet.Description>
 				</div>
 			</div>
@@ -612,6 +651,56 @@
 					</div>
 				{/if}
 			</div>
+
+			<!-- Data & Backup Management -->
+			<div class="space-y-3 rounded-xl bg-muted/30 p-3.5">
+				<div class="flex items-center gap-1.5 font-semibold text-foreground">
+					<Database size={15} class="text-primary" />
+					<span>Data & Backup</span>
+				</div>
+
+				<div class="space-y-2 border-t border-border/30 pt-2">
+					<p class="text-[11px] text-muted-foreground">
+						Import academic records or manage application backups.
+					</p>
+
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={() => (importModalOpen = true)}
+						class="h-9 w-full justify-start gap-2 bg-background px-3 text-xs font-normal"
+					>
+						<FileSpreadsheet size={14} class="text-primary" />
+						<span>Import Grades (ArchersHub)</span>
+					</Button>
+
+					<div class="grid grid-cols-2 gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={exportState}
+							class="h-9 justify-start gap-2 bg-background px-2.5 text-xs font-normal"
+						>
+							<Download size={14} class="text-muted-foreground" />
+							<span>Backup (JSON)</span>
+						</Button>
+
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={() => fileInputEl?.click()}
+							class="h-9 justify-start gap-2 bg-background px-2.5 text-xs font-normal"
+						>
+							<Upload size={14} class="text-muted-foreground" />
+							<span>Restore (JSON)</span>
+						</Button>
+					</div>
+				</div>
+			</div>
 		</div>
 	</Sheet.Content>
 </Sheet.Root>
+
+<input bind:this={fileInputEl} type="file" accept=".json" class="hidden" onchange={importState} />
+
+<ImportModal bind:open={importModalOpen} />

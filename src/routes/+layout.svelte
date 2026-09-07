@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { appStore } from '$lib/stores/appState';
 	import { applyTheme } from '$lib/themes';
 	import Header from '$lib/components/layout/Header.svelte';
@@ -81,6 +82,8 @@
 		})();
 	</script>
 </svelte:head>
+
+<Toaster />
 
 <Tooltip.Provider delayDuration={300} disableHoverableContent>
 	<div class="aurora-bg"></div>
