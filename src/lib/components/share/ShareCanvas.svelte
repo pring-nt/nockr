@@ -42,17 +42,17 @@
 	let activeCount = $derived((showSummary ? 1 : 0) + (showHeader ? 1 : 0) + (showCourses ? 1 : 0));
 
 	let styleString = $derived(
-			`width: ${dimensions.width}px; height: ${dimensions.height}px; ` +
+		`width: ${dimensions.width}px; height: ${dimensions.height}px; ` +
 			Object.entries(themeStyles)
-					.map(([k, v]) => `${k}:${v}`)
-					.join(';')
+				.map(([k, v]) => `${k}:${v}`)
+				.join(';')
 	);
 </script>
 
 <div
-		bind:this={canvasRef}
-		style={styleString}
-		class="relative flex flex-col justify-between overflow-hidden p-10 font-sans text-(--text) select-none
+	bind:this={canvasRef}
+	style={styleString}
+	class="relative flex flex-col justify-between overflow-hidden p-10 font-sans text-(--text) select-none
     {config.background === 'solid' ? 'bg-(--surface)' : ''}
     {config.background === 'theme' ? 'bg-(--base)' : ''}
     {config.background === 'transparent' ? 'bg-transparent' : ''}"
@@ -60,8 +60,8 @@
 	<!-- Ambient Core Gradient & Noise Texture for Theme Background Mode -->
 	{#if config.background === 'theme'}
 		<div
-				class="pointer-events-none absolute inset-0"
-				style="
+			class="pointer-events-none absolute inset-0"
+			style="
         background-image:
           radial-gradient(
             circle at 50% 35%,
@@ -82,8 +82,8 @@
       "
 		></div>
 		<svg
-				class="pointer-events-none absolute inset-0 size-full opacity-[0.04]"
-				xmlns="http://www.w3.org/2000/svg"
+			class="pointer-events-none absolute inset-0 size-full opacity-[0.04]"
+			xmlns="http://www.w3.org/2000/svg"
 		>
 			<filter id="shareCanvasNoiseFilter">
 				<feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
@@ -118,23 +118,23 @@
 						<div class="col-span-5 space-y-6">
 							{#if showSummary}
 								<SummaryWidget
-										maskGpa={config.privacy.maskGPA}
-										showHonors={config.widgets.latinHonorsBadge}
+									maskGpa={config.privacy.maskGPA}
+									showHonors={config.widgets.latinHonorsBadge}
 								/>
 							{/if}
 							{#if showHeader}
 								<TermHeaderWidget
-										{term}
-										maskGpa={config.privacy.maskGPA}
-										showDeansListBadge={config.widgets.deansListBadge}
+									{term}
+									maskGpa={config.privacy.maskGPA}
+									showDeansListBadge={config.widgets.deansListBadge}
 								/>
 							{/if}
 						</div>
 
 						<div class="col-span-7">
 							<CourseListWidget
-									courses={term?.courses ?? []}
-									gradeDisplay={config.privacy.courseGradeDisplay}
+								courses={term?.courses ?? []}
+								gradeDisplay={config.privacy.courseGradeDisplay}
 							/>
 						</div>
 					</div>
@@ -142,21 +142,21 @@
 					<div class="mx-auto w-full max-w-3xl space-y-6">
 						{#if showSummary}
 							<SummaryWidget
-									maskGpa={config.privacy.maskGPA}
-									showHonors={config.widgets.latinHonorsBadge}
+								maskGpa={config.privacy.maskGPA}
+								showHonors={config.widgets.latinHonorsBadge}
 							/>
 						{/if}
 						{#if showHeader}
 							<TermHeaderWidget
-									{term}
-									maskGpa={config.privacy.maskGPA}
-									showDeansListBadge={config.widgets.deansListBadge}
+								{term}
+								maskGpa={config.privacy.maskGPA}
+								showDeansListBadge={config.widgets.deansListBadge}
 							/>
 						{/if}
 						{#if showCourses}
 							<CourseListWidget
-									courses={term?.courses ?? []}
-									gradeDisplay={config.privacy.courseGradeDisplay}
+								courses={term?.courses ?? []}
+								gradeDisplay={config.privacy.courseGradeDisplay}
 							/>
 						{/if}
 					</div>
@@ -166,24 +166,24 @@
 					<div class="grid grid-cols-12 items-start gap-5">
 						<div class="col-span-6">
 							<SummaryWidget
-									maskGpa={config.privacy.maskGPA}
-									showHonors={config.widgets.latinHonorsBadge}
+								maskGpa={config.privacy.maskGPA}
+								showHonors={config.widgets.latinHonorsBadge}
 							/>
 						</div>
 						{#if showHeader}
 							<div class="col-span-6">
 								<TermHeaderWidget
-										{term}
-										maskGpa={config.privacy.maskGPA}
-										showDeansListBadge={config.widgets.deansListBadge}
+									{term}
+									maskGpa={config.privacy.maskGPA}
+									showDeansListBadge={config.widgets.deansListBadge}
 								/>
 							</div>
 						{/if}
 					</div>
 					{#if showCourses}
 						<CourseListWidget
-								courses={term?.courses ?? []}
-								gradeDisplay={config.privacy.courseGradeDisplay}
+							courses={term?.courses ?? []}
+							gradeDisplay={config.privacy.courseGradeDisplay}
 						/>
 					{/if}
 				</div>
@@ -191,21 +191,21 @@
 				<div class="mx-auto w-full max-w-3xl space-y-6">
 					{#if showSummary}
 						<SummaryWidget
-								maskGpa={config.privacy.maskGPA}
-								showHonors={config.widgets.latinHonorsBadge}
+							maskGpa={config.privacy.maskGPA}
+							showHonors={config.widgets.latinHonorsBadge}
 						/>
 					{/if}
 					{#if showHeader}
 						<TermHeaderWidget
-								{term}
-								maskGpa={config.privacy.maskGPA}
-								showDeansListBadge={config.widgets.deansListBadge}
+							{term}
+							maskGpa={config.privacy.maskGPA}
+							showDeansListBadge={config.widgets.deansListBadge}
 						/>
 					{/if}
 					{#if showCourses}
 						<CourseListWidget
-								courses={term?.courses ?? []}
-								gradeDisplay={config.privacy.courseGradeDisplay}
+							courses={term?.courses ?? []}
+							gradeDisplay={config.privacy.courseGradeDisplay}
 						/>
 					{/if}
 				</div>
@@ -213,21 +213,21 @@
 				<div class="mx-auto w-full max-w-2xl space-y-5">
 					{#if showSummary}
 						<SummaryWidget
-								maskGpa={config.privacy.maskGPA}
-								showHonors={config.widgets.latinHonorsBadge}
+							maskGpa={config.privacy.maskGPA}
+							showHonors={config.widgets.latinHonorsBadge}
 						/>
 					{/if}
 					{#if showHeader}
 						<TermHeaderWidget
-								{term}
-								maskGpa={config.privacy.maskGPA}
-								showDeansListBadge={config.widgets.deansListBadge}
+							{term}
+							maskGpa={config.privacy.maskGPA}
+							showDeansListBadge={config.widgets.deansListBadge}
 						/>
 					{/if}
 					{#if showCourses}
 						<CourseListWidget
-								courses={term?.courses ?? []}
-								gradeDisplay={config.privacy.courseGradeDisplay}
+							courses={term?.courses ?? []}
+							gradeDisplay={config.privacy.courseGradeDisplay}
 						/>
 					{/if}
 				</div>
@@ -238,7 +238,7 @@
 	<!-- Transparent Footer Watermark -->
 	{#if config.showWatermark ?? true}
 		<div
-				class="relative z-10 flex items-center justify-between text-xs font-medium text-(--subtle)/60"
+			class="relative z-10 flex items-center justify-between text-xs font-medium text-(--subtle)/60"
 		>
 			<span>Generated with Nockr</span>
 			<span class="font-mono">nockr.vercel.app</span>
