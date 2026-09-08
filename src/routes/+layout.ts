@@ -1,4 +1,10 @@
-import { dev } from '$app/environment';
+import { browser, dev } from '$app/environment';
 import { injectAnalytics } from '@vercel/analytics/sveltekit';
 
-injectAnalytics({ mode: dev ? 'development' : 'production' });
+if (browser) {
+	const isVercel = window.location.hostname.includes('vercel');
+
+	if (isVercel) {
+		injectAnalytics({ mode: dev ? 'development' : 'production' });
+	}
+}
