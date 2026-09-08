@@ -162,40 +162,65 @@ function createAppStore() {
 	// Persist synchronized state immediately to migrate legacy localStorage values
 	persist(initialState);
 
+	const { subscribe, set: internalSet, update: internalUpdate } = store;
+
+	// Multi-tab sync
+	if (typeof window !== 'undefined') {
+		window.addEventListener('storage', (e) => {
+			if (e.key !== STORAGE_KEY) return;
+
+			if (e.newValue === null) {
+				internalSet(buildFreshState());
+				return;
+			}
+
+			try {
+				const json = JSON.parse(e.newValue);
+				const parsed = AppStateSchema.safeParse(json);
+				if (parsed.success) {
+					internalSet({
+						...parsed.data,
+						universitySettings: syncUniversitySettings(parsed.data.universitySettings)
+					});
+				} else {
+					console.warn('[Nockr] Multi-tab sync payload invalid:', parsed.error);
+				}
+			} catch (error) {
+				console.error('[Nockr] Multi-tab sync parse failure:', error);
+			}
+		});
+	}
+
+	function set(value: AppState) {
+		persist(value);
+		internalSet(value);
+	}
+
+	function update(fn: (state: AppState) => AppState) {
+		internalUpdate((state) => {
+			const next = fn(state);
+			persist(next);
+			return next;
+		});
+	}
+
 	return {
-		subscribe: store.subscribe,
-
-		set(value: AppState) {
-			persist(value);
-			store.set(value);
-		},
-
-		update(fn: (state: AppState) => AppState) {
-			store.update((state) => {
-				const next = fn(state);
-				persist(next);
-				return next;
-			});
-		},
+		subscribe,
+		set,
+		update,
 
 		resetGEChecklist() {
-			store.update((state) => {
-				const next: AppState = {
-					...state,
-					geChecklist: DEFAULT_GE_LIST.map((item) => ({
-						...item,
-						completed: false
-					}))
-				};
-				persist(next);
-				return next;
-			});
+			update((state) => ({
+				...state,
+				geChecklist: DEFAULT_GE_LIST.map((item) => ({
+					...item,
+					completed: false
+				}))
+			}));
 		},
 
 		reset() {
-			const fresh = buildFreshState();
-			persist(fresh);
-			store.set(fresh);
+			set(buildFreshState());
 		}
 	};
 }
