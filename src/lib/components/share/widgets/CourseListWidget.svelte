@@ -11,9 +11,7 @@
 	} = $props();
 </script>
 
-<div
-	class="overflow-hidden rounded-3xl border border-border/50 bg-card/90 p-6 shadow-lg backdrop-blur-md"
->
+<div class="overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-lg">
 	<table class="w-full text-left">
 		<thead>
 			<tr class="border-b border-border/40 text-xs tracking-wider text-muted-foreground uppercase">

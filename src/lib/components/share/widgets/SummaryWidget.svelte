@@ -30,9 +30,7 @@
 	);
 </script>
 
-<div
-	class="space-y-6 rounded-3xl border border-border/50 bg-card/90 p-8 shadow-lg backdrop-blur-md"
->
+<div class="space-y-6 rounded-3xl border border-border bg-card p-8 shadow-lg">
 	<div class="grid grid-cols-3 items-start gap-4">
 		<!-- Cumulative GPA Column -->
 		<div class="min-w-0 space-y-2">
@@ -87,7 +85,7 @@
 			>
 		</div>
 
-		<div class="h-3 w-full overflow-hidden rounded-full bg-muted/50">
+		<div class="h-3 w-full overflow-hidden rounded-full bg-muted">
 			<div
 				class="h-full bg-primary transition-all duration-500 ease-out"
 				style="width: {progressPercent}%;"

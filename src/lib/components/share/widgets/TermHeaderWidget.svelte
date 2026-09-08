@@ -29,7 +29,7 @@
 </script>
 
 {#if term}
-	<div class="rounded-3xl border border-border/50 bg-card/90 p-7 shadow-lg backdrop-blur-md">
+	<div class="rounded-3xl border border-border bg-card p-7 shadow-lg">
 		<div class="flex items-start justify-between gap-4">
 			<div class="flex min-w-0 flex-1 flex-col gap-1">
 				<p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Term</p>

@@ -52,7 +52,7 @@
 <div
 	bind:this={canvasRef}
 	style={styleString}
-	class="relative flex flex-col justify-between overflow-hidden p-10 font-sans text-(--text) select-none
+	class="relative flex flex-col justify-center overflow-hidden p-10 font-sans text-(--text) select-none
     {config.background === 'solid' ? 'bg-(--surface)' : ''}
     {config.background === 'theme' ? 'bg-(--base)' : ''}
     {config.background === 'transparent' ? 'bg-transparent' : ''}"
@@ -92,20 +92,26 @@
 		</svg>
 	{/if}
 
-	<!-- Main Content Stack (Watermark + Widgets grouped together) -->
+	<!-- Main Content Stack -->
 	<div class="relative z-10 my-auto flex w-full flex-col gap-6">
-		<!-- Enlarged Watermark Logo Header -->
+		<!-- Integrated Header Watermark -->
 		{#if config.showWatermark ?? true}
-			<div class="flex flex-col items-center justify-center gap-1.5 text-center">
+			<div class="flex flex-col items-center justify-center gap-1.5 text-center drop-shadow-md">
 				<div class="flex items-center gap-3.5">
-					<div class="rounded-2xl bg-(--iris)/15 p-2.5 text-(--iris) shadow-sm">
+					<div class="rounded-2xl border border-(--iris)/30 bg-(--iris)/15 p-2.5 text-(--iris)">
 						<Target size={40} />
 					</div>
 					<h2 class="gradient-text text-5xl font-black tracking-wider">Nockr</h2>
 				</div>
-				<p class="text-xs font-bold tracking-widest text-(--subtle)/80 uppercase">
-					Academic Performance Tracker
-				</p>
+				<div
+					class="flex items-center gap-2 text-xs font-bold tracking-wider text-(--subtle) uppercase"
+				>
+					<span>Academic Performance Tracker</span>
+					<span class="opacity-50">•</span>
+					<span class="font-mono text-[11px] tracking-normal lowercase"
+						>nockr.nockr-app.workers.dev</span
+					>
+				</div>
 			</div>
 		{/if}
 
@@ -234,14 +240,4 @@
 			{/if}
 		</div>
 	</div>
-
-	<!-- Transparent Footer Watermark -->
-	{#if config.showWatermark ?? true}
-		<div
-			class="relative z-10 flex items-center justify-between text-xs font-medium text-(--subtle)/60"
-		>
-			<span>Generated with Nockr</span>
-			<span class="font-mono">nockr.vercel.app</span>
-		</div>
-	{/if}
 </div>
