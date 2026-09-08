@@ -25,3 +25,5 @@ vite.config.ts.timestamp-*
 # IDEs
 /.vscode
 /.idea
+
+worker-configuration.d.ts
