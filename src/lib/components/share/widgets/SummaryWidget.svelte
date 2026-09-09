@@ -14,7 +14,7 @@
 	} = $props();
 
 	let cgpa = $derived(computeCGPA($appStore.terms));
-	let unitsEarned = $derived(computeUnitsEarned($appStore.terms));
+	let unitsEarned = $derived(computeUnitsEarned($appStore.terms, $appStore.universitySettings));
 	let totalUnits = $derived($appStore.totalProgramUnits ?? 165);
 	let remainingUnits = $derived(Math.max(0, totalUnits - unitsEarned));
 	let progressPercent = $derived(

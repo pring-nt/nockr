@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Term } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
-	import { computeTGPA } from '$lib/logic/gpa';
+	import { computeTGPA, computeTermAttemptedUnits, computeTermUnitsEarned } from '$lib/logic/gpa';
 	import { getDeansListTier } from '$lib/logic/honors';
 	import { maskGpa as maskGpaFn } from '$lib/logic/share';
 	import { GraduationCap } from 'lucide-svelte';
@@ -16,15 +16,16 @@
 		showDeansListBadge?: boolean;
 	} = $props();
 
+	let settings = $derived($appStore.universitySettings);
 	let tgpa = $derived(term ? computeTGPA(term) : null);
 	let totalUnits = $derived(term ? term.courses.reduce((acc, c) => acc + (c.units || 0), 0) : 0);
+	let attemptedUnits = $derived(term ? computeTermAttemptedUnits(term) : 0);
+	let earnedUnits = $derived(term ? computeTermUnitsEarned(term, settings) : 0);
 
 	let formattedTgpa = $derived(tgpa === null ? '—' : maskGpa ? maskGpaFn(tgpa) : tgpa.toFixed(3));
 
 	let deansListTier = $derived(
-		showDeansListBadge && term && tgpa !== null
-			? getDeansListTier(term, tgpa, $appStore.universitySettings)
-			: null
+		showDeansListBadge && term && tgpa !== null ? getDeansListTier(term, tgpa, settings) : null
 	);
 </script>
 
@@ -35,12 +36,21 @@
 				<p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Term</p>
 				<div class="flex min-w-0 items-center gap-3">
 					<h3 class="truncate text-3xl font-black text-foreground">{term.name}</h3>
-					<span
-						class="inline-flex shrink-0 items-center rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 font-mono text-xs font-bold text-primary"
-					>
-						{totalUnits}
-						{totalUnits === 1 ? 'unit' : 'units'}
-					</span>
+					{#if attemptedUnits > 0 && earnedUnits < attemptedUnits}
+						<span
+							class="inline-flex shrink-0 items-center rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 font-mono text-xs font-bold text-primary"
+							title="{attemptedUnits - earnedUnits} units failed in this term"
+						>
+							{earnedUnits}/{totalUnits} earned
+						</span>
+					{:else}
+						<span
+							class="inline-flex shrink-0 items-center rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 font-mono text-xs font-bold text-primary"
+						>
+							{totalUnits}
+							{totalUnits === 1 ? 'unit' : 'units'}
+						</span>
+					{/if}
 				</div>
 			</div>
 

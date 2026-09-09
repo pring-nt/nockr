@@ -7,10 +7,10 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import LatinHonorsModal from '$lib/components/honors/LatinHonorsModal.svelte';
-	import UnitCalculatorModal from '$lib/components/summary/UnitCalculatorModal.svelte';
+	import UnitRunwayModal from '$lib/components/summary/UnitRunwayModal.svelte';
 
 	let cgpa = $derived(computeCGPA($appStore.terms));
-	let unitsEarned = $derived(computeUnitsEarned($appStore.terms));
+	let unitsEarned = $derived(computeUnitsEarned($appStore.terms, $appStore.universitySettings));
 	let totalProgramUnits = $derived($appStore.totalProgramUnits ?? 165);
 	let remainingUnits = $derived(Math.max(0, totalProgramUnits - unitsEarned));
 	let progressPercent = $derived(
@@ -237,4 +237,4 @@
 </Card>
 
 <LatinHonorsModal bind:open={honorsModalOpen} />
-<UnitCalculatorModal bind:open={unitCalcModalOpen} />
+<UnitRunwayModal bind:open={unitCalcModalOpen} />

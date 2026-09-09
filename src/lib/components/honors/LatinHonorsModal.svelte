@@ -2,7 +2,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Award, Sparkles, TriangleAlert, CircleCheck } from 'lucide-svelte';
 	import { appStore } from '$lib/stores/appState';
-	import { computeCGPA, computeUnitsEarned } from '$lib/logic/gpa';
+	import { computeCGPA, computeUnitsEarned, computeAttemptedUnits } from '$lib/logic/gpa';
 	import { matchTier, isNoFailDisqualified } from '$lib/logic/honors';
 
 	let { open = $bindable(false) }: { open: boolean } = $props();
@@ -12,7 +12,8 @@
 	let totalProgramUnits = $derived($appStore.totalProgramUnits);
 
 	let cgpa = $derived(computeCGPA(terms));
-	let unitsEarned = $derived(computeUnitsEarned(terms));
+	let attemptedUnits = $derived(computeAttemptedUnits(terms));
+	let unitsEarned = $derived(computeUnitsEarned(terms, settings));
 	let remainingUnits = $derived(Math.max(0, totalProgramUnits - unitsEarned));
 
 	let bestGrade = $derived(
@@ -21,9 +22,12 @@
 
 	let projectedCGPA = $derived.by(() => {
 		if (totalProgramUnits <= 0) return null;
-		const currentPoints = (cgpa ?? 0) * unitsEarned;
+		const currentQP = (cgpa ?? 0) * attemptedUnits;
 		const maxFuturePoints = remainingUnits * bestGrade;
-		return (currentPoints + maxFuturePoints) / totalProgramUnits;
+		const totalProjectedAttemptedUnits = attemptedUnits + remainingUnits;
+
+		if (totalProjectedAttemptedUnits <= 0) return null;
+		return (currentQP + maxFuturePoints) / totalProjectedAttemptedUnits;
 	});
 
 	let currentTier = $derived(cgpa !== null ? matchTier(cgpa, settings.latinHonorsTiers) : null);

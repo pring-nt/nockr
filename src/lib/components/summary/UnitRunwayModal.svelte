@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
 	import { calcAtGrade, generateGradeSteps, type GradeStepResult } from '$lib/logic/unitCalc';
+	import { isPassingGrade } from '$lib/logic/gpa';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Select from '$lib/components/ui/select';
 	import { Input } from '$lib/components/ui/input';
@@ -25,25 +26,35 @@
 	let settings = $derived($appStore.universitySettings);
 	let totalProgramUnits = $derived($appStore.totalProgramUnits ?? 165);
 
-	// Calculate current CGPA & units earned
+	// Calculate current CGPA, units earned, attempted units, and check for existing failing grades
 	let stats = $derived.by(() => {
+		let attempted = 0;
 		let earned = 0;
 		let points = 0;
+		let hasFailingGrade = false;
 
 		for (const term of $appStore.terms ?? []) {
 			for (const course of term.courses ?? []) {
 				if (course.grade !== null && course.grade !== undefined && course.units > 0) {
-					earned += course.units;
+					attempted += course.units;
 					points += course.units * course.grade;
+
+					if (isPassingGrade(course.grade, settings)) {
+						earned += course.units;
+					} else {
+						hasFailingGrade = true;
+					}
 				}
 			}
 		}
 
-		const cgpa = earned > 0 ? points / earned : 0;
+		const cgpa = attempted > 0 ? points / attempted : 0;
 		return {
 			cgpa: Math.round(cgpa * 1000) / 1000,
+			attemptedUnits: attempted,
 			unitsEarned: earned,
-			remainingUnits: Math.max(0, totalProgramUnits - earned)
+			remainingUnits: Math.max(0, totalProgramUnits - earned),
+			hasFailingGrade
 		};
 	});
 
@@ -80,6 +91,31 @@
 	let bestGrade = $derived(
 		settings?.gradeDirection === 'ascending' ? (settings?.gradeMax ?? 4) : (settings?.gradeMin ?? 1)
 	);
+
+	// Highest achievable CGPA assuming best grade for all remaining units
+	let maxPossibleCGPA = $derived.by<number | null>(() => {
+		if (!settings || stats.remainingUnits <= 0) return null;
+		const totalUnits = stats.attemptedUnits + stats.remainingUnits;
+		if (totalUnits === 0) return 0;
+		const currentPoints = stats.cgpa * stats.attemptedUnits;
+		const maxFuturePoints = stats.remainingUnits * bestGrade;
+		return (currentPoints + maxFuturePoints) / totalUnits;
+	});
+
+	// Overall reachability of the target CGPA
+	let isTargetReachable = $derived.by<boolean>(() => {
+		if (effectiveTargetCGPA === null || maxPossibleCGPA === null || !settings) return true;
+		return settings.gradeDirection === 'ascending'
+			? maxPossibleCGPA >= effectiveTargetCGPA - 0.0001
+			: maxPossibleCGPA <= effectiveTargetCGPA + 0.0001;
+	});
+
+	// Disqualification status: user already has a failing grade inside their completed transcript
+	let isDisqualifiedFromHonors = $derived.by<boolean>(() => {
+		return Boolean(
+			targetMode === 'honor' && settings?.latinHonorsNoFailPolicy && stats.hasFailingGrade
+		);
+	});
 
 	// Grade steps available for university
 	let gradeSteps = $derived(settings ? generateGradeSteps(settings) : []);
@@ -171,7 +207,10 @@
 			totalProgramUnits,
 			effectiveTargetCGPA,
 			selectedGradeStep,
-			settings
+			settings,
+			stats.attemptedUnits,
+			stats.hasFailingGrade,
+			targetMode === 'honor'
 		);
 	});
 </script>
@@ -314,14 +353,48 @@
 				{/if}
 			</div>
 
-			<!-- Grade Stepper Input & Outcome Card -->
+			<!-- Status Check 1: Missing or Invalid Target -->
 			{#if effectiveTargetCGPA === null}
 				<div
 					class="rounded-xl border border-border bg-muted/50 p-4 text-center text-xs text-muted-foreground"
 				>
 					Please enter a valid target CGPA to compute your unit runway.
 				</div>
+				<!-- Status Check 2: Pre-existing failing grade disqualification on current transcript -->
+			{:else if isDisqualifiedFromHonors}
+				<div
+					class="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-xs text-destructive"
+				>
+					<div class="flex items-center gap-2 font-bold">
+						<Ban class="size-4 shrink-0 text-destructive" />
+						<span>University Policy Disqualification</span>
+					</div>
+					<p class="mt-1.5 text-[11px] leading-relaxed opacity-90">
+						Your university enforces a No-Fail Policy for Latin Honors. Because your course history
+						contains a failing grade in a completed course, honors eligibility is revoked. Switch to <strong
+							>Custom Target</strong
+						> to calculate your unit runway for personal GPA goals.
+					</p>
+				</div>
+				<!-- Status Check 3: Target CGPA is mathematically unreachable even with perfect grades -->
+			{:else if !isTargetReachable}
+				<div
+					class="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-xs text-destructive"
+				>
+					<div class="flex items-center gap-2 font-bold">
+						<CircleX class="size-4 shrink-0 text-destructive" />
+						<span>Unreachable Target Threshold</span>
+					</div>
+					<p class="mt-1.5 text-[11px] leading-relaxed opacity-90">
+						Even if you score a perfect <strong>{bestGrade.toFixed(1)}</strong> for all remaining
+						<strong>{stats.remainingUnits} units</strong>, your maximum possible CGPA is
+						<strong class="font-mono">{maxPossibleCGPA?.toFixed(3)}</strong>, which falls short of
+						your target of
+						<strong class="font-mono">{effectiveTargetCGPA.toFixed(3)}</strong>.
+					</p>
+				</div>
 			{:else}
+				<!-- Grade Stepper Input & Outcome Card -->
 				<div class="space-y-3 pt-1">
 					<div class="flex flex-col justify-between gap-0.5 sm:flex-row sm:items-center">
 						<Label class="text-xs font-bold text-foreground">Select Course Grade</Label>
@@ -387,7 +460,7 @@
 								>
 									<div class="flex items-center gap-2 font-bold">
 										<CircleCheck class="size-4 shrink-0 text-primary" />
-										<span>Fully Safe Target</span>
+										<span>Fully Safe Grade</span>
 									</div>
 									<p class="mt-1 text-[11px] opacity-90">
 										Taking <strong>all remaining {stats.remainingUnits} units</strong> at grade
@@ -435,13 +508,15 @@
 									class="rounded-lg border border-border/60 bg-muted/40 p-3 text-xs text-muted-foreground"
 								>
 									<div class="flex items-center gap-2 font-semibold text-foreground">
-										<CircleX class="size-4 shrink-0" />
-										<span>Unreachable Threshold</span>
+										<CircleX class="size-4 shrink-0 text-muted-foreground" />
+										<span>Insufficient Grade for Target</span>
 									</div>
-									<p class="mt-1 text-[11px]">
-										Even if you score perfect <strong>{bestGrade.toFixed(1)}</strong> for all
-										remaining units, your target CGPA of
-										<strong>{effectiveTargetCGPA.toFixed(3)}</strong> cannot be reached.
+									<p class="mt-1 text-[11px] leading-relaxed">
+										Taking courses at <strong>{selectedGradeStep.toFixed(2)}</strong> lowers your
+										GPA too much. Even if you score a perfect
+										<strong>{bestGrade.toFixed(1)}</strong>
+										in all other remaining units, you cannot reach your target CGPA of
+										<strong>{effectiveTargetCGPA.toFixed(3)}</strong>.
 									</p>
 								</div>
 							{:else if selectedStepResult.status === 'disqualified'}
@@ -449,10 +524,10 @@
 									class="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
 								>
 									<div class="flex items-center gap-2 font-bold">
-										<Ban class="size-4 shrink-0" />
+										<Ban class="size-4 shrink-0 text-destructive" />
 										<span>University Policy Disqualification</span>
 									</div>
-									<p class="mt-1 text-[11px] opacity-90">
+									<p class="mt-1 text-[11px] leading-relaxed opacity-90">
 										Your university enforces a No-Fail Policy for Latin Honors. Taking a grade of <strong
 											>{selectedGradeStep.toFixed(2)}</strong
 										> automatically revokes honors eligibility.

@@ -1,4 +1,5 @@
 import type { UniversitySettings, HonorTier } from '$lib/schemas';
+import { isPassingGrade } from './gpa';
 
 export type GradeStepResult =
 	| { status: 'ok'; maxUnits: number; remainingAtBest: number; projectedCGPA: number }
@@ -38,14 +39,12 @@ export function generateGradeSteps(settings: UniversitySettings): number[] {
 	const steps: number[] = [];
 
 	if (gradeDirection === 'ascending') {
-		// Best = gradeMax (e.g. 4.0), worst = gradeMin (e.g. 0.0)
 		let g = round(gradeMax);
 		while (g >= gradeMin - 0.0001) {
 			steps.push(round(g));
 			g = round(g - gradeStep);
 		}
 	} else {
-		// Best = gradeMin (e.g. 1.0), worst = gradeMax (e.g. 5.0)
 		let g = round(gradeMin);
 		while (g <= gradeMax + 0.0001) {
 			steps.push(round(g));
@@ -53,8 +52,11 @@ export function generateGradeSteps(settings: UniversitySettings): number[] {
 		}
 	}
 
-	// Append failing grade if it exists and isn't already in the steps
-	if (failingGrade !== null && !steps.some((s) => Math.abs(s - failingGrade) < 0.0001)) {
+	if (
+		failingGrade !== null &&
+		failingGrade !== undefined &&
+		!steps.some((s) => Math.abs(s - failingGrade) < 0.0001)
+	) {
 		steps.push(failingGrade);
 	}
 
@@ -67,48 +69,62 @@ export function calcAtGrade(
 	totalUnits: number,
 	targetCGPA: number,
 	targetGrade: number,
-	settings: UniversitySettings
+	settings: UniversitySettings,
+	attemptedUnits: number = unitsEarned,
+	hasFailingGrade: boolean = false,
+	isHonorTarget: boolean = false
 ): GradeStepResult {
-	const remaining = totalUnits - unitsEarned;
+	const remaining = Math.max(0, totalUnits - unitsEarned);
 	if (remaining <= 0) return { status: 'complete' };
 
 	const isAscending = settings.gradeDirection === 'ascending';
 	const bestGrade = isAscending ? settings.gradeMax : settings.gradeMin;
 
-	const isFailing =
-		settings.failingGrade !== null && Math.abs(targetGrade - settings.failingGrade) < 0.0001;
+	// Determines if the grade being tested is a failing grade under university rules
+	const isTestingFailing =
+		!isPassingGrade(targetGrade, settings) ||
+		(settings.failingGrade !== null &&
+			settings.failingGrade !== undefined &&
+			Math.abs(targetGrade - settings.failingGrade) < 0.0001);
 
-	if (isFailing && settings.latinHonorsNoFailPolicy) {
-		return { status: 'disqualified' };
+	// Latin Honors No-Fail Policy Disqualification Check:
+	if (isHonorTarget && settings.latinHonorsNoFailPolicy) {
+		if (hasFailingGrade || isTestingFailing) {
+			return { status: 'disqualified' };
+		}
 	}
 
-	const currentPoints = cgpa * unitsEarned;
+	const currentPoints = cgpa * attemptedUnits;
+	const finalTotalAttempted = attemptedUnits + remaining;
 
 	const meetsTarget = (projected: number) =>
 		isAscending ? projected >= targetCGPA - 0.0001 : projected <= targetCGPA + 0.0001;
 
-	// 1. Check best-case scenario (all remaining units at bestGrade)
-	const bestCaseCGPA = (currentPoints + remaining * bestGrade) / totalUnits;
+	// 1. Check if overall target CGPA is mathematically achievable even with top grades
+	const bestCaseCGPA = (currentPoints + remaining * bestGrade) / finalTotalAttempted;
 	if (!meetsTarget(bestCaseCGPA)) {
 		return { status: 'impossible' };
 	}
 
-	// 2. Check all-target scenario (all remaining units at targetGrade)
-	const targetAllCGPA = (currentPoints + remaining * targetGrade) / totalUnits;
+	// 2. Check if all remaining units at targetGrade satisfies the target
+	const targetAllCGPA = (currentPoints + remaining * targetGrade) / finalTotalAttempted;
 	if (meetsTarget(targetAllCGPA)) {
 		return { status: 'already', projectedCGPA: round3(targetAllCGPA) };
 	}
 
+	if (Math.abs(targetGrade - bestGrade) < 1e-8) {
+		return { status: 'already', projectedCGPA: round3(targetAllCGPA) };
+	}
+
 	// 3. Solve for x units at targetGrade, (remaining - x) units at bestGrade
-	const neededPoints = targetCGPA * totalUnits;
+	const neededPoints = targetCGPA * finalTotalAttempted;
 	const remainingPoints = neededPoints - currentPoints;
 	const x = (remainingPoints - remaining * bestGrade) / (targetGrade - bestGrade);
 
-	// Use epsilon tolerance to avoid floating-point rounding bugs (e.g. 11.99999 -> 11)
 	const maxUnits = Math.min(remaining, Math.max(0, Math.floor(x + 1e-8)));
 	const remainingAtBest = remaining - maxUnits;
 	const projectedCGPA = round3(
-		(currentPoints + maxUnits * targetGrade + remainingAtBest * bestGrade) / totalUnits
+		(currentPoints + maxUnits * targetGrade + remainingAtBest * bestGrade) / finalTotalAttempted
 	);
 
 	return { status: 'ok', maxUnits, remainingAtBest, projectedCGPA };
@@ -119,11 +135,14 @@ export function calcUnitTable(
 	unitsEarned: number,
 	totalUnits: number,
 	target: HonorTier | number,
-	settings: UniversitySettings
+	settings: UniversitySettings,
+	attemptedUnits: number = unitsEarned,
+	hasFailingGrade: boolean = false
 ): UnitCalcOutput {
-	const remaining = totalUnits - unitsEarned;
+	const remaining = Math.max(0, totalUnits - unitsEarned);
 	const bestGrade = settings.gradeDirection === 'ascending' ? settings.gradeMax : settings.gradeMin;
 
+	const isHonorTarget = typeof target !== 'number';
 	const targetCGPA =
 		typeof target === 'number'
 			? target
@@ -136,8 +155,22 @@ export function calcUnitTable(
 
 	const rows: GradeStepRow[] = steps.map((grade) => ({
 		grade,
-		isFailing: settings.failingGrade !== null && Math.abs(grade - settings.failingGrade) < 0.0001,
-		result: calcAtGrade(cgpa, unitsEarned, totalUnits, targetCGPA, grade, settings)
+		isFailing:
+			!isPassingGrade(grade, settings) ||
+			(settings.failingGrade !== null &&
+				settings.failingGrade !== undefined &&
+				Math.abs(grade - settings.failingGrade) < 0.0001),
+		result: calcAtGrade(
+			cgpa,
+			unitsEarned,
+			totalUnits,
+			targetCGPA,
+			grade,
+			settings,
+			attemptedUnits,
+			hasFailingGrade,
+			isHonorTarget
+		)
 	}));
 
 	return {

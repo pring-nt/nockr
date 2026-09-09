@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Term } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
-	import { computeTGPA } from '$lib/logic/gpa';
+	import { computeTGPA, computeTermAttemptedUnits, computeTermUnitsEarned } from '$lib/logic/gpa';
 	import { getDeansListTier } from '$lib/logic/honors';
 	import { Plus, Trash2, GraduationCap, Share2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -20,9 +20,12 @@
 		onRename: (name: string) => void;
 	} = $props();
 
+	let settings = $derived($appStore.universitySettings);
 	let tgpa = $derived(computeTGPA(term));
 	let totalUnits = $derived(term.courses.reduce((acc, c) => acc + (c.units || 0), 0));
-	let deansListTier = $derived(getDeansListTier(term, tgpa, $appStore.universitySettings));
+	let attemptedUnits = $derived(computeTermAttemptedUnits(term));
+	let earnedUnits = $derived(computeTermUnitsEarned(term, settings));
+	let deansListTier = $derived(getDeansListTier(term, tgpa, settings));
 
 	let isEditing = $state(false);
 	let editName = $state('');
@@ -134,12 +137,21 @@
 						</Tooltip.Root>
 					{/if}
 
-					<span
-						class="inline-flex shrink-0 items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
-					>
-						{totalUnits}
-						{totalUnits === 1 ? 'unit' : 'units'}
-					</span>
+					{#if attemptedUnits > 0 && earnedUnits < attemptedUnits}
+						<span
+							class="inline-flex shrink-0 items-center rounded-md border border-destructive/30 bg-destructive/10 px-2 py-0.5 font-mono text-[11px] font-bold text-destructive"
+							title="{attemptedUnits - earnedUnits} units failed in this term"
+						>
+							{earnedUnits}/{totalUnits} earned
+						</span>
+					{:else}
+						<span
+							class="inline-flex shrink-0 items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
+						>
+							{totalUnits}
+							{totalUnits === 1 ? 'unit' : 'units'}
+						</span>
+					{/if}
 				</div>
 
 				{#if deansListTier}

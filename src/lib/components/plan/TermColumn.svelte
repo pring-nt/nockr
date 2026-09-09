@@ -4,7 +4,7 @@
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, type DndEvent } from 'svelte-dnd-action';
 	import { appStore } from '$lib/stores/appState';
 	import type { Term, Course } from '$lib/schemas';
-	import { computeTGPA } from '$lib/logic/gpa';
+	import { computeTGPA, computeTermAttemptedUnits, computeTermUnitsEarned } from '$lib/logic/gpa';
 	import CourseCard from '$lib/components/plan/CourseCard.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
@@ -13,6 +13,7 @@
 
 	let { term }: { term: Term } = $props();
 
+	let settings = $derived($appStore.universitySettings);
 	let localCourses = $state<Course[]>(untrack(() => [...term.courses]));
 	let isEditingTerm = $state(false);
 	let termNameEdit = $state(untrack(() => term.name));
@@ -29,6 +30,8 @@
 
 	let tgpa = $derived(computeTGPA(term));
 	let totalUnits = $derived(term.courses.reduce((acc, c) => acc + c.units, 0));
+	let attemptedUnits = $derived(computeTermAttemptedUnits(term));
+	let earnedUnits = $derived(computeTermUnitsEarned(term, settings));
 
 	function isShadowItem(item: Course): boolean {
 		return Boolean((item as Record<string, unknown>)[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
@@ -189,12 +192,21 @@
 
 		<!-- Prominent Stats Badges -->
 		<div class="mt-2 flex items-center gap-1.5">
-			<span
-				class="inline-flex items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
-			>
-				{totalUnits}
-				{totalUnits === 1 ? 'unit' : 'units'}
-			</span>
+			{#if attemptedUnits > 0 && earnedUnits < attemptedUnits}
+				<span
+					class="inline-flex items-center rounded-md border border-destructive/30 bg-destructive/10 px-2 py-0.5 font-mono text-[11px] font-bold text-destructive"
+					title="{attemptedUnits - earnedUnits} units failed in this term"
+				>
+					{earnedUnits}/{totalUnits} earned
+				</span>
+			{:else}
+				<span
+					class="inline-flex items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
+				>
+					{totalUnits}
+					{totalUnits === 1 ? 'unit' : 'units'}
+				</span>
+			{/if}
 
 			{#if tgpa !== null}
 				<span
