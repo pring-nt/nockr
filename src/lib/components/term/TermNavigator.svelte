@@ -7,13 +7,9 @@
 	import { fly } from 'svelte/transition';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { smoothScroll } from '$lib/actions/smoothScroll';
 
 	let viewMode = $derived($appStore.ui?.cardViewMode ?? 'focus');
-	let pillsNavRef = $state<HTMLElement | null>(null);
-
-	let targetScrollLeft = 0;
-	let animationFrameId: number | null = null;
-	let lastTime: number | null = null;
 
 	function setViewMode(mode: 'focus' | 'grid') {
 		appStore.update((state) => ({
@@ -139,64 +135,6 @@
 	function switchToGrid() {
 		setViewMode('grid');
 	}
-
-	function stepScroll(timestamp: number) {
-		if (!pillsNavRef) {
-			animationFrameId = null;
-			lastTime = null;
-			return;
-		}
-
-		if (lastTime === null) lastTime = timestamp;
-		const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
-		lastTime = timestamp;
-
-		const current = pillsNavRef.scrollLeft;
-		const diff = targetScrollLeft - current;
-
-		if (Math.abs(diff) < 0.5) {
-			pillsNavRef.scrollLeft = targetScrollLeft;
-			animationFrameId = null;
-			lastTime = null;
-			return;
-		}
-
-		const lerp = 1 - Math.exp(-20 * dt);
-		const intended = current + diff * lerp;
-		pillsNavRef.scrollLeft = intended;
-
-		if (Math.abs(pillsNavRef.scrollLeft - intended) > 0.5) {
-			targetScrollLeft = pillsNavRef.scrollLeft;
-			animationFrameId = null;
-			lastTime = null;
-			return;
-		}
-
-		animationFrameId = requestAnimationFrame(stepScroll);
-	}
-
-	function handleWheelScroll(e: WheelEvent) {
-		if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-		if (e.deltaY === 0) return;
-
-		const container = e.currentTarget as HTMLElement;
-		e.preventDefault();
-
-		let delta = e.deltaY;
-		if (e.deltaMode === 1) delta *= 16;
-		else if (e.deltaMode === 2) delta *= container.clientWidth;
-
-		if (animationFrameId === null) {
-			targetScrollLeft = container.scrollLeft;
-		}
-
-		targetScrollLeft = targetScrollLeft + delta;
-
-		if (animationFrameId === null) {
-			lastTime = null;
-			animationFrameId = requestAnimationFrame(stepScroll);
-		}
-	}
 </script>
 
 {#if $appStore.terms.length === 0}
@@ -221,8 +159,7 @@
 	<!-- Pill Nav + View Toggle -->
 	<div class="flex flex-col justify-between gap-4 pt-2 sm:flex-row sm:items-center">
 		<div
-			bind:this={pillsNavRef}
-			onwheel={handleWheelScroll}
+			use:smoothScroll
 			class="flex flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent items-center gap-2 overflow-x-auto overscroll-x-contain pb-2"
 		>
 			{#each $appStore.terms as term (term.id)}

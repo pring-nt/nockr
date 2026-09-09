@@ -4,80 +4,9 @@
 	import TermColumn from '$lib/components/plan/TermColumn.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Plus } from 'lucide-svelte';
+	import { smoothScroll, type SmoothScrollController } from '$lib/actions/smoothScroll';
 
-	let mainRef = $state<HTMLElement | null>(null);
-
-	let targetScrollLeft = 0;
-	let animationFrameId: number | null = null;
-	let lastTime: number | null = null;
-
-	function stepScroll(timestamp: number) {
-		if (!mainRef) {
-			animationFrameId = null;
-			lastTime = null;
-			return;
-		}
-
-		if (lastTime === null) lastTime = timestamp;
-		const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
-		lastTime = timestamp;
-
-		const current = mainRef.scrollLeft;
-		const diff = targetScrollLeft - current;
-
-		if (Math.abs(diff) < 0.5) {
-			mainRef.scrollLeft = targetScrollLeft;
-			animationFrameId = null;
-			lastTime = null;
-			return;
-		}
-
-		const lerp = 1 - Math.exp(-20 * dt);
-		const intended = current + diff * lerp;
-		mainRef.scrollLeft = intended;
-
-		if (Math.abs(mainRef.scrollLeft - intended) > 0.5) {
-			targetScrollLeft = mainRef.scrollLeft;
-			animationFrameId = null;
-			lastTime = null;
-			return;
-		}
-
-		animationFrameId = requestAnimationFrame(stepScroll);
-	}
-
-	function handleWheelScroll(e: WheelEvent) {
-		if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-		if (e.deltaY === 0) return;
-
-		const container = e.currentTarget as HTMLElement;
-
-		let target = e.target as HTMLElement | null;
-		while (target && target !== container) {
-			if (target.scrollHeight > target.clientHeight) {
-				const overflowY = getComputedStyle(target).overflowY;
-				if (overflowY === 'auto' || overflowY === 'scroll') return;
-			}
-			target = target.parentElement;
-		}
-
-		e.preventDefault();
-
-		let delta = e.deltaY;
-		if (e.deltaMode === 1) delta *= 16;
-		else if (e.deltaMode === 2) delta *= container.clientWidth;
-
-		if (animationFrameId === null) {
-			targetScrollLeft = container.scrollLeft;
-		}
-
-		targetScrollLeft = targetScrollLeft + delta;
-
-		if (animationFrameId === null) {
-			lastTime = null;
-			animationFrameId = requestAnimationFrame(stepScroll);
-		}
-	}
+	let scroller: SmoothScrollController | null = null;
 
 	async function addTerm() {
 		const newId = crypto.randomUUID();
@@ -94,19 +23,12 @@
 		}));
 
 		await tick();
-		if (mainRef) {
-			targetScrollLeft = mainRef.scrollWidth;
-			if (animationFrameId === null) {
-				lastTime = null;
-				animationFrameId = requestAnimationFrame(stepScroll);
-			}
-		}
+		scroller?.scrollTo(Infinity);
 	}
 </script>
 
 <main
-	bind:this={mainRef}
-	onwheel={handleWheelScroll}
+	use:smoothScroll={(c) => (scroller = c)}
 	class="flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain p-3 sm:p-6"
 >
 	<div class="flex h-full gap-3 sm:gap-4" style="width: max-content">
