@@ -23,7 +23,9 @@
 		}));
 
 		await tick();
-		scroller?.scrollTo(Infinity);
+		requestAnimationFrame(() => {
+			scroller?.scrollTo(Infinity);
+		});
 	}
 </script>
 

@@ -16,7 +16,8 @@ export function smoothScroll(
 
 	function handleNativeScroll() {
 		if (animationFrameId === null) {
-			targetScrollLeft = node.scrollLeft;
+			const maxScroll = getMaxScroll();
+			targetScrollLeft = Math.max(0, Math.min(maxScroll, node.scrollLeft));
 		}
 	}
 
@@ -28,19 +29,22 @@ export function smoothScroll(
 		const current = node.scrollLeft;
 		const maxScroll = getMaxScroll();
 
-		// Dynamically clamp target to current DOM bounds so macOS rubber-banding never locks target position
 		const boundedTarget = Math.max(0, Math.min(maxScroll, targetScrollLeft));
 		const diff = boundedTarget - current;
 
 		if (Math.abs(diff) < 0.5) {
-			node.scrollLeft = boundedTarget;
+			if (maxScroll > 0 && targetScrollLeft >= maxScroll - 2) {
+				node.scrollLeft = node.scrollWidth;
+			} else {
+				node.scrollLeft = boundedTarget;
+			}
+
 			targetScrollLeft = node.scrollLeft;
 			animationFrameId = null;
 			lastTime = null;
 			return;
 		}
 
-		// Smooth decay constant (~250ms transition)
 		const lerp = 1 - Math.exp(-14 * dt);
 		node.scrollLeft = current + diff * lerp;
 
@@ -66,12 +70,12 @@ export function smoothScroll(
 		if (e.deltaMode === 1) delta *= 16;
 		else if (e.deltaMode === 2) delta *= node.clientWidth;
 
+		const maxScroll = getMaxScroll();
+
 		if (animationFrameId === null) {
-			targetScrollLeft = node.scrollLeft;
+			targetScrollLeft = Math.max(0, Math.min(maxScroll, node.scrollLeft));
 		}
 
-		const maxScroll = getMaxScroll();
-		// Clamping on wheel prevents accumulation of thousands of overflow pixels into macOS rubber-band space
 		targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + delta));
 
 		if (animationFrameId === null) {
@@ -81,8 +85,7 @@ export function smoothScroll(
 	}
 
 	function scrollTo(position: number) {
-		const maxScroll = getMaxScroll();
-		targetScrollLeft = Math.max(0, Math.min(maxScroll, position));
+		targetScrollLeft = position;
 
 		if (animationFrameId === null) {
 			lastTime = null;
