@@ -9,11 +9,11 @@ interface RawRow {
 	term: string;
 	courseCode: string;
 	credits: number;
-	grade: number;
+	grade: number | null;
 	status: string;
 }
 
-const INCLUDE_STATUSES = ['passed'];
+const INCLUDE_STATUSES = ['passed', 'failed', 'registered'];
 
 function parseGrade(raw: string): number | null {
 	const cleaned = raw.trim().replace(/^'+/, '').replace(/'+$/, '');
@@ -51,7 +51,6 @@ function parseHTMLTable(html: string): RawRow[] {
 		const status = statusRaw.trim().toLowerCase();
 		const credits = parseFloat(creditsRaw);
 
-		// Only completed graded courses
 		if (!INCLUDE_STATUSES.includes(status)) return [];
 
 		// Skip 0-credit courses (SAS, LASARE, NSTP orientations)
@@ -61,10 +60,17 @@ function parseHTMLTable(html: string): RawRow[] {
 		// counted toward GPA per DLSU policy
 		if (courseCode.trim().startsWith('LCLS')) return [];
 
-		const grade = parseGrade(gradesRaw);
+		let grade: number | null = null;
 
-		// Skip pass/fail courses with no numeric grade (PASSED, E, INC etc.)
-		if (grade === null) return [];
+		if (status === 'passed') {
+			grade = parseGrade(gradesRaw);
+			// Skip pass/fail courses with no numeric grade (PASSED, E, INC, etc.)
+			if (grade === null) return [];
+		} else if (status === 'failed') {
+			grade = parseGrade(gradesRaw) ?? 0;
+		} else if (status === 'registered') {
+			grade = null;
+		}
 
 		return [
 			{
@@ -112,19 +118,22 @@ export async function parseGradeExport(file: File): Promise<ImportResult> {
 		if (rows.length === 0) {
 			return {
 				status: 'empty',
-				message: 'No graded courses found. Make sure you exported from Core Courses.'
+				message: 'No courses found. Make sure you exported from Core Courses.'
 			};
 		}
 
-		// Group by original term name for sorting purposes only
+		// Separate completed (passed & failed) courses from registered courses
+		const completedRows = rows.filter((r) => r.status !== 'registered');
+		const registeredRows = rows.filter((r) => r.status === 'registered');
+
+		// Group completed courses by original term name
 		const termMap = new Map<string, RawRow[]>();
-		for (const row of rows) {
+		for (const row of completedRows) {
 			if (!termMap.has(row.term)) termMap.set(row.term, []);
 			termMap.get(row.term)!.push(row);
 		}
 
-		// Sort by trimester number extracted from the original name,
-		// then rename sequentially to 'Term 1', 'Term 2', etc.
+		// Sort and label completed terms
 		const terms: Term[] = Array.from(termMap.entries())
 			.sort(([a], [b]) => extractTrimesterNumber(a) - extractTrimesterNumber(b))
 			.map(([, termRows], index) => ({
@@ -137,6 +146,20 @@ export async function parseGradeExport(file: File): Promise<ImportResult> {
 					grade: r.grade
 				}))
 			}));
+
+		// Append registered courses in their own sequential term with blank (null) grades
+		if (registeredRows.length > 0) {
+			terms.push({
+				id: crypto.randomUUID(),
+				name: `Term ${terms.length + 1}`,
+				courses: registeredRows.map((r): Course => ({
+					id: crypto.randomUUID(),
+					name: r.courseCode,
+					units: r.credits,
+					grade: null
+				}))
+			});
+		}
 
 		return { status: 'ok', terms };
 	} catch (err) {
