@@ -9,6 +9,7 @@ export function smoothScroll(
 	let targetScrollLeft = node.scrollLeft;
 	let animationFrameId: number | null = null;
 	let lastTime: number | null = null;
+	let stalledFrames = 0;
 
 	function getMaxScroll(): number {
 		return Math.max(0, node.scrollWidth - node.clientWidth);
@@ -42,11 +43,27 @@ export function smoothScroll(
 			targetScrollLeft = node.scrollLeft;
 			animationFrameId = null;
 			lastTime = null;
+			stalledFrames = 0;
 			return;
 		}
 
 		const lerp = 1 - Math.exp(-14 * dt);
-		node.scrollLeft = current + diff * lerp;
+		const intendedDelta = diff * lerp;
+		node.scrollLeft = current + intendedDelta;
+		const actualDelta = node.scrollLeft - current;
+
+		if (Math.abs(actualDelta) < Math.abs(intendedDelta) * 0.5) {
+			stalledFrames++;
+			if (stalledFrames >= 3) {
+				targetScrollLeft = node.scrollLeft;
+				animationFrameId = null;
+				lastTime = null;
+				stalledFrames = 0;
+				return;
+			}
+		} else {
+			stalledFrames = 0;
+		}
 
 		animationFrameId = requestAnimationFrame(stepScroll);
 	}
