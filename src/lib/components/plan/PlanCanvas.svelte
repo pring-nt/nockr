@@ -95,10 +95,11 @@
 
 		await tick();
 		if (mainRef) {
-			mainRef.scrollTo({
-				left: mainRef.scrollWidth,
-				behavior: 'smooth'
-			});
+			targetScrollLeft = mainRef.scrollWidth;
+			if (animationFrameId === null) {
+				lastTime = null;
+				animationFrameId = requestAnimationFrame(stepScroll);
+			}
 		}
 	}
 </script>
