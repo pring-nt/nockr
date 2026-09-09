@@ -6,7 +6,7 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { appStore } from '$lib/stores/appState';
+	import { themeStore } from '$lib/stores/themeState';
 	import { THEMES } from '$lib/themes';
 	import type { ThemeName, CustomTheme } from '$lib/schemas';
 
@@ -16,7 +16,7 @@
 	const presetThemes = THEMES.filter((theme) => theme.name !== 'custom');
 
 	let customColors: CustomTheme = $state(
-		$appStore.theme.custom ?? {
+		$themeStore.custom ?? {
 			base: '#191724',
 			surface: '#1f1d2e',
 			overlay: '#26233a',
@@ -103,14 +103,14 @@
 	];
 
 	function selectPreset(themeName: ThemeName) {
-		$appStore.theme = {
-			...$appStore.theme,
+		$themeStore = {
+			...$themeStore,
 			active: themeName
 		};
 	}
 
 	function applyCustomTheme() {
-		$appStore.theme = {
+		$themeStore = {
 			active: 'custom',
 			custom: { ...customColors }
 		};
@@ -193,13 +193,11 @@
 			{#each presetThemes as theme (theme.name)}
 				<DropdownMenu.Item
 					onclick={() => selectPreset(theme.name)}
-					class={$appStore.theme.active === theme.name
-						? 'bg-primary/10 font-medium text-primary'
-						: ''}
+					class={$themeStore.active === theme.name ? 'bg-primary/10 font-medium text-primary' : ''}
 				>
 					<div class="flex w-full items-center justify-between">
 						{theme.label}
-						{#if $appStore.theme.active === theme.name}
+						{#if $themeStore.active === theme.name}
 							<Check size={14} />
 						{/if}
 					</div>
@@ -210,14 +208,14 @@
 
 			<DropdownMenu.Item
 				onclick={() => (customDialogOpen = true)}
-				class={$appStore.theme.active === 'custom' ? 'bg-primary/10 font-medium text-primary' : ''}
+				class={$themeStore.active === 'custom' ? 'bg-primary/10 font-medium text-primary' : ''}
 			>
 				<div class="flex w-full items-center justify-between">
 					<div class="flex items-center">
 						<Plus size={14} class="mr-2" />
 						Custom Theme
 					</div>
-					{#if $appStore.theme.active === 'custom'}
+					{#if $themeStore.active === 'custom'}
 						<Check size={14} />
 					{/if}
 				</div>

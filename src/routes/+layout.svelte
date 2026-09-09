@@ -2,15 +2,15 @@
 	import './layout.css';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { appStore } from '$lib/stores/appState';
+	import { themeStore } from '$lib/stores/themeState';
 	import { applyTheme } from '$lib/themes';
 	import Header from '$lib/components/layout/Header.svelte';
 
 	let { children } = $props();
 
 	$effect(() => {
-		if ($appStore?.theme) {
-			applyTheme($appStore.theme);
+		if ($themeStore) {
+			applyTheme($themeStore);
 		}
 	});
 </script>
@@ -45,10 +45,17 @@
 
 			/* Restore Theme State */
 			try {
-				const raw = localStorage.getItem('nockr_state');
-				if (!raw) return;
-				const state = JSON.parse(raw);
-				const theme = state?.theme;
+				let theme = null;
+				const rawTheme = localStorage.getItem('nockr_theme');
+				if (rawTheme) {
+					theme = JSON.parse(rawTheme);
+				} else {
+					const rawState = localStorage.getItem('nockr_state');
+					if (rawState) {
+						theme = JSON.parse(rawState)?.theme;
+					}
+				}
+
 				if (!theme?.active) return;
 
 				const root = document.documentElement;

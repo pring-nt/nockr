@@ -1,25 +1,26 @@
 <script lang="ts">
-	import type { Course } from '$lib/schemas';
+	import type { Course, UniversitySettings } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
 	import { Trash2, Minus, Plus, GripVertical } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { cn } from '$lib/utils.js';
 
 	let {
 		course,
 		termId,
+		settings,
 		onNavigate
 	}: {
 		course: Course;
 		termId: string;
+		settings: UniversitySettings;
 		onNavigate?: () => void;
 	} = $props();
 
-	let gradeMin = $derived($appStore.universitySettings.gradeMin);
-	let gradeMax = $derived($appStore.universitySettings.gradeMax);
-	let failingGrade = $derived($appStore.universitySettings.failingGrade);
-	let gradeStep = $derived($appStore.universitySettings.gradeStep ?? 0.25);
+	let gradeMin = $derived(settings.gradeMin);
+	let gradeMax = $derived(settings.gradeMax);
+	let failingGrade = $derived(settings.failingGrade);
+	let gradeStep = $derived(settings.gradeStep ?? 0.25);
 
 	let isFailingGrade = $derived(
 		course.grade !== null && failingGrade !== null && course.grade === failingGrade
@@ -166,10 +167,10 @@
 
 <div
 	class={cn(
-		'group relative flex flex-col gap-2 rounded-lg border p-2.5 shadow-2xs backdrop-blur-xs transition-all duration-200',
+		'group relative flex flex-col gap-2 rounded-lg border p-2.5 shadow-2xs transition-colors duration-150',
 		course.grade === null
-			? 'border-border/80 bg-card/90 text-card-foreground shadow-xs hover:border-primary/50'
-			: 'border-border/40 bg-muted/30 text-muted-foreground hover:border-border/70'
+			? 'border-border/70 bg-card/70 text-card-foreground shadow-xs hover:border-primary/50'
+			: 'border-border/40 bg-muted/40 text-muted-foreground hover:border-border/70'
 	)}
 >
 	<!-- Top Row: Grip + Course Name + Delete -->
@@ -195,24 +196,15 @@
 			onkeydown={onNameKeydown}
 		/>
 
-		<Tooltip.Root>
-			<Tooltip.Trigger>
-				{#snippet child({ props })}
-					<Button
-						{...props}
-						variant="ghost"
-						size="icon"
-						onclick={deleteCourse}
-						class="h-6 w-6 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
-					>
-						<Trash2 size={13} />
-					</Button>
-				{/snippet}
-			</Tooltip.Trigger>
-			<Tooltip.Content>
-				<p>Delete course</p>
-			</Tooltip.Content>
-		</Tooltip.Root>
+		<Button
+			variant="ghost"
+			size="icon"
+			onclick={deleteCourse}
+			title="Delete course"
+			class="h-6 w-6 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
+		>
+			<Trash2 size={13} />
+		</Button>
 	</div>
 
 	<!-- Bottom Row: Units & Grade Steppers -->

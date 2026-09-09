@@ -3,6 +3,7 @@ import { AppStateSchema, type AppState } from '$lib/schemas';
 import { DLSU_PRESET, DEFAULT_GE_LIST, UNIVERSITY_PRESETS } from '$lib/constants';
 
 const STORAGE_KEY = 'nockr_state';
+const THEME_STORAGE_KEY = 'nockr_theme';
 
 interface UnvalidatedCourse {
 	id?: unknown;
@@ -82,6 +83,16 @@ function getInitialState(): AppState {
 		if (!raw) return buildFreshState();
 
 		const json = JSON.parse(raw);
+
+		// Legacy Theme Migration: Copy legacy theme state to nockr_theme before appState overwrites nockr_state
+		if (json?.theme && !localStorage.getItem(THEME_STORAGE_KEY)) {
+			try {
+				localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(json.theme));
+			} catch (e) {
+				console.warn('[Nockr] Legacy theme extraction failed:', e);
+			}
+		}
+
 		const parsed = AppStateSchema.safeParse(json);
 
 		// 1. Direct validation pass with setting hydration

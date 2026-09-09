@@ -111,10 +111,10 @@
 
 <div
 	class={cn(
-		'flex h-full max-h-full w-70 shrink-0 flex-col rounded-xl border p-3 shadow-xs backdrop-blur-md transition-all duration-200',
+		'flex h-full max-h-full w-70 shrink-0 flex-col rounded-xl border p-3 shadow-xs backdrop-blur-md transition-colors duration-150',
 		isHovered
 			? 'border-primary/60 bg-primary/10 shadow-lg ring-2 shadow-primary/5 ring-primary/40'
-			: 'border-border/50 bg-background/25'
+			: 'border-border/50 bg-background/40'
 	)}
 >
 	<!-- Column Header -->
@@ -230,11 +230,11 @@
 			<div animate:flip={{ duration: 200 }}>
 				{#if isShadowItem(course)}
 					<div
-						class="pointer-events-none visible! h-18.5 w-full rounded-lg border-2 border-dashed border-primary/50 bg-primary/10 opacity-100! backdrop-blur-xs transition-all duration-150"
+						class="pointer-events-none visible! h-18.5 w-full rounded-lg border-2 border-dashed border-primary/50 bg-primary/10 opacity-100! transition-colors duration-150"
 						style="visibility: visible !important; opacity: 1 !important;"
 					></div>
 				{:else}
-					<CourseCard {course} termId={term.id} onNavigate={() => addCourse(true)} />
+					<CourseCard {course} termId={term.id} {settings} onNavigate={() => addCourse(true)} />
 				{/if}
 			</div>
 		{/each}
@@ -244,7 +244,7 @@
 	<Button
 		variant="outline"
 		size="sm"
-		class="mt-3 w-full shrink-0 gap-1.5 border-dashed bg-background/20 text-xs text-muted-foreground backdrop-blur-xs hover:bg-background/40 hover:text-foreground"
+		class="mt-3 w-full shrink-0 gap-1.5 border-dashed bg-background/30 text-xs text-muted-foreground hover:bg-background/60 hover:text-foreground"
 		onclick={() => addCourse(true)}
 	>
 		<Plus size={14} /> Add Course

@@ -21,8 +21,14 @@
 	} from 'lucide-svelte';
 	import ImportModal from '$lib/components/settings/ImportModal.svelte';
 	import { appStore } from '$lib/stores/appState';
+	import { themeStore } from '$lib/stores/themeState';
 	import { UNIVERSITY_PRESETS } from '$lib/constants';
-	import type { UniversitySettings, HonorTier, UniversityMode } from '$lib/schemas';
+	import {
+		ThemeSettingsSchema,
+		type UniversitySettings,
+		type HonorTier,
+		type UniversityMode
+	} from '$lib/schemas';
 
 	let { open = $bindable(false) }: { open: boolean } = $props();
 
@@ -44,8 +50,12 @@
 	);
 
 	function exportState() {
+		const backupData = {
+			...$appStore,
+			theme: $themeStore
+		};
 		const dataStr =
-			'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify($appStore, null, 2));
+			'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backupData, null, 2));
 		const downloadAnchor = document.createElement('a');
 		downloadAnchor.setAttribute('href', dataStr);
 		downloadAnchor.setAttribute(
@@ -66,6 +76,14 @@
 		reader.onload = (e) => {
 			try {
 				const parsed = JSON.parse(e.target?.result as string);
+
+				if (parsed?.theme) {
+					const themeResult = ThemeSettingsSchema.safeParse(parsed.theme);
+					if (themeResult.success) {
+						themeStore.set(themeResult.data);
+					}
+				}
+
 				appStore.set(parsed);
 				if (fileInputEl) fileInputEl.value = '';
 			} catch {
