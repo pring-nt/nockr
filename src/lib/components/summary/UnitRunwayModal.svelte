@@ -13,11 +13,11 @@
 		CircleCheck,
 		CircleX,
 		GraduationCap,
-		Ban,
 		Award,
 		Target,
 		Minus,
-		Plus
+		Plus,
+		TriangleAlert
 	} from 'lucide-svelte';
 
 	let { open = $bindable(false) }: { open: boolean } = $props();
@@ -110,7 +110,7 @@
 			: maxPossibleCGPA <= effectiveTargetCGPA + 0.0001;
 	});
 
-	// Disqualification status: user already has a failing grade inside their completed transcript
+	// Disqualification status notice trigger
 	let isDisqualifiedFromHonors = $derived.by<boolean>(() => {
 		return Boolean(
 			targetMode === 'honor' && settings?.latinHonorsNoFailPolicy && stats.hasFailingGrade
@@ -353,6 +353,23 @@
 				{/if}
 			</div>
 
+			<!-- Non-blocking Soft Disqualification Disclaimer -->
+			{#if isDisqualifiedFromHonors}
+				<div
+					class="flex items-start gap-2.5 rounded-xl border border-[var(--gold)]/30 bg-[var(--gold)]/10 p-3 text-xs text-[var(--gold)]"
+				>
+					<TriangleAlert class="mt-0.5 size-4 shrink-0 text-[var(--gold)]" />
+					<div class="space-y-0.5">
+						<span class="font-semibold">Honors Eligibility Notice</span>
+						<p class="text-[11px] leading-relaxed opacity-90">
+							Your university enforces a No-Fail Policy for Latin Honors. Because your course
+							history contains a failing grade, official honors eligibility may be revoked. The
+							calculations below display mathematical runway for reference.
+						</p>
+					</div>
+				</div>
+			{/if}
+
 			<!-- Status Check 1: Missing or Invalid Target -->
 			{#if effectiveTargetCGPA === null}
 				<div
@@ -360,23 +377,7 @@
 				>
 					Please enter a valid target CGPA to compute your unit runway.
 				</div>
-				<!-- Status Check 2: Pre-existing failing grade disqualification on current transcript -->
-			{:else if isDisqualifiedFromHonors}
-				<div
-					class="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-xs text-destructive"
-				>
-					<div class="flex items-center gap-2 font-bold">
-						<Ban class="size-4 shrink-0 text-destructive" />
-						<span>University Policy Disqualification</span>
-					</div>
-					<p class="mt-1.5 text-[11px] leading-relaxed opacity-90">
-						Your university enforces a No-Fail Policy for Latin Honors. Because your course history
-						contains a failing grade in a completed course, honors eligibility is revoked. Switch to <strong
-							>Custom Target</strong
-						> to calculate your unit runway for personal GPA goals.
-					</p>
-				</div>
-				<!-- Status Check 3: Target CGPA is mathematically unreachable even with perfect grades -->
+				<!-- Status Check 2: Target CGPA is mathematically unreachable even with perfect grades -->
 			{:else if !isTargetReachable}
 				<div
 					class="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-xs text-destructive"
@@ -517,20 +518,6 @@
 										<strong>{bestGrade.toFixed(1)}</strong>
 										in all other remaining units, you cannot reach your target CGPA of
 										<strong>{effectiveTargetCGPA.toFixed(3)}</strong>.
-									</p>
-								</div>
-							{:else if selectedStepResult.status === 'disqualified'}
-								<div
-									class="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
-								>
-									<div class="flex items-center gap-2 font-bold">
-										<Ban class="size-4 shrink-0 text-destructive" />
-										<span>University Policy Disqualification</span>
-									</div>
-									<p class="mt-1 text-[11px] leading-relaxed opacity-90">
-										Your university enforces a No-Fail Policy for Latin Honors. Taking a grade of <strong
-											>{selectedGradeStep.toFixed(2)}</strong
-										> automatically revokes honors eligibility.
 									</p>
 								</div>
 							{/if}

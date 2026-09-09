@@ -2,10 +2,16 @@ import type { UniversitySettings, HonorTier } from '$lib/schemas';
 import { isPassingGrade } from './gpa';
 
 export type GradeStepResult =
-	| { status: 'ok'; maxUnits: number; remainingAtBest: number; projectedCGPA: number }
-	| { status: 'already'; projectedCGPA: number }
-	| { status: 'impossible' }
-	| { status: 'disqualified' }
+	| {
+			status: 'ok';
+			maxUnits: number;
+			remainingAtBest: number;
+			projectedCGPA: number;
+			isDisqualified?: boolean;
+	  }
+	| { status: 'already'; projectedCGPA: number; isDisqualified?: boolean }
+	| { status: 'impossible'; isDisqualified?: boolean }
+	| { status: 'disqualified'; isDisqualified?: boolean }
 	| { status: 'complete' };
 
 export type GradeStepRow = {
@@ -87,12 +93,10 @@ export function calcAtGrade(
 			settings.failingGrade !== undefined &&
 			Math.abs(targetGrade - settings.failingGrade) < 0.0001);
 
-	// Latin Honors No-Fail Policy Disqualification Check:
-	if (isHonorTarget && settings.latinHonorsNoFailPolicy) {
-		if (hasFailingGrade || isTestingFailing) {
-			return { status: 'disqualified' };
-		}
-	}
+	// Latin Honors No-Fail Policy Disqualification Check (flagged without stopping math)
+	const isDisqualified = Boolean(
+		isHonorTarget && settings.latinHonorsNoFailPolicy && (hasFailingGrade || isTestingFailing)
+	);
 
 	const currentPoints = cgpa * attemptedUnits;
 	const finalTotalAttempted = attemptedUnits + remaining;
@@ -103,17 +107,17 @@ export function calcAtGrade(
 	// 1. Check if overall target CGPA is mathematically achievable even with top grades
 	const bestCaseCGPA = (currentPoints + remaining * bestGrade) / finalTotalAttempted;
 	if (!meetsTarget(bestCaseCGPA)) {
-		return { status: 'impossible' };
+		return { status: 'impossible', isDisqualified };
 	}
 
 	// 2. Check if all remaining units at targetGrade satisfies the target
 	const targetAllCGPA = (currentPoints + remaining * targetGrade) / finalTotalAttempted;
 	if (meetsTarget(targetAllCGPA)) {
-		return { status: 'already', projectedCGPA: round3(targetAllCGPA) };
+		return { status: 'already', projectedCGPA: round3(targetAllCGPA), isDisqualified };
 	}
 
 	if (Math.abs(targetGrade - bestGrade) < 1e-8) {
-		return { status: 'already', projectedCGPA: round3(targetAllCGPA) };
+		return { status: 'already', projectedCGPA: round3(targetAllCGPA), isDisqualified };
 	}
 
 	// 3. Solve for x units at targetGrade, (remaining - x) units at bestGrade
@@ -127,7 +131,7 @@ export function calcAtGrade(
 		(currentPoints + maxUnits * targetGrade + remainingAtBest * bestGrade) / finalTotalAttempted
 	);
 
-	return { status: 'ok', maxUnits, remainingAtBest, projectedCGPA };
+	return { status: 'ok', maxUnits, remainingAtBest, projectedCGPA, isDisqualified };
 }
 
 export function calcUnitTable(
