@@ -10,6 +10,10 @@ export function smoothScroll(
 	let animationFrameId: number | null = null;
 	let lastTime: number | null = null;
 
+	function getMaxScroll(): number {
+		return Math.max(0, node.scrollWidth - node.clientWidth);
+	}
+
 	function handleNativeScroll() {
 		if (animationFrameId === null) {
 			targetScrollLeft = node.scrollLeft;
@@ -22,25 +26,23 @@ export function smoothScroll(
 		lastTime = timestamp;
 
 		const current = node.scrollLeft;
-		const diff = targetScrollLeft - current;
+		const maxScroll = getMaxScroll();
+
+		// Dynamically clamp target to current DOM bounds so macOS rubber-banding never locks target position
+		const boundedTarget = Math.max(0, Math.min(maxScroll, targetScrollLeft));
+		const diff = boundedTarget - current;
 
 		if (Math.abs(diff) < 0.5) {
-			node.scrollLeft = targetScrollLeft;
-			animationFrameId = null;
-			lastTime = null;
-			return;
-		}
-
-		const lerp = 1 - Math.exp(-20 * dt);
-		const intended = current + diff * lerp;
-		node.scrollLeft = intended;
-
-		if (Math.abs(node.scrollLeft - intended) > 0.5) {
+			node.scrollLeft = boundedTarget;
 			targetScrollLeft = node.scrollLeft;
 			animationFrameId = null;
 			lastTime = null;
 			return;
 		}
+
+		// Smooth decay constant (~250ms transition)
+		const lerp = 1 - Math.exp(-14 * dt);
+		node.scrollLeft = current + diff * lerp;
 
 		animationFrameId = requestAnimationFrame(stepScroll);
 	}
@@ -68,7 +70,9 @@ export function smoothScroll(
 			targetScrollLeft = node.scrollLeft;
 		}
 
-		targetScrollLeft += delta;
+		const maxScroll = getMaxScroll();
+		// Clamping on wheel prevents accumulation of thousands of overflow pixels into macOS rubber-band space
+		targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + delta));
 
 		if (animationFrameId === null) {
 			lastTime = null;
@@ -77,7 +81,8 @@ export function smoothScroll(
 	}
 
 	function scrollTo(position: number) {
-		targetScrollLeft = Number.isFinite(position) ? position : node.scrollWidth;
+		const maxScroll = getMaxScroll();
+		targetScrollLeft = Math.max(0, Math.min(maxScroll, position));
 
 		if (animationFrameId === null) {
 			lastTime = null;
