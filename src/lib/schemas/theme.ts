@@ -14,6 +14,14 @@ export const ThemeNameSchema = z.enum([
 	'tokyo-light',
 	'solarized-dark',
 	'solarized-light',
+	'dlsu-green-dark',
+	'dlsu-green-light',
+	'admu-blue-dark',
+	'admu-blue-light',
+	'up-maroon-dark',
+	'up-maroon-light',
+	'ust-yellow-dark',
+	'ust-yellow-light',
 	'custom'
 ]);
 
