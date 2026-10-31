@@ -203,7 +203,7 @@
 						Checklist
 					</h2>
 				{/if}
-				<span class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+				<span class="rounded-sm bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
 					{doneCount}/{items.length}
 				</span>
 
@@ -301,7 +301,7 @@
 						aria-pressed={filter === option.value}
 						onclick={() => setView({ checklistFilter: option.value })}
 						class={cn(
-							'rounded px-2 py-2 text-[11px] font-medium whitespace-nowrap transition-colors md:px-1.5 md:py-1 md:text-[10px]',
+							'rounded-sm px-2 py-2 text-[11px] font-medium whitespace-nowrap transition-colors md:px-1.5 md:py-1 md:text-[10px]',
 							filter === option.value
 								? 'bg-primary/15 text-primary'
 								: 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
@@ -375,9 +375,11 @@
 					{/if}
 				</div>
 			{/each}
-			{#if dragItems.length === 0 && items.length > 0}
+			{#if dragItems.length === 0}
 				<p class="px-1 py-6 text-center text-[11px] text-muted-foreground">
-					No courses here (・_・)
+					{items.length > 0
+						? 'No courses here (・_・)'
+						: 'Your checklist is empty. Add a course below or import your grades (・‿・)'}
 				</p>
 			{/if}
 		</div>

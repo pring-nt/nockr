@@ -113,7 +113,7 @@
 				<label
 					ondragover={(e) => e.preventDefault()}
 					ondrop={handleDrop}
-					class="relative flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 p-4 text-center transition-colors hover:border-primary/50 hover:bg-muted/50 sm:p-6"
+					class="relative flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 p-4 text-center transition-colors hover:border-primary/50 hover:bg-muted/50 sm:p-6"
 				>
 					<input
 						bind:this={fileInputEl}
@@ -144,7 +144,7 @@
 					</div>
 				{/if}
 
-				<div class="rounded-xl border border-border bg-muted/40 p-3 text-muted-foreground">
+				<div class="rounded-lg border border-border bg-muted/40 p-3 text-muted-foreground">
 					<div class="mb-1 flex items-center gap-1.5 font-bold text-foreground">
 						<TriangleAlert class="size-4 shrink-0 text-muted-foreground" />
 						<span>Know before you import</span>
@@ -171,7 +171,7 @@
 			</DialogHeader>
 
 			<div class="mt-3 flex-1 space-y-3.5 overflow-y-auto px-1">
-				<div class="rounded-xl border border-border bg-card p-3.5 sm:p-4">
+				<div class="rounded-lg border border-border bg-card p-3.5 sm:p-4">
 					<p class="mb-2 text-xs font-bold text-foreground">
 						Found {parsedTerms.length} terms · {totalCoursesCount} courses
 					</p>
@@ -201,7 +201,7 @@
 				</div>
 
 				<div
-					class="rounded-xl border border-destructive/50 bg-destructive/10 p-3.5 text-destructive sm:p-4"
+					class="rounded-lg border border-destructive/50 bg-destructive/10 p-3.5 text-destructive sm:p-4"
 				>
 					<div class="flex items-start gap-2.5">
 						<TriangleAlert class="mt-0.5 size-4 shrink-0 sm:size-5" />

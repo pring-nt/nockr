@@ -376,9 +376,12 @@
 	--color-foreground: var(--foreground);
 	--color-background: var(--background);
 
+	/* xl: cards, dialogs. lg: panels and rows inside them. md: buttons, inputs, tabs, icon tiles.
+	   sm: tags, chips, steppers, menu items. rounded-full is for circles and progress tracks. */
 	--radius-sm: calc(var(--radius) * 0.6);
 	--radius-md: calc(var(--radius) * 0.8);
 	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) * 1.2);
 }
 
 @media (max-width: 639px) {

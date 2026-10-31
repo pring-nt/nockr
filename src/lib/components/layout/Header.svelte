@@ -38,13 +38,13 @@
 	<!-- Brand & Navigation -->
 	<div class="flex items-center gap-2.5 sm:gap-6">
 		<a href={resolve('/')} class="flex items-center gap-2 no-underline">
-			<div class="rounded-lg border border-primary/20 bg-primary/10 p-1.5 text-primary">
+			<div class="rounded-md border border-primary/20 bg-primary/10 p-1.5 text-primary">
 				<Target size={18} />
 			</div>
 			<div class="flex items-center gap-1.5">
 				<span class="gradient-text text-base font-semibold tracking-tight sm:text-lg">Nockr</span>
 				<span
-					class="hidden rounded-md border border-border/40 bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] tracking-wider text-muted-foreground uppercase md:inline-flex"
+					class="hidden rounded-sm border border-border/40 bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] tracking-wider text-muted-foreground uppercase md:inline-flex"
 				>
 					{$appStore.universitySettings.mode}
 				</span>

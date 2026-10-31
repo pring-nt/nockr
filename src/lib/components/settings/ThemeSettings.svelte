@@ -193,7 +193,9 @@
 <div class="space-y-4 text-xs">
 	{#each themeGroups as group (group.label)}
 		<div class="space-y-2">
-			<p class="font-semibold text-foreground">{group.label}</p>
+			<p class="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+				{group.label}
+			</p>
 			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
 				{#each group.themes as theme (theme.name)}
 					{@render themeCard(theme)}
@@ -246,7 +248,7 @@
 								</div>
 								<div class="flex items-center gap-2">
 									<div
-										class="relative h-7 w-8 shrink-0 overflow-hidden rounded border border-border"
+										class="relative h-7 w-8 shrink-0 overflow-hidden rounded-sm border border-border"
 									>
 										<input
 											type="color"

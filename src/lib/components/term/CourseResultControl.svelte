@@ -64,7 +64,7 @@
 			onclick={() => toggle('passed')}
 			onkeydown={handleKeydown}
 			class={cn(
-				'h-8 rounded text-xs font-medium transition-colors sm:h-5',
+				'h-8 rounded-sm text-xs font-medium transition-colors sm:h-5',
 				course.result === 'passed'
 					? 'bg-primary/15 text-primary'
 					: 'text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground'
@@ -81,7 +81,7 @@
 			onclick={() => toggle('failed')}
 			onkeydown={handleKeydown}
 			class={cn(
-				'h-8 rounded text-xs font-medium transition-colors sm:h-5',
+				'h-8 rounded-sm text-xs font-medium transition-colors sm:h-5',
 				course.result === 'failed'
 					? 'bg-destructive/15 text-destructive'
 					: 'text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground'

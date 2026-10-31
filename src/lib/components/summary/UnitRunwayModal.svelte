@@ -207,11 +207,11 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Content
-		class="max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto rounded-2xl p-4 sm:max-w-2xl sm:p-6"
+		class="max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto p-4 sm:max-w-2xl sm:p-6"
 	>
 		<Dialog.Header class="space-y-1 pb-1">
 			<div class="flex items-center gap-2 text-primary">
-				<div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+				<div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
 					<Calculator class="size-4 text-primary" />
 				</div>
 				<Dialog.Title class="text-base font-bold tracking-tight sm:text-lg">
@@ -226,7 +226,7 @@
 
 		<!-- Stat Overview Ribbon -->
 		<div
-			class="grid grid-cols-3 gap-1.5 rounded-xl border border-border/50 bg-muted/40 p-2.5 text-xs sm:gap-2 sm:p-3"
+			class="grid grid-cols-3 gap-1.5 rounded-lg border border-border/50 bg-muted/40 p-2.5 text-xs sm:gap-2 sm:p-3"
 		>
 			<div>
 				<span class="block truncate text-[10px] font-medium text-muted-foreground sm:text-[11px]"
@@ -254,7 +254,7 @@
 		</div>
 
 		{#if stats.remainingUnits <= 0}
-			<div class="rounded-xl border border-primary/20 bg-primary/5 p-5 text-center">
+			<div class="rounded-lg border border-primary/20 bg-primary/5 p-5 text-center">
 				<GraduationCap class="mx-auto size-8 text-primary" />
 				<h3 class="mt-2 text-sm font-bold text-foreground">Program Completed</h3>
 				<p class="mt-1 text-xs text-muted-foreground">
@@ -264,17 +264,17 @@
 			</div>
 		{:else}
 			<!-- Target Threshold Config Section -->
-			<div class="space-y-3 rounded-xl border border-border/60 bg-background p-3 sm:p-3.5">
+			<div class="space-y-3 rounded-lg border border-border/60 bg-background p-3 sm:p-3.5">
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<Label class="text-xs font-bold text-foreground">Target CGPA Threshold</Label>
 
 					<!-- Segmented Control Mode Switch -->
 					{#if honorTiers.length > 0}
-						<div class="inline-flex rounded-lg bg-muted p-0.5 text-xs">
+						<div class="inline-flex rounded-md bg-muted p-0.5 text-xs">
 							<button
 								type="button"
 								onclick={() => (targetMode = 'honor')}
-								class="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition-all sm:px-2.5 sm:text-[11px]
+								class="flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] font-medium transition-all sm:px-2.5 sm:text-[11px]
                                 {targetMode === 'honor'
 									? 'bg-background text-foreground shadow-xs'
 									: 'text-muted-foreground hover:text-foreground'}"
@@ -285,7 +285,7 @@
 							<button
 								type="button"
 								onclick={() => (targetMode = 'custom')}
-								class="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition-all sm:px-2.5 sm:text-[11px]
+								class="flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] font-medium transition-all sm:px-2.5 sm:text-[11px]
                                 {targetMode === 'custom'
 									? 'bg-background text-foreground shadow-xs'
 									: 'text-muted-foreground hover:text-foreground'}"
@@ -334,7 +334,7 @@
 							class="h-9 font-mono text-xs"
 						/>
 						{#if effectiveTargetCGPA !== null}
-							<Badge variant="secondary" class="shrink-0 font-mono text-xs">
+							<Badge variant="secondary" class="shrink-0 rounded-sm font-mono text-xs">
 								Target: {settings?.gradeDirection === 'ascending' ? '≥' : '≤'}
 								{effectiveTargetCGPA.toFixed(3)}
 							</Badge>
@@ -346,7 +346,7 @@
 			<!-- Non-blocking Soft Disqualification Disclaimer -->
 			{#if isDisqualifiedFromHonors}
 				<div
-					class="flex items-start gap-2.5 rounded-xl border border-[var(--gold)]/30 bg-[var(--gold)]/10 p-3 text-xs text-[var(--gold)]"
+					class="flex items-start gap-2.5 rounded-lg border border-[var(--gold)]/30 bg-[var(--gold)]/10 p-3 text-xs text-[var(--gold)]"
 				>
 					<TriangleAlert class="mt-0.5 size-4 shrink-0 text-[var(--gold)]" />
 					<div class="space-y-0.5">
@@ -363,14 +363,14 @@
 			<!-- Status Check 1: Missing or Invalid Target -->
 			{#if effectiveTargetCGPA === null}
 				<div
-					class="rounded-xl border border-border bg-muted/50 p-4 text-center text-xs text-muted-foreground"
+					class="rounded-lg border border-border bg-muted/50 p-4 text-center text-xs text-muted-foreground"
 				>
 					Please enter a valid target CGPA to compute your unit runway.
 				</div>
 				<!-- Status Check 2: Target CGPA is mathematically unreachable even with perfect grades -->
 			{:else if !isTargetReachable}
 				<div
-					class="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-xs text-destructive"
+					class="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-xs text-destructive"
 				>
 					<div class="flex items-center gap-2 font-bold">
 						<CircleX class="size-4 shrink-0 text-destructive" />
@@ -397,7 +397,7 @@
 					<!-- Direct Grade Stepper Input -->
 					<div
 						class={cn(
-							'flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background px-2 transition-colors',
+							'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-2 transition-colors',
 							gradeIsFocused && 'border-primary ring-1 ring-primary'
 						)}
 					>
@@ -405,7 +405,7 @@
 							type="button"
 							tabindex="-1"
 							onclick={() => updateGradeStep('down')}
-							class="flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 sm:size-8"
+							class="flex size-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 sm:size-8"
 							aria-label="Decrease grade"
 						>
 							<Minus class="size-4" />
@@ -427,7 +427,7 @@
 							type="button"
 							tabindex="-1"
 							onclick={() => updateGradeStep('up')}
-							class="flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 sm:size-8"
+							class="flex size-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 sm:size-8"
 							aria-label="Increase grade"
 						>
 							<Plus class="size-4" />
@@ -436,7 +436,7 @@
 
 					<!-- Selected Grade Outcome Card -->
 					{#if selectedGradeStep !== null && selectedStepResult}
-						<div class="space-y-3 rounded-xl border border-border bg-card p-3.5 sm:p-4">
+						<div class="space-y-3 rounded-lg border border-border bg-card p-3.5 sm:p-4">
 							<div class="flex items-center justify-between border-b border-border/50 pb-2">
 								<span class="text-xs font-semibold text-muted-foreground">Tested Grade:</span>
 								<span class="font-mono text-base font-bold text-foreground">
@@ -447,7 +447,7 @@
 							<!-- Status Detail Box -->
 							{#if selectedStepResult.status === 'already'}
 								<div
-									class="rounded-lg border border-primary/20 bg-primary/10 p-3 text-xs text-primary"
+									class="rounded-md border border-primary/20 bg-primary/10 p-3 text-xs text-primary"
 								>
 									<div class="flex items-center gap-2 font-bold">
 										<CircleCheck class="size-4 shrink-0 text-primary" />
@@ -463,7 +463,7 @@
 								</div>
 							{:else if selectedStepResult.status === 'ok'}
 								<div class="grid grid-cols-1 gap-2 pt-1 text-xs sm:grid-cols-2 sm:gap-3">
-									<div class="rounded-lg border border-border/60 bg-muted/30 p-2.5">
+									<div class="rounded-md border border-border/60 bg-muted/30 p-2.5">
 										<span class="text-[11px] font-medium text-muted-foreground"
 											>Max Allowed at {selectedGradeStep.toFixed(2)}</span
 										>
@@ -475,7 +475,7 @@
 										</div>
 									</div>
 
-									<div class="rounded-lg border border-border/60 bg-muted/30 p-2.5">
+									<div class="rounded-md border border-border/60 bg-muted/30 p-2.5">
 										<span class="text-[11px] font-medium text-muted-foreground"
 											>Remaining Required at {bestGrade.toFixed(1)}</span
 										>
@@ -496,7 +496,7 @@
 								</div>
 							{:else if selectedStepResult.status === 'impossible'}
 								<div
-									class="rounded-lg border border-border/60 bg-muted/40 p-3 text-xs text-muted-foreground"
+									class="rounded-md border border-border/60 bg-muted/40 p-3 text-xs text-muted-foreground"
 								>
 									<div class="flex items-center gap-2 font-semibold text-foreground">
 										<CircleX class="size-4 shrink-0 text-muted-foreground" />

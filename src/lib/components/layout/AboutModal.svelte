@@ -22,7 +22,7 @@
 	>
 		<Dialog.Header class="space-y-1 text-left">
 			<div class="flex items-center gap-2.5">
-				<div class="rounded-lg border border-primary/20 bg-primary/10 p-1.5 text-primary">
+				<div class="rounded-md border border-primary/20 bg-primary/10 p-1.5 text-primary">
 					<Target size={16} />
 				</div>
 				<Dialog.Title class="text-lg font-bold sm:text-xl">About Nockr</Dialog.Title>
@@ -97,7 +97,7 @@
 
 			<!-- Disclaimers -->
 			<div
-				class="space-y-2 rounded-xl border border-border bg-muted/30 p-3.5 text-xs text-muted-foreground sm:p-4"
+				class="space-y-2 rounded-lg border border-border bg-muted/30 p-3.5 text-xs text-muted-foreground sm:p-4"
 			>
 				<p class="leading-relaxed">
 					<span class="font-semibold text-foreground">Your data never leaves your device.</span>

@@ -179,7 +179,7 @@
 				href={selectedTermId ? `/?termId=${selectedTermId}` : '/'}
 				variant="ghost"
 				size="icon"
-				class="size-8 rounded-full sm:size-9"
+				class="size-8 sm:size-9"
 			>
 				<ArrowLeft class="size-4 sm:size-5" />
 			</Button>
@@ -225,7 +225,7 @@
 	<div class="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12">
 		<!-- Live Canvas Preview Target -->
 		<div
-			class="relative order-1 flex h-95 w-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-(--base)/60 sm:h-125 lg:sticky lg:top-6 lg:order-2 lg:col-span-8 lg:h-160"
+			class="relative order-1 flex h-95 w-full flex-col overflow-hidden rounded-xl border border-border/50 bg-(--base)/60 sm:h-125 lg:sticky lg:top-6 lg:order-2 lg:col-span-8 lg:h-160"
 		>
 			<!-- Scrollable Viewport -->
 			<div
@@ -249,7 +249,7 @@
 
 			<!-- Floating Zoom Toolbar Controls -->
 			<div
-				class="absolute right-3 bottom-3 z-10 flex items-center gap-1 rounded-xl border border-border/40 bg-(--surface)/90 p-1 shadow-md backdrop-blur-xs"
+				class="absolute right-3 bottom-3 z-10 flex items-center gap-1 rounded-lg border border-border/40 bg-(--surface)/90 p-1 shadow-md backdrop-blur-xs"
 			>
 				<Button
 					variant="ghost"
