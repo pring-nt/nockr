@@ -90,7 +90,7 @@
 					<p class="text-xs leading-relaxed text-muted-foreground">
 						Skip manual entry for courses you've already taken. Use the <span
 							class="font-medium text-foreground">spreadsheet icon</span
-						> in the bottom of the settings sidebar to import your grade history directly from your ArchersHub
+						> in the Data section of Settings to import your grade history directly from your ArchersHub
 						Curriculum Progression export. Core courses only — electives and minor courses will need to
 						be added manually.
 					</p>

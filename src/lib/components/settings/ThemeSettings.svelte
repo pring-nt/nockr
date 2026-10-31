@@ -1,19 +1,22 @@
 <script lang="ts">
-	import { Palette, Plus, Check, Download, Upload } from 'lucide-svelte';
+	import { Plus, Check, Download, Upload } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { themeStore } from '$lib/stores/themeState';
-	import { THEMES } from '$lib/themes';
+	import { THEMES, type ThemeMeta } from '$lib/themes';
 	import type { ThemeName, CustomTheme } from '$lib/schemas';
 
 	let customDialogOpen = $state(false);
 
-	// Filter out 'custom' since it is rendered separately at the bottom of the dropdown
+	// 'custom' opens the palette builder, so it gets its own card
 	const presetThemes = THEMES.filter((theme) => theme.name !== 'custom');
+	const themeGroups = [
+		{ label: 'Dark', themes: presetThemes.filter((theme) => theme.isDark) },
+		{ label: 'Light', themes: presetThemes.filter((theme) => !theme.isDark) }
+	];
+	const swatches = ['--iris', '--rose', '--foam', '--gold', '--love'];
 
 	let customColors: CustomTheme = $state(
 		$themeStore.custom ?? {
@@ -160,69 +163,61 @@
 	}
 </script>
 
-<Dialog.Root bind:open={customDialogOpen}>
-	<DropdownMenu.Root>
-		<Tooltip.Root>
-			<Tooltip.Trigger>
-				{#snippet child({ props: tooltipProps })}
-					<DropdownMenu.Trigger>
-						{#snippet child({ props: menuProps })}
-							<Button
-								{...tooltipProps}
-								{...menuProps}
-								variant="ghost"
-								size="icon"
-								aria-label="Select theme"
-								class="h-9 w-9 rounded-lg text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring"
-							>
-								<Palette size={18} class="transition-transform duration-200 hover:rotate-12" />
-							</Button>
-						{/snippet}
-					</DropdownMenu.Trigger>
-				{/snippet}
-			</Tooltip.Trigger>
-			<Tooltip.Content side="bottom">
-				<p>Theme options</p>
-			</Tooltip.Content>
-		</Tooltip.Root>
-
-		<DropdownMenu.Content align="end" class="w-48">
-			<DropdownMenu.Label>Presets</DropdownMenu.Label>
-			<DropdownMenu.Separator />
-
-			{#each presetThemes as theme (theme.name)}
-				<DropdownMenu.Item
-					onclick={() => selectPreset(theme.name)}
-					class={$themeStore.active === theme.name ? 'bg-primary/10 font-medium text-primary' : ''}
-				>
-					<div class="flex w-full items-center justify-between">
-						{theme.label}
-						{#if $themeStore.active === theme.name}
-							<Check size={14} />
-						{/if}
-					</div>
-				</DropdownMenu.Item>
+{#snippet themeCard(theme: ThemeMeta)}
+	{@const isActive = $themeStore.active === theme.name}
+	<!-- data-theme scopes that theme's raw tokens to this card, so it previews any theme -->
+	<button
+		type="button"
+		data-theme={theme.name}
+		aria-pressed={isActive}
+		onclick={() => selectPreset(theme.name)}
+		class="relative flex flex-col gap-2 rounded-lg border p-2.5 text-left transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none {isActive
+			? 'ring-2 ring-primary'
+			: ''}"
+		style="background: var(--base); color: var(--text); border-color: var(--highlight-med);"
+	>
+		<span class="flex items-center justify-between gap-2">
+			<span class="truncate text-[11px] font-medium">{theme.label}</span>
+			{#if isActive}
+				<Check size={13} class="shrink-0" />
+			{/if}
+		</span>
+		<span class="flex gap-1">
+			{#each swatches as swatch (swatch)}
+				<span class="size-3 rounded-full" style="background: var({swatch});"></span>
 			{/each}
+		</span>
+	</button>
+{/snippet}
 
-			<DropdownMenu.Separator />
+<div class="space-y-4 text-xs">
+	{#each themeGroups as group (group.label)}
+		<div class="space-y-2">
+			<p class="font-semibold text-foreground">{group.label}</p>
+			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+				{#each group.themes as theme (theme.name)}
+					{@render themeCard(theme)}
+				{/each}
+			</div>
+		</div>
+	{/each}
 
-			<DropdownMenu.Item
-				onclick={() => (customDialogOpen = true)}
-				class={$themeStore.active === 'custom' ? 'bg-primary/10 font-medium text-primary' : ''}
-			>
-				<div class="flex w-full items-center justify-between">
-					<div class="flex items-center">
-						<Plus size={14} class="mr-2" />
-						Custom Theme
-					</div>
-					{#if $themeStore.active === 'custom'}
-						<Check size={14} />
-					{/if}
-				</div>
-			</DropdownMenu.Item>
-		</DropdownMenu.Content>
-	</DropdownMenu.Root>
+	<Button
+		variant={$themeStore.active === 'custom' ? 'default' : 'outline'}
+		size="sm"
+		onclick={() => (customDialogOpen = true)}
+		class="h-9 gap-1.5 text-xs"
+	>
+		{#if $themeStore.active === 'custom'}
+			<Check size={14} />
+		{:else}
+			<Plus size={14} />
+		{/if}
+		Custom Theme
+	</Button>
+</div>
 
+<Dialog.Root bind:open={customDialogOpen}>
 	<Dialog.Content
 		onCloseAutoFocus={(e) => e.preventDefault()}
 		class="max-h-[85vh] overflow-y-auto sm:max-w-150"
