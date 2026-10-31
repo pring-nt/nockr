@@ -255,6 +255,18 @@ function createAppStore() {
 
 		reset() {
 			set(buildFreshState());
+		},
+
+		/** Loads a backup file through the same migration and validation as saved state */
+		restore(json: unknown): boolean {
+			const parsed = AppStateSchema.safeParse(migrateState(json as Record<string, unknown> | null));
+			if (!parsed.success) return false;
+
+			set({
+				...parsed.data,
+				universitySettings: syncUniversitySettings(parsed.data.universitySettings)
+			});
+			return true;
 		}
 	};
 }

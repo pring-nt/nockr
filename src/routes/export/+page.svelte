@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { goto, afterNavigate } from '$app/navigation';
 	import type { ShareConfig, AspectRatio, GradeDisplayMode } from '$lib/schemas';
@@ -6,7 +7,6 @@
 	import { captureCanvas, getCanvasDimensions } from '$lib/logic/share';
 	import { appStore } from '$lib/stores/appState';
 	import ShareCanvas from '$lib/components/share/ShareCanvas.svelte';
-	import ThemePicker from '$lib/components/settings/ThemePicker.svelte';
 	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button';
 	import { Switch } from '$lib/components/ui/switch';
@@ -346,7 +346,14 @@
 			<div class="space-y-3 border-t border-border/50 pt-4">
 				<div class="flex items-center justify-between">
 					<Label class="font-semibold text-(--subtle)">Site Theme</Label>
-					<ThemePicker />
+					<Button
+						href={resolve('/settings')}
+						variant="ghost"
+						size="sm"
+						class="h-7 bg-(--highlight-low) px-2.5 text-[11px] text-(--text) hover:bg-(--highlight-med)"
+					>
+						Change
+					</Button>
 				</div>
 
 				<div>

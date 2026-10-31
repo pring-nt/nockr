@@ -12,15 +12,12 @@
 		CircleQuestionMark,
 		Info
 	} from 'lucide-svelte';
-	import SettingsSidebar from '$lib/components/settings/SettingsSidebar.svelte';
-	import ThemePicker from '$lib/components/settings/ThemePicker.svelte';
 	import MobileHeaderMenu from '$lib/components/layout/MobileHeaderMenu.svelte';
 	import GettingStartedModal from '$lib/components/layout/GettingStartedModal.svelte';
 	import AboutModal from '$lib/components/layout/AboutModal.svelte';
 	import { appStore } from '$lib/stores/appState';
 	import { cn } from '$lib/utils.js';
 
-	let settingsOpen = $state(false);
 	let gettingStartedOpen = $state(false);
 	let aboutOpen = $state(false);
 
@@ -87,8 +84,6 @@
 	<div class="flex items-center gap-1 sm:gap-1.5">
 		<!-- Desktop Secondary Actions -->
 		<div class="hidden items-center gap-1 sm:flex">
-			<ThemePicker />
-
 			<Tooltip.Root>
 				<Tooltip.Trigger>
 					{#snippet child({ props })}
@@ -154,7 +149,6 @@
 
 		<!-- Mobile Overflow Dropdown -->
 		<div class="flex items-center gap-1 sm:hidden">
-			<ThemePicker />
 			<MobileHeaderMenu
 				onGettingStarted={() => (gettingStartedOpen = true)}
 				onAbout={() => (aboutOpen = true)}
@@ -163,16 +157,21 @@
 
 		<div class="mx-0.5 h-4 w-px bg-border/60 sm:mx-1"></div>
 
-		<!-- Settings Drawer Trigger -->
+		<!-- Settings -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
 				{#snippet child({ props })}
 					<Button
 						{...props}
+						href={resolve('/settings')}
 						variant="outline"
 						size="sm"
-						onclick={() => (settingsOpen = true)}
-						class="h-8 gap-1.5 border-border/60 bg-background/50 px-2 text-xs transition-all duration-200 hover:bg-muted/50 focus-visible:ring-1 focus-visible:ring-ring sm:px-3"
+						aria-label="Settings"
+						aria-current={page.url.pathname.startsWith('/settings') ? 'page' : undefined}
+						class={cn(
+							'h-8 gap-1.5 border-border/60 px-2 text-xs transition-all duration-200 hover:bg-muted/50 focus-visible:ring-1 focus-visible:ring-ring sm:px-3',
+							page.url.pathname.startsWith('/settings') ? 'bg-muted/60' : 'bg-background/50'
+						)}
 					>
 						<SlidersHorizontal size={14} />
 						<span class="hidden font-medium sm:inline">Settings</span>
@@ -180,12 +179,11 @@
 				{/snippet}
 			</Tooltip.Trigger>
 			<Tooltip.Content side="bottom">
-				<p>University Settings</p>
+				<p>Themes, university, and data</p>
 			</Tooltip.Content>
 		</Tooltip.Root>
 	</div>
 </header>
 
-<SettingsSidebar bind:open={settingsOpen} />
 <GettingStartedModal bind:open={gettingStartedOpen} />
 <AboutModal bind:open={aboutOpen} />

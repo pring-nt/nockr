@@ -112,7 +112,7 @@ src/
 │   │   ├── honors/         # Latin Honors modal
 │   │   ├── layout/         # Header shell
 │   │   ├── plan/           # TermColumn, CourseCard, ChecklistPanel (Plan page)
-│   │   ├── settings/       # Settings sidebar, theme picker
+│   │   ├── settings/       # University form, theme gallery, data tools
 │   │   ├── share/          # Share canvas, widgets
 │   │   ├── summary/        # Academic summary card & unit calculator
 │   │   ├── term/           # TermCard, CourseRow, TermNavigator
@@ -133,6 +133,8 @@ src/
     │   └── +page.svelte    # Plan page (flowchart + course checklist)
     ├── export/
     │   └── +page.svelte    # Export page (toggleable widgets, aspect ratios)
+    ├── settings/
+    │   └── +page.svelte    # Settings page (themes, university rules, data and backup)
     └── layout.css          # Theme variables, glass/aurora utilities, .no-gpu fallbacks
 ```
 
