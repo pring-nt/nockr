@@ -550,6 +550,12 @@
 	) !important;
 }
 
+/* Backdrop blur re-rasterizes on every scroll frame, which software rendering can't keep up with */
+.no-gpu [class*='backdrop-blur'] {
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+}
+
 .no-gpu .glass {
 	backdrop-filter: none !important;
 	-webkit-backdrop-filter: none !important;
