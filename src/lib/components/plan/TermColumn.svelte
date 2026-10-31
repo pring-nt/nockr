@@ -19,9 +19,10 @@
 		computeTermUnitsEarned
 	} from '$lib/logic/gpa';
 	import CourseCard from '$lib/components/plan/CourseCard.svelte';
+	import TermMenu from '$lib/components/term/TermMenu.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { GripVertical, Plus, Trash2, Share2 } from 'lucide-svelte';
+	import { GripVertical, Plus } from 'lucide-svelte';
 	import { cn } from '$lib/utils.js';
 
 	let { term, deck = false }: { term: Term; deck?: boolean } = $props();
@@ -205,82 +206,30 @@
 				{/if}
 			</div>
 
-			<div class="flex shrink-0 items-center gap-0.5">
-				<Tooltip.Root>
-					<Tooltip.Trigger>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								href="/export?termId={term.id}"
-								variant="ghost"
-								size="icon"
-								class="h-8 w-8 text-muted-foreground hover:text-foreground md:h-6 md:w-6"
-							>
-								<Share2 size={13} />
-							</Button>
-						{/snippet}
-					</Tooltip.Trigger>
-					<Tooltip.Content>
-						<p>Export term card</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
-
-				<Tooltip.Root>
-					<Tooltip.Trigger>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								variant="ghost"
-								size="icon"
-								onclick={deleteTerm}
-								class="h-8 w-8 text-muted-foreground hover:text-destructive md:h-6 md:w-6"
-							>
-								<Trash2 size={13} />
-							</Button>
-						{/snippet}
-					</Tooltip.Trigger>
-					<Tooltip.Content>
-						<p>Delete term</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
-			</div>
+			<TermMenu
+				termId={term.id}
+				termName={term.name}
+				triggerClass="h-8 w-8 md:h-6 md:w-6"
+				onRename={startEditing}
+				onDelete={deleteTerm}
+			/>
 		</div>
 
-		<!-- Prominent Stats Badges -->
-		<div class="mt-2 flex items-center gap-1.5">
+		<p class="mt-1 font-mono text-[11px] text-muted-foreground">
 			{#if attemptedUnits > 0 && earnedUnits < attemptedUnits}
-				<span
-					class="inline-flex items-center rounded-md border border-destructive/30 bg-destructive/10 px-2 py-0.5 font-mono text-[11px] font-bold text-destructive"
-					title="{attemptedUnits - earnedUnits} units failed in this term"
-				>
+				<span class="text-destructive" title="{attemptedUnits - earnedUnits} units failed">
 					{earnedUnits}/{totalUnits} earned
 				</span>
 			{:else}
-				<span
-					class="inline-flex items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
-				>
-					{totalUnits}
-					{totalUnits === 1 ? 'unit' : 'units'}
-				</span>
+				{totalUnits} {totalUnits === 1 ? 'unit' : 'units'}
 			{/if}
-
 			{#if nonGpaUnits > 0}
-				<span
-					class="inline-flex items-center rounded-md border border-border/50 bg-muted/60 px-2 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground"
-					title="Not counted in GPA or degree units"
-				>
-					+{nonGpaUnits} non-GPA
-				</span>
+				<span title="Not counted in GPA or degree units">· +{nonGpaUnits} non-GPA</span>
 			{/if}
-
 			{#if tgpa !== null}
-				<span
-					class="inline-flex items-center rounded-md border border-border/50 bg-muted/60 px-2 py-0.5 font-mono text-[11px] font-semibold text-foreground"
-				>
-					TGPA {tgpa.toFixed(3)}
-				</span>
+				<span class="text-foreground">· TGPA {tgpa.toFixed(3)}</span>
 			{/if}
-		</div>
+		</p>
 	</div>
 
 	<!-- Draggable Drop Zone -->

@@ -190,12 +190,19 @@
 
 <div class="relative flex h-full flex-col bg-background/20 backdrop-blur-md">
 	<!-- Top Bar / Header -->
-	<div class="flex h-14 items-center justify-between border-b border-border/40 px-3">
+	<div
+		class={cn(
+			'flex items-center justify-between border-b border-border/40 px-3',
+			embedded ? 'h-11' : 'h-14'
+		)}
+	>
 		{#if isOpen}
 			<div class="flex items-center gap-1.5 overflow-hidden">
-				<h2 class="truncate text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-					Checklist
-				</h2>
+				{#if !embedded}
+					<h2 class="truncate text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+						Checklist
+					</h2>
+				{/if}
 				<span class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
 					{doneCount}/{items.length}
 				</span>
@@ -347,7 +354,7 @@
 			}}
 			onconsider={handleConsider}
 			onfinalize={handleFinalize}
-			class="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-3 text-xs"
+			class="min-h-0 flex-1 space-y-2 overflow-y-auto p-3 text-xs md:space-y-1.5"
 		>
 			{#each dragItems as item (item.id)}
 				<div animate:flip={{ duration: 150 }}>
@@ -388,9 +395,9 @@
 					type="text"
 					bind:value={newItemLabel}
 					placeholder="Add a course..."
-					class="h-8 bg-background/40 text-xs backdrop-blur-xs"
+					class="h-10 bg-background/40 text-xs backdrop-blur-xs md:h-8"
 				/>
-				<Button type="submit" size="sm" class="h-8 px-2.5" aria-label="Add course">
+				<Button type="submit" size="sm" class="h-10 px-3 md:h-8 md:px-2.5" aria-label="Add course">
 					<Plus size={14} />
 				</Button>
 				<Tooltip.Root>
@@ -401,7 +408,7 @@
 								type="button"
 								variant="outline"
 								size="sm"
-								class="h-8 px-2.5"
+								class="h-10 px-3 md:h-8 md:px-2.5"
 								aria-label="Paste a list of courses"
 								onclick={() => (isPasteOpen = true)}
 							>

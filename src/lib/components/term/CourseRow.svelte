@@ -154,14 +154,14 @@
 </script>
 
 <div
-	class="grid grid-cols-[1fr_1fr_32px] items-center gap-x-2 gap-y-1 border-b border-border/30 pb-2 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:border-0 sm:pb-0"
+	class="grid grid-cols-[1fr_1fr_32px] items-center gap-x-2 rounded-lg bg-muted/30 p-2 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:rounded-none sm:bg-transparent sm:p-0"
 >
 	<!-- Course name -->
 	<input
 		id="course-{course.id}-name"
 		class={cn(
 			'col-span-2 col-start-1 row-start-1 sm:col-span-1',
-			'w-full min-w-0 border-b border-border bg-transparent text-sm text-foreground',
+			'w-full min-w-0 border-b border-transparent bg-transparent text-sm font-medium text-foreground sm:border-border sm:font-normal',
 			'truncate pb-0.5 transition-colors focus:border-primary focus:outline-none'
 		)}
 		value={course.name}
@@ -174,7 +174,7 @@
 	<div
 		class={cn(
 			'col-start-1 row-start-2 sm:col-start-2 sm:row-start-1',
-			'flex items-center justify-between border-b border-border',
+			'flex items-center justify-between border-b border-transparent sm:border-border',
 			'pb-0.5 transition-colors focus-within:border-primary'
 		)}
 	>
@@ -216,7 +216,7 @@
 			class={cn(
 				'col-start-2 row-start-2 sm:col-start-3 sm:row-start-1',
 				'flex items-center justify-between border-b pb-0.5 transition-colors',
-				isFailingGrade ? 'border-destructive' : 'border-border',
+				isFailingGrade ? 'border-destructive' : 'border-transparent sm:border-border',
 				!isFailingGrade && 'focus-within:border-primary'
 			)}
 		>
