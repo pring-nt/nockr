@@ -229,10 +229,7 @@
 </div>
 
 <Dialog.Root bind:open={customDialogOpen}>
-	<Dialog.Content
-		onCloseAutoFocus={(e) => e.preventDefault()}
-		class="max-h-[85vh] overflow-y-auto sm:max-w-150"
-	>
+	<Dialog.Content class="max-h-[85vh] overflow-y-auto sm:max-w-150">
 		<Dialog.Header>
 			<Dialog.Title>Build Custom Theme</Dialog.Title>
 			<Dialog.Description>

@@ -89,7 +89,6 @@
 
 <Dialog bind:open onOpenChange={handleOpenChange}>
 	<DialogContent
-		onCloseAutoFocus={(e) => e.preventDefault()}
 		class="flex max-h-[90dvh] w-[calc(100vw-2rem)] max-w-md flex-col overflow-hidden p-4 sm:max-w-lg sm:p-6"
 	>
 		{#if step === 'upload'}

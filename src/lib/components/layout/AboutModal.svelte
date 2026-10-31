@@ -17,7 +17,6 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Content
-		onCloseAutoFocus={(e) => e.preventDefault()}
 		class="flex max-h-[90dvh] w-[calc(100vw-2rem)] max-w-md flex-col overflow-hidden p-4 sm:max-w-lg sm:p-6"
 	>
 		<Dialog.Header class="space-y-1 text-left">
