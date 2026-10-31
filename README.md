@@ -47,7 +47,7 @@ Ships with presets for four Philippine universities and a fully custom mode:
 Custom mode exposes full control over grade bounds, direction, step size, honor tier labels and thresholds, unit constraints, and honor policies.
 
 ### Plan Page
-A separate full-screen flowchart view of all terms. Courses can be dragged between terms — the move carries the full course object (name, units, grade). Changes sync back to the main tracker immediately.
+A separate full-screen flowchart view of all terms. Courses can be dragged between terms — the move carries the full course object (name, units, grade). Terms can be reordered by dragging their handle or from the Reorder Terms list, and `Term N` names renumber to match while renamed terms keep their names. Changes sync back to the main tracker immediately.
 
 ### Course Checklist
 A collapsible panel on the Plan page listing the courses in your curriculum. Drag a course onto a term to plan it, or move it there if it is already placed. Items check off on their own from your grades, and manual checks cover anything taken elsewhere. Ships with a DLSU GE preset; other universities start empty. Courses can be added one at a time, pasted as a list, or filled in by an ArchersHub import.
