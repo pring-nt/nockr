@@ -1,5 +1,19 @@
-import type { UniversitySettings, HonorTier } from '$lib/schemas';
+import {
+	DEFAULT_PROGRAM_UNITS,
+	type AppState,
+	type HonorTier,
+	type UniversitySettings
+} from '$lib/schemas';
 import { isPassingGrade } from './gpa';
+
+export function isValidProgramUnits(units: number | null | undefined): units is number {
+	return Number.isInteger(units) && (units as number) > 0;
+}
+
+/** A total still on the default was never chosen, unless the user said to keep it */
+export function isProgramUnitsSet(state: AppState): boolean {
+	return state.ui.hasConfirmedUnits || state.totalProgramUnits !== DEFAULT_PROGRAM_UNITS;
+}
 
 export type GradeStepResult =
 	| {

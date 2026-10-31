@@ -4,10 +4,11 @@ import {
 	ChecklistItemSchema,
 	CourseResultSchema,
 	CourseTypeSchema,
-	type AppState
+	type AppState,
+	type UniversityMode
 } from '$lib/schemas';
 import { DLSU_PRESET, UNIVERSITY_PRESETS } from '$lib/constants';
-import { defaultChecklist } from '$lib/logic/checklist';
+import { defaultChecklist, isUntouchedChecklist } from '$lib/logic/checklist';
 
 const STORAGE_KEY = 'nockr_state';
 const THEME_STORAGE_KEY = 'nockr_theme';
@@ -245,6 +246,38 @@ function createAppStore() {
 		subscribe,
 		set,
 		update,
+
+		selectUniversity(mode: UniversityMode) {
+			update((state) => {
+				if (mode === 'custom') {
+					const restoredCustom = state.customSettingsCache ?? state.universitySettings;
+					return { ...state, universitySettings: { ...restoredCustom, mode: 'custom' } };
+				}
+
+				const preset = UNIVERSITY_PRESETS[mode];
+				const customCache =
+					state.universitySettings.mode === 'custom'
+						? { ...state.universitySettings }
+						: state.customSettingsCache;
+
+				return {
+					...state,
+					customSettingsCache: customCache,
+					universitySettings: { ...preset },
+					courseChecklist: isUntouchedChecklist(state.courseChecklist)
+						? defaultChecklist(preset.mode)
+						: state.courseChecklist
+				};
+			});
+		},
+
+		setProgramUnits(totalProgramUnits: number) {
+			update((state) => ({
+				...state,
+				totalProgramUnits,
+				ui: { ...state.ui, hasConfirmedUnits: true }
+			}));
+		},
 
 		resetChecklist() {
 			update((state) => ({

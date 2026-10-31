@@ -4,6 +4,7 @@
 	import { appStore } from '$lib/stores/appState';
 	import { computeCGPA, computeUnitsEarned, computeAttemptedUnits } from '$lib/logic/gpa';
 	import { matchTier, isNoFailDisqualified } from '$lib/logic/honors';
+	import ProgramUnitsNotice from '$lib/components/summary/ProgramUnitsNotice.svelte';
 
 	let { open = $bindable(false) }: { open: boolean } = $props();
 
@@ -54,6 +55,8 @@
 		</Dialog.Header>
 
 		<div class="space-y-4 py-3">
+			<ProgramUnitsNotice />
+
 			<!-- Current Standing Card -->
 			<div class="relative overflow-hidden rounded-lg border border-border/60 bg-muted/30 p-4">
 				<div class="text-xs font-medium text-muted-foreground">Current Standing</div>

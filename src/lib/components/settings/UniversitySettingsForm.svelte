@@ -7,8 +7,7 @@
 	import { Plus, Trash2, Check, Award, GraduationCap, Lock, Copy } from 'lucide-svelte';
 	import { appStore } from '$lib/stores/appState';
 	import { UNIVERSITY_PRESETS } from '$lib/constants';
-	import { defaultChecklist, isUntouchedChecklist } from '$lib/logic/checklist';
-	import type { UniversitySettings, HonorTier, UniversityMode } from '$lib/schemas';
+	import type { UniversitySettings, HonorTier } from '$lib/schemas';
 
 	let settings = $derived($appStore.universitySettings);
 	let isPreset = $derived(settings.mode !== 'custom');
@@ -24,36 +23,6 @@
 	let triggerLabel = $derived(
 		presetLabels[selectedTemplate] ?? 'Select preset to populate Custom...'
 	);
-
-	function selectMode(mode: UniversityMode) {
-		appStore.update((state) => {
-			if (mode === 'custom') {
-				const restoredCustom = state.customSettingsCache ?? {
-					...state.universitySettings,
-					mode: 'custom'
-				};
-				return {
-					...state,
-					universitySettings: { ...restoredCustom, mode: 'custom' }
-				};
-			}
-
-			const preset = UNIVERSITY_PRESETS[mode];
-			const customCache =
-				state.universitySettings.mode === 'custom'
-					? { ...state.universitySettings }
-					: state.customSettingsCache;
-
-			return {
-				...state,
-				customSettingsCache: customCache,
-				universitySettings: { ...preset },
-				courseChecklist: isUntouchedChecklist(state.courseChecklist)
-					? defaultChecklist(preset.mode)
-					: state.courseChecklist
-			};
-		});
-	}
 
 	function loadPresetToCustom(presetKey: keyof typeof UNIVERSITY_PRESETS) {
 		const preset = UNIVERSITY_PRESETS[presetKey];
@@ -176,7 +145,7 @@
 					<Button
 						variant={settings.mode === 'dlsu' ? 'default' : 'outline'}
 						size="sm"
-						onclick={() => selectMode('dlsu')}
+						onclick={() => appStore.selectUniversity('dlsu')}
 						class="h-9 justify-between px-3 text-xs"
 					>
 						<span>DLSU</span>
@@ -186,7 +155,7 @@
 					<Button
 						variant={settings.mode === 'up' ? 'default' : 'outline'}
 						size="sm"
-						onclick={() => selectMode('up')}
+						onclick={() => appStore.selectUniversity('up')}
 						class="h-9 justify-between px-3 text-xs"
 					>
 						<span>UP</span>
@@ -199,7 +168,7 @@
 					<Button
 						variant={settings.mode === 'ust' ? 'default' : 'outline'}
 						size="sm"
-						onclick={() => selectMode('ust')}
+						onclick={() => appStore.selectUniversity('ust')}
 						class="h-9 justify-between px-3 text-xs"
 					>
 						<span>UST</span>
@@ -209,7 +178,7 @@
 					<Button
 						variant={settings.mode === 'admu' ? 'default' : 'outline'}
 						size="sm"
-						onclick={() => selectMode('admu')}
+						onclick={() => appStore.selectUniversity('admu')}
 						class="h-9 justify-between px-3 text-xs"
 					>
 						<span>ADMU</span>
@@ -221,7 +190,7 @@
 				<Button
 					variant={settings.mode === 'custom' ? 'default' : 'outline'}
 					size="sm"
-					onclick={() => selectMode('custom')}
+					onclick={() => appStore.selectUniversity('custom')}
 					class="h-9 w-full justify-between px-3 text-xs"
 				>
 					<span>Custom</span>

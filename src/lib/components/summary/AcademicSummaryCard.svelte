@@ -2,6 +2,7 @@
 	import { appStore } from '$lib/stores/appState';
 	import { tween } from '$lib/motion';
 	import { computeCGPA, computeNonGpaUnits, computeUnitsEarned } from '$lib/logic/gpa';
+	import { isValidProgramUnits } from '$lib/logic/unitCalc';
 	import { PenLine, Check, Award, ChevronRight, Share2, Calculator } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
@@ -9,6 +10,7 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import LatinHonorsModal from '$lib/components/honors/LatinHonorsModal.svelte';
 	import UnitRunwayModal from '$lib/components/summary/UnitRunwayModal.svelte';
+	import ProgramUnitsNotice from '$lib/components/summary/ProgramUnitsNotice.svelte';
 
 	let cgpa = $derived(computeCGPA($appStore.terms));
 	let unitsEarned = $derived(computeUnitsEarned($appStore.terms, $appStore.universitySettings));
@@ -30,8 +32,8 @@
 	}
 
 	function saveTotalUnits() {
-		if (tempTotalUnits > 0) {
-			appStore.update((state) => ({ ...state, totalProgramUnits: tempTotalUnits }));
+		if (isValidProgramUnits(tempTotalUnits) && tempTotalUnits !== totalProgramUnits) {
+			appStore.setProgramUnits(tempTotalUnits);
 		}
 		isEditingTotal = false;
 	}
@@ -239,6 +241,8 @@
 					target
 				</p>
 			{/if}
+
+			<ProgramUnitsNotice class="mt-3" />
 		</div>
 	</CardContent>
 </Card>

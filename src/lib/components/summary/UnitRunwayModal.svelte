@@ -8,6 +8,7 @@
 		gradedCourses,
 		isPassingGrade
 	} from '$lib/logic/gpa';
+	import ProgramUnitsNotice from '$lib/components/summary/ProgramUnitsNotice.svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Select from '$lib/components/ui/select';
 	import { Input } from '$lib/components/ui/input';
@@ -252,6 +253,8 @@
 				<p class="text-sm font-bold text-primary sm:text-base">{stats.remainingUnits}</p>
 			</div>
 		</div>
+
+		<ProgramUnitsNotice />
 
 		{#if stats.remainingUnits <= 0}
 			<div class="rounded-lg border border-primary/20 bg-primary/5 p-5 text-center">
