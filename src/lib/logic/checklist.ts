@@ -1,7 +1,9 @@
 import {
 	ChecklistItemSchema,
 	CourseSchema,
+	type ChecklistFilter,
 	type ChecklistItem,
+	type ChecklistSort,
 	type Course,
 	type Term,
 	type UniversitySettings
@@ -14,6 +16,7 @@ export type ChecklistStatus = 'open' | 'planned' | 'failed' | 'done';
 export interface ChecklistState {
 	status: ChecklistStatus;
 	termName: string | null;
+	termIndex: number | null;
 }
 
 export type ChecklistSeed = Pick<ChecklistItem, 'label' | 'units' | 'type'>;
@@ -44,18 +47,46 @@ export function getChecklistState(
 	settings: UniversitySettings
 ): ChecklistState {
 	const placements = findPlacements(terms, item.label);
+	const inTerm = (status: ChecklistStatus, placement: Placement): ChecklistState => ({
+		status,
+		termName: placement.term.name,
+		termIndex: terms.indexOf(placement.term)
+	});
 
 	const passed = placements.findLast((p) => isCoursePassed(p.course, settings));
-	if (passed) return { status: 'done', termName: passed.term.name };
-	if (item.completed) return { status: 'done', termName: null };
+	if (passed) return inTerm('done', passed);
+	if (item.completed) return { status: 'done', termName: null, termIndex: null };
 
 	const planned = placements.findLast((p) => !isCourseFinished(p.course));
-	if (planned) return { status: 'planned', termName: planned.term.name };
+	if (planned) return inTerm('planned', planned);
 
 	const failed = placements.at(-1);
-	return failed
-		? { status: 'failed', termName: failed.term.name }
-		: { status: 'open', termName: null };
+	return failed ? inTerm('failed', failed) : { status: 'open', termName: null, termIndex: null };
+}
+
+function matchesFilter(status: ChecklistStatus, filter: ChecklistFilter): boolean {
+	if (filter === 'all') return true;
+	if (filter === 'todo') return status === 'open' || status === 'failed';
+	return status === filter;
+}
+
+/** Applies the panel's filter and sort. Courses with no term sort after those that have one. */
+export function viewChecklist(
+	items: ChecklistItem[],
+	states: Map<string, ChecklistState>,
+	filter: ChecklistFilter,
+	sort: ChecklistSort
+): ChecklistItem[] {
+	const visible = items.filter((item) =>
+		matchesFilter(states.get(item.id)?.status ?? 'open', filter)
+	);
+	const termOrder = (item: ChecklistItem) =>
+		states.get(item.id)?.termIndex ?? Number.MAX_SAFE_INTEGER;
+
+	if (sort === 'alphabetical') {
+		return visible.sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+	}
+	return sort === 'term' ? visible.sort((a, b) => termOrder(a) - termOrder(b)) : visible;
 }
 
 /**

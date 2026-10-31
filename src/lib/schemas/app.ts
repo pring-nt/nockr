@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import { TermSchema } from './term';
-import { ChecklistItemSchema } from './checklist';
+import { ChecklistFilterSchema, ChecklistItemSchema, ChecklistSortSchema } from './checklist';
 import { UniversitySettingsSchema } from './university';
 
 export const UISettingsSchema = z.object({
 	cardViewMode: z.enum(['focus', 'grid']).default('focus'),
 	checklistPanelOpen: z.boolean().default(true),
+	checklistFilter: ChecklistFilterSchema.default('all'),
+	checklistSort: ChecklistSortSchema.default('custom'),
 	hasSeenOnboarding: z.boolean().default(false)
 });
 

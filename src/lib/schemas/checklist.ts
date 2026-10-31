@@ -9,4 +9,9 @@ export const ChecklistItemSchema = z.object({
 	completed: z.boolean().default(false)
 });
 
+export const ChecklistFilterSchema = z.enum(['all', 'todo', 'planned', 'done']);
+export const ChecklistSortSchema = z.enum(['custom', 'alphabetical', 'term']);
+
 export type ChecklistItem = z.infer<typeof ChecklistItemSchema>;
+export type ChecklistFilter = z.infer<typeof ChecklistFilterSchema>;
+export type ChecklistSort = z.infer<typeof ChecklistSortSchema>;

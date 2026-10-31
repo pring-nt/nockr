@@ -3,23 +3,52 @@
 	import { flip } from 'svelte/animate';
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, type DndEvent } from 'svelte-dnd-action';
 	import { appStore } from '$lib/stores/appState';
-	import { ChecklistItemSchema, type ChecklistItem } from '$lib/schemas';
+	import {
+		ChecklistItemSchema,
+		type ChecklistFilter,
+		type ChecklistItem,
+		type ChecklistSort
+	} from '$lib/schemas';
 	import {
 		getChecklistState,
 		mergeChecklist,
 		parseChecklistLines,
 		placeChecklistItem,
+		viewChecklist,
 		type ChecklistDragItem
 	} from '$lib/logic/checklist';
 	import ChecklistRow from '$lib/components/plan/ChecklistRow.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { ChevronLeft, ChevronRight, ClipboardList, Info, Plus, RotateCcw } from 'lucide-svelte';
+	import {
+		ArrowUpDown,
+		ChevronLeft,
+		ChevronRight,
+		ClipboardList,
+		Info,
+		Plus,
+		RotateCcw
+	} from 'lucide-svelte';
+	import { cn } from '$lib/utils.js';
 
 	const PASTE_PLACEHOLDER = 'CCPROG1, 3\nCCPROG2, 3\nGEPCOMM';
+
+	const filterOptions: { value: ChecklistFilter; label: string }[] = [
+		{ value: 'all', label: 'All' },
+		{ value: 'todo', label: 'To do' },
+		{ value: 'planned', label: 'Planned' },
+		{ value: 'done', label: 'Done' }
+	];
+
+	const sortOptions: { value: ChecklistSort; label: string }[] = [
+		{ value: 'custom', label: 'Default' },
+		{ value: 'alphabetical', label: 'A–Z' },
+		{ value: 'term', label: 'By term' }
+	];
 
 	let isOpen = $derived($appStore.ui?.checklistPanelOpen ?? true);
 	let items = $derived($appStore.courseChecklist ?? []);
@@ -30,6 +59,11 @@
 		new Map(items.map((item) => [item.id, getChecklistState(item, terms, settings)]))
 	);
 	let doneCount = $derived([...states.values()].filter((s) => s.status === 'done').length);
+
+	let filter = $derived($appStore.ui.checklistFilter);
+	let sort = $derived($appStore.ui.checklistSort);
+	let visibleItems = $derived(viewChecklist(items, states, filter, sort));
+	let isReorderable = $derived(filter === 'all' && sort === 'custom');
 
 	let newItemLabel = $state('');
 	let pasteText = $state('');
@@ -42,11 +76,11 @@
 		return list.map((item) => ({ ...item, fromChecklist: true }));
 	}
 
-	let dragItems = $state<ChecklistDragItem[]>(untrack(() => toDragItems(items)));
+	let dragItems = $state<ChecklistDragItem[]>(untrack(() => toDragItems(visibleItems)));
 	let isDragging = $state(false);
 
 	$effect(() => {
-		const next = toDragItems(items);
+		const next = toDragItems(visibleItems);
 		if (!isDragging) dragItems = next;
 	});
 
@@ -63,7 +97,7 @@
 		isDragging = false;
 
 		// A course dropped on a term leaves this list short, so only a drop back here is a reorder
-		if (e.detail.items.length === items.length) {
+		if (isReorderable && e.detail.items.length === items.length) {
 			const order = e.detail.items.map((item) => item.id);
 			appStore.update((state) => ({
 				...state,
@@ -72,7 +106,11 @@
 				)
 			}));
 		}
-		dragItems = toDragItems(items);
+		dragItems = toDragItems(visibleItems);
+	}
+
+	function setView(changes: { checklistFilter?: ChecklistFilter; checklistSort?: ChecklistSort }) {
+		appStore.update((state) => ({ ...state, ui: { ...state.ui, ...changes } }));
 	}
 
 	function togglePanel() {
@@ -229,6 +267,57 @@
 	</div>
 
 	{#if isOpen}
+		<!-- Filter and Sort -->
+		<div class="flex items-center gap-1 border-b border-border/40 px-3 py-1.5">
+			<div class="flex min-w-0 flex-1 gap-0.5" role="group" aria-label="Filter checklist">
+				{#each filterOptions as option (option.value)}
+					<button
+						type="button"
+						aria-pressed={filter === option.value}
+						onclick={() => setView({ checklistFilter: option.value })}
+						class={cn(
+							'rounded px-1.5 py-1 text-[10px] font-medium whitespace-nowrap transition-colors',
+							filter === option.value
+								? 'bg-primary/15 text-primary'
+								: 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+						)}
+					>
+						{option.label}
+					</button>
+				{/each}
+			</div>
+
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger>
+					{#snippet child({ props })}
+						<Button
+							{...props}
+							variant="ghost"
+							size="icon"
+							class={cn(
+								'h-6 w-6 shrink-0',
+								sort === 'custom' ? 'text-muted-foreground' : 'text-primary'
+							)}
+							aria-label="Sort checklist"
+						>
+							<ArrowUpDown size={13} />
+						</Button>
+					{/snippet}
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content align="end" class="w-36">
+					<DropdownMenu.Label>Sort by</DropdownMenu.Label>
+					<DropdownMenu.RadioGroup
+						value={sort}
+						onValueChange={(value) => setView({ checklistSort: value as ChecklistSort })}
+					>
+						{#each sortOptions as option (option.value)}
+							<DropdownMenu.RadioItem value={option.value}>{option.label}</DropdownMenu.RadioItem>
+						{/each}
+					</DropdownMenu.RadioGroup>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+		</div>
+
 		<!-- Checklist Scroll Container -->
 		<div
 			use:dndzone={{
@@ -252,7 +341,7 @@
 						<ChecklistRow
 							{item}
 							{terms}
-							state={states.get(item.id) ?? { status: 'open', termName: null }}
+							state={states.get(item.id) ?? { status: 'open', termName: null, termIndex: null }}
 							onToggle={() => updateItem(item.id, { completed: !item.completed })}
 							onDelete={() => deleteItem(item.id)}
 							onUpdate={(changes) => updateItem(item.id, changes)}
@@ -261,6 +350,11 @@
 					{/if}
 				</div>
 			{/each}
+			{#if dragItems.length === 0 && items.length > 0}
+				<p class="px-1 py-6 text-center text-[11px] text-muted-foreground">
+					No courses here (・_・)
+				</p>
+			{/if}
 		</div>
 
 		<!-- Add Course Input -->

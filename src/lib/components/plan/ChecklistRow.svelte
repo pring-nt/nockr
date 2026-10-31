@@ -138,8 +138,11 @@
 			{/if}
 		</div>
 
-		<span class="shrink-0 font-mono text-[10px] text-muted-foreground">
-			{item.units}u{item.type === 'graded' ? '' : '*'}
+		<span
+			class="shrink-0 font-mono text-[10px] text-muted-foreground"
+			title="{item.units} {item.units === 1 ? 'unit' : 'units'}"
+		>
+			{item.units}{item.type === 'graded' ? '' : '*'}
 		</span>
 
 		<DropdownMenu.Root>
