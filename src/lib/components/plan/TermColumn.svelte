@@ -3,8 +3,14 @@
 	import { flip } from 'svelte/animate';
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, type DndEvent } from 'svelte-dnd-action';
 	import { appStore } from '$lib/stores/appState';
-	import type { Term, Course } from '$lib/schemas';
-	import { computeTGPA, computeTermAttemptedUnits, computeTermUnitsEarned } from '$lib/logic/gpa';
+	import { CourseSchema, type Term, type Course } from '$lib/schemas';
+	import {
+		computeTGPA,
+		computeTermAttemptedUnits,
+		computeTermNonGpaUnits,
+		computeTermTotalUnits,
+		computeTermUnitsEarned
+	} from '$lib/logic/gpa';
 	import CourseCard from '$lib/components/plan/CourseCard.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
@@ -29,7 +35,8 @@
 	});
 
 	let tgpa = $derived(computeTGPA(term));
-	let totalUnits = $derived(term.courses.reduce((acc, c) => acc + c.units, 0));
+	let totalUnits = $derived(computeTermTotalUnits(term));
+	let nonGpaUnits = $derived(computeTermNonGpaUnits(term));
 	let attemptedUnits = $derived(computeTermAttemptedUnits(term));
 	let earnedUnits = $derived(computeTermUnitsEarned(term, settings));
 
@@ -71,7 +78,7 @@
 				t.id === term.id
 					? {
 							...t,
-							courses: [...t.courses, { id: newId, name: '', units: 3, grade: null }]
+							courses: [...t.courses, CourseSchema.parse({ id: newId })]
 						}
 					: t
 			)
@@ -205,6 +212,15 @@
 				>
 					{totalUnits}
 					{totalUnits === 1 ? 'unit' : 'units'}
+				</span>
+			{/if}
+
+			{#if nonGpaUnits > 0}
+				<span
+					class="inline-flex items-center rounded-md border border-border/50 bg-muted/60 px-2 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground"
+					title="Not counted in GPA or degree units"
+				>
+					+{nonGpaUnits} non-GPA
 				</span>
 			{/if}
 

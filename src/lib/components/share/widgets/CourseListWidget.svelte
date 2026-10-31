@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Course, GradeDisplayMode } from '$lib/schemas';
-	import { maskGrade } from '$lib/logic/share';
+	import { formatCourseGrade } from '$lib/logic/share';
 
 	let {
 		courses = [],
@@ -31,7 +31,7 @@
 					<td class="py-3 text-center font-mono text-base text-muted-foreground">{course.units}</td>
 					{#if gradeDisplay !== 'hidden'}
 						<td class="py-3 text-center font-mono text-lg font-black text-primary">
-							{maskGrade(course.grade, gradeDisplay) ?? '—'}
+							{formatCourseGrade(course, gradeDisplay) ?? '—'}
 						</td>
 					{/if}
 				</tr>

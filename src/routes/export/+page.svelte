@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { goto, afterNavigate } from '$app/navigation';
 	import type { ShareConfig, AspectRatio, GradeDisplayMode } from '$lib/schemas';
+	import { isCourseFinished } from '$lib/logic/gpa';
 	import { captureCanvas, getCanvasDimensions } from '$lib/logic/share';
 	import { appStore } from '$lib/stores/appState';
 	import ShareCanvas from '$lib/components/share/ShareCanvas.svelte';
@@ -31,8 +32,7 @@
 	let latestTerm = $derived.by(() => {
 		if (terms.length === 0) return undefined;
 		const latestCompleted = terms.findLast(
-			(t) =>
-				t.courses.length > 0 && t.courses.every((c) => c.grade !== null && c.grade !== undefined)
+			(t) => t.courses.length > 0 && t.courses.every((c) => isCourseFinished(c))
 		);
 		return latestCompleted ?? terms[terms.length - 1];
 	});

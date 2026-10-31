@@ -27,6 +27,9 @@
 	let fileInputEl = $state<HTMLInputElement | null>(null);
 
 	let totalCoursesCount = $derived(parsedTerms.reduce((acc, term) => acc + term.courses.length, 0));
+	let nonGpaCoursesCount = $derived(
+		parsedTerms.flatMap((term) => term.courses).filter((c) => c.type !== 'graded').length
+	);
 
 	function resetState() {
 		step = 'upload';
@@ -167,6 +170,12 @@
 					<p class="mb-2 text-xs font-bold text-foreground">
 						Found {parsedTerms.length} terms · {totalCoursesCount} courses
 					</p>
+					{#if nonGpaCoursesCount > 0}
+						<p class="mb-2 text-[11px] text-muted-foreground">
+							{nonGpaCoursesCount} of these are non-academic or credited, so they are not counted in your
+							GPA.
+						</p>
+					{/if}
 					<div
 						class="max-h-36 space-y-1 overflow-y-auto pr-1 font-mono text-xs text-muted-foreground sm:max-h-40"
 					>

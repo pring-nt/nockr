@@ -1,8 +1,10 @@
 <script lang="ts">
-	import type { Course, UniversitySettings } from '$lib/schemas';
+	import type { Course, CourseResult, CourseType, UniversitySettings } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
-	import { Trash2, Minus, Plus, GripVertical } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { isCourseFinished, withCourseType } from '$lib/logic/gpa';
+	import { Minus, Plus, GripVertical } from 'lucide-svelte';
+	import CourseMenu from '$lib/components/term/CourseMenu.svelte';
+	import CourseResultControl from '$lib/components/term/CourseResultControl.svelte';
 	import { cn } from '$lib/utils.js';
 
 	let {
@@ -22,11 +24,17 @@
 	let failingGrade = $derived(settings.failingGrade);
 	let gradeStep = $derived(settings.gradeStep ?? 0.25);
 
+	let minUnits = $derived(course.type === 'graded' ? 1 : 0);
+	let isFinished = $derived(isCourseFinished(course));
+
 	let isFailingGrade = $derived(
 		course.grade !== null && failingGrade !== null && course.grade === failingGrade
 	);
 
-	function updateField(field: 'name' | 'units' | 'grade', value: string | number | null) {
+	function updateField(
+		field: 'name' | 'units' | 'grade' | 'result',
+		value: string | number | null
+	) {
 		appStore.update((state) => ({
 			...state,
 			terms: state.terms.map((t) => {
@@ -34,6 +42,19 @@
 				return {
 					...t,
 					courses: t.courses.map((c) => (c.id === course.id ? { ...c, [field]: value } : c))
+				};
+			})
+		}));
+	}
+
+	function changeType(type: CourseType) {
+		appStore.update((state) => ({
+			...state,
+			terms: state.terms.map((t) => {
+				if (t.id !== termId) return t;
+				return {
+					...t,
+					courses: t.courses.map((c) => (c.id === course.id ? withCourseType(c, type) : c))
 				};
 			})
 		}));
@@ -61,20 +82,20 @@
 		const target = e.target as HTMLInputElement;
 		const val = Math.trunc(parseFloat(target.value));
 		if (!isNaN(val)) {
-			updateField('units', Math.max(1, Math.min(12, val)));
+			updateField('units', Math.max(minUnits, Math.min(12, val)));
 		}
 	}
 
 	function handleUnitsBlur(e: Event) {
 		const target = e.target as HTMLInputElement;
 		const val = Math.trunc(parseFloat(target.value));
-		const clamped = isNaN(val) ? course.units || 1 : Math.max(1, Math.min(12, val));
+		const clamped = isNaN(val) ? course.units || minUnits : Math.max(minUnits, Math.min(12, val));
 		updateField('units', clamped);
 		target.value = String(clamped);
 	}
 
 	function updateUnits(delta: number) {
-		const next = Math.max(1, Math.min(12, (course.units || 0) + delta));
+		const next = Math.max(minUnits, Math.min(12, (course.units || 0) + delta));
 		updateField('units', next);
 	}
 
@@ -133,7 +154,8 @@
 	function onUnitsKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-			document.getElementById(`plan-course-${course.id}-grade`)?.focus();
+			if (course.type === 'credited') onNavigate?.();
+			else document.getElementById(`plan-course-${course.id}-grade`)?.focus();
 		}
 		if (e.key === 'ArrowUp') {
 			e.preventDefault();
@@ -168,7 +190,7 @@
 <div
 	class={cn(
 		'group relative flex flex-col gap-2 rounded-lg border p-2.5 shadow-2xs transition-colors duration-150',
-		course.grade === null
+		!isFinished
 			? 'border-border/70 bg-card/70 text-card-foreground shadow-xs hover:border-primary/50'
 			: 'border-border/40 bg-muted/40 text-muted-foreground hover:border-border/70'
 	)}
@@ -185,10 +207,10 @@
 			class={cn(
 				'w-full border-b border-transparent bg-transparent text-sm transition-colors focus:outline-none',
 				'placeholder:text-muted-foreground/50',
-				course.grade === null
+				!isFinished
 					? 'font-semibold text-foreground hover:border-border focus:border-primary'
 					: 'font-medium text-muted-foreground hover:border-border/60 focus:border-primary',
-				course.grade !== null && 'focus:text-foreground'
+				isFinished && 'focus:text-foreground'
 			)}
 			value={course.name}
 			placeholder="Course name"
@@ -196,15 +218,12 @@
 			onkeydown={onNameKeydown}
 		/>
 
-		<Button
-			variant="ghost"
-			size="icon"
-			onclick={deleteCourse}
-			title="Delete course"
-			class="h-6 w-6 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
-		>
-			<Trash2 size={13} />
-		</Button>
+		<CourseMenu
+			type={course.type}
+			triggerClass="h-6 w-6 shrink-0 text-muted-foreground/50 hover:text-foreground"
+			onTypeChange={changeType}
+			onDelete={deleteCourse}
+		/>
 	</div>
 
 	<!-- Bottom Row: Units & Grade Steppers -->
@@ -231,10 +250,10 @@
 					id="plan-course-{course.id}-units"
 					class={cn(
 						'w-full bg-transparent p-0 text-center text-xs focus:outline-none',
-						course.grade === null ? 'font-medium text-foreground' : 'text-muted-foreground'
+						!isFinished ? 'font-medium text-foreground' : 'text-muted-foreground'
 					)}
 					type="number"
-					min="1"
+					min={minUnits}
 					max="12"
 					step="1"
 					value={course.units}
@@ -256,54 +275,65 @@
 
 		<!-- Grade Stepper -->
 		<div class="flex flex-col gap-0.5">
-			<span class="text-[10px] text-muted-foreground">Grade</span>
-			<div
-				class={cn(
-					'flex items-center justify-between border-b pb-0.5 transition-colors',
-					isFailingGrade ? 'border-destructive' : 'border-border/60',
-					!isFailingGrade && 'focus-within:border-primary'
-				)}
-			>
-				<button
-					type="button"
-					tabindex="-1"
-					onclick={() => updateGrade(-1)}
-					class="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
-				>
-					<Minus size={11} />
-				</button>
-
-				<input
-					id="plan-course-{course.id}-grade"
+			<span class="text-[10px] text-muted-foreground">
+				{course.type === 'graded' ? 'Grade' : 'Result'}
+			</span>
+			{#if course.type === 'graded'}
+				<div
 					class={cn(
-						'w-full bg-transparent p-0 text-center font-mono text-xs focus:outline-none',
-						isFailingGrade
-							? 'font-semibold text-destructive'
-							: course.grade !== null
-								? 'font-medium text-foreground'
-								: 'text-muted-foreground/60'
+						'flex items-center justify-between border-b pb-0.5 transition-colors',
+						isFailingGrade ? 'border-destructive' : 'border-border/60',
+						!isFailingGrade && 'focus-within:border-primary'
 					)}
-					type="number"
-					min={gradeMin}
-					max={gradeMax}
-					step={gradeStep}
-					placeholder="—"
-					value={gradeDisplay}
-					onfocus={handleGradeFocus}
-					oninput={handleGradeInput}
-					onblur={handleGradeBlur}
-					onkeydown={onGradeKeydown}
-				/>
-
-				<button
-					type="button"
-					tabindex="-1"
-					onclick={() => updateGrade(1)}
-					class="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
 				>
-					<Plus size={11} />
-				</button>
-			</div>
+					<button
+						type="button"
+						tabindex="-1"
+						onclick={() => updateGrade(-1)}
+						class="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+					>
+						<Minus size={11} />
+					</button>
+
+					<input
+						id="plan-course-{course.id}-grade"
+						class={cn(
+							'w-full bg-transparent p-0 text-center font-mono text-xs focus:outline-none',
+							isFailingGrade
+								? 'font-semibold text-destructive'
+								: course.grade !== null
+									? 'font-medium text-foreground'
+									: 'text-muted-foreground/60'
+						)}
+						type="number"
+						min={gradeMin}
+						max={gradeMax}
+						step={gradeStep}
+						placeholder="—"
+						value={gradeDisplay}
+						onfocus={handleGradeFocus}
+						oninput={handleGradeInput}
+						onblur={handleGradeBlur}
+						onkeydown={onGradeKeydown}
+					/>
+
+					<button
+						type="button"
+						tabindex="-1"
+						onclick={() => updateGrade(1)}
+						class="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+					>
+						<Plus size={11} />
+					</button>
+				</div>
+			{:else}
+				<CourseResultControl
+					{course}
+					id="plan-course-{course.id}-grade"
+					onChange={(result: CourseResult) => updateField('result', result)}
+					{onNavigate}
+				/>
+			{/if}
 		</div>
 	</div>
 </div>

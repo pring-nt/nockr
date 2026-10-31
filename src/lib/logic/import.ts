@@ -1,4 +1,4 @@
-import type { Term, Course } from '$lib/schemas';
+import type { Term, Course, CourseResult, CourseType } from '$lib/schemas';
 
 export type ImportResult =
 	| { status: 'ok'; terms: Term[] }
@@ -11,9 +11,19 @@ interface RawRow {
 	credits: number;
 	grade: number | null;
 	status: string;
+	type: CourseType;
+	result: CourseResult;
+	enrolled: boolean;
 }
 
-const INCLUDE_STATUSES = ['passed', 'failed', 'registered'];
+const INCLUDE_STATUSES = ['passed', 'failed', 'registered', 'credited'];
+
+const STATUS_RESULTS: Record<string, CourseResult> = {
+	passed: 'passed',
+	failed: 'failed',
+	credited: 'passed',
+	registered: 'pending'
+};
 
 function parseGrade(raw: string): number | null {
 	const cleaned = raw.trim().replace(/^'+/, '').replace(/'+$/, '');
@@ -25,6 +35,23 @@ function parseGrade(raw: string): number | null {
 function extractTrimesterNumber(termName: string): number {
 	const match = termName.match(/\d+/);
 	return match ? parseInt(match[0], 10) : 999;
+}
+
+function classifyCourse(
+	courseCode: string,
+	credits: number,
+	grade: number | null,
+	status: string
+): CourseType {
+	if (status === 'credited') return 'credited';
+
+	// 0-credit courses (SAS, LASARE, NSTP orientations) and pass/fail courses with no
+	// numeric grade (PASSED, E) carry no GPA weight. LCLS (Lasallian Studies 1/2/3) and
+	// NSTP have credits but are not counted toward GPA per DLSU policy
+	if (credits === 0 || courseCode.startsWith('LCLS') || courseCode.startsWith('NSTP')) {
+		return 'non-academic';
+	}
+	return status === 'passed' && grade === null ? 'non-academic' : 'graded';
 }
 
 function parseHTMLTable(html: string): RawRow[] {
@@ -41,44 +68,35 @@ function parseHTMLTable(html: string): RawRow[] {
 
 		if (cells.length < 9) return [];
 
-		const [sessionRaw, term, courseCode, , , creditsRaw, , gradesRaw, statusRaw] = cells;
-
-		// Session is '-' for all curriculum placeholders — only real
-		// enrollments have an actual academic year in this column
-		const session = sessionRaw.trim().replace(/^'+/, '').replace(/'+$/, '');
-		if (!session || session === '-') return [];
+		const [sessionRaw, term, courseCodeRaw, , , creditsRaw, , gradesRaw, statusRaw] = cells;
 
 		const status = statusRaw.trim().toLowerCase();
-		const credits = parseFloat(creditsRaw);
-
 		if (!INCLUDE_STATUSES.includes(status)) return [];
 
-		// Skip 0-credit courses (SAS, LASARE, NSTP orientations)
-		if (isNaN(credits) || credits === 0) return [];
+		// Session is '-' for curriculum placeholders, so only real enrollments have an
+		// academic year here. Credited courses are the exception: they were never enrolled in
+		const session = sessionRaw.trim().replace(/^'+/, '').replace(/'+$/, '');
+		const enrolled = Boolean(session) && session !== '-';
+		if (!enrolled && status !== 'credited') return [];
 
-		// LCLS (Lasallian Studies 1/2/3) have 1 credit but are not
-		// counted toward GPA per DLSU policy
-		if (courseCode.trim().startsWith('LCLS')) return [];
+		const credits = parseFloat(creditsRaw);
+		if (isNaN(credits)) return [];
 
-		let grade: number | null = null;
-
-		if (status === 'passed') {
-			grade = parseGrade(gradesRaw);
-			// Skip pass/fail courses with no numeric grade (PASSED, E, INC, etc.)
-			if (grade === null) return [];
-		} else if (status === 'failed') {
-			grade = parseGrade(gradesRaw) ?? 0;
-		} else if (status === 'registered') {
-			grade = null;
-		}
+		const courseCode = courseCodeRaw.trim();
+		const parsedGrade = parseGrade(gradesRaw);
+		const grade = status === 'failed' ? (parsedGrade ?? 0) : parsedGrade;
+		const type = classifyCourse(courseCode, credits, grade, status);
 
 		return [
 			{
 				term: term.trim(),
-				courseCode: courseCode.trim(),
+				courseCode,
 				credits: Math.round(credits),
 				grade,
-				status
+				status,
+				type,
+				result: type === 'graded' ? 'pending' : STATUS_RESULTS[status],
+				enrolled
 			}
 		];
 	});
@@ -86,19 +104,29 @@ function parseHTMLTable(html: string): RawRow[] {
 
 function deduplicateRows(rows: RawRow[]): RawRow[] {
 	const seen = new Map<string, RawRow>();
+	const rank = (row: RawRow) => (row.enrolled ? 2 : 0) + (row.grade !== null ? 1 : 0);
 
 	for (const row of rows) {
 		const key = `${row.term}::${row.courseCode}`;
 		const existing = seen.get(key);
 
-		if (!existing) {
-			seen.set(key, row);
-		} else if (existing.grade === null && row.grade !== null) {
+		if (!existing || rank(row) > rank(existing)) {
 			seen.set(key, row);
 		}
 	}
 
 	return Array.from(seen.values());
+}
+
+function toCourse(row: RawRow): Course {
+	return {
+		id: crypto.randomUUID(),
+		name: row.courseCode,
+		units: row.credits,
+		grade: row.grade,
+		type: row.type,
+		result: row.result
+	};
 }
 
 export async function parseGradeExport(file: File): Promise<ImportResult> {
@@ -139,12 +167,7 @@ export async function parseGradeExport(file: File): Promise<ImportResult> {
 			.map(([, termRows], index) => ({
 				id: crypto.randomUUID(),
 				name: `Term ${index + 1}`,
-				courses: termRows.map((r): Course => ({
-					id: crypto.randomUUID(),
-					name: r.courseCode,
-					units: r.credits,
-					grade: r.grade
-				}))
+				courses: termRows.map(toCourse)
 			}));
 
 		// Append registered courses in their own sequential term with blank (null) grades
@@ -152,12 +175,7 @@ export async function parseGradeExport(file: File): Promise<ImportResult> {
 			terms.push({
 				id: crypto.randomUUID(),
 				name: `Term ${terms.length + 1}`,
-				courses: registeredRows.map((r): Course => ({
-					id: crypto.randomUUID(),
-					name: r.courseCode,
-					units: r.credits,
-					grade: null
-				}))
+				courses: registeredRows.map(toCourse)
 			});
 		}
 

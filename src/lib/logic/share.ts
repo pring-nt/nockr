@@ -1,5 +1,5 @@
 import { toPng } from 'html-to-image';
-import type { ShareConfig, AspectRatio, GradeDisplayMode } from '$lib/schemas';
+import type { Course, ShareConfig, AspectRatio, GradeDisplayMode } from '$lib/schemas';
 import { ASPECT_RATIO_DIMENSIONS } from '$lib/constants';
 
 const THEME_TOKENS = [
@@ -75,6 +75,13 @@ export function getCanvasDimensions(ratio: AspectRatio): { width: number; height
 
 export function maskGpa(gpa: number): string {
 	return `${Math.floor(gpa)}.XXX`;
+}
+
+export function formatCourseGrade(course: Course, mode: GradeDisplayMode): string | null {
+	if (course.type === 'graded') return maskGrade(course.grade, mode);
+	if (course.type === 'credited') return 'CR';
+	if (course.result === 'pending') return null;
+	return course.result === 'passed' ? 'P' : 'F';
 }
 
 export function maskGrade(grade: number | null, mode: GradeDisplayMode): string | null {

@@ -1,7 +1,14 @@
 <script lang="ts">
-	import type { Term } from '$lib/schemas';
+	import { CourseSchema, type CourseType, type Term } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
-	import { computeTGPA, computeTermAttemptedUnits, computeTermUnitsEarned } from '$lib/logic/gpa';
+	import {
+		computeTGPA,
+		computeTermAttemptedUnits,
+		computeTermNonGpaUnits,
+		computeTermTotalUnits,
+		computeTermUnitsEarned,
+		withCourseType
+	} from '$lib/logic/gpa';
 	import { getDeansListTier } from '$lib/logic/honors';
 	import { Plus, Trash2, GraduationCap, Share2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -22,7 +29,8 @@
 
 	let settings = $derived($appStore.universitySettings);
 	let tgpa = $derived(computeTGPA(term));
-	let totalUnits = $derived(term.courses.reduce((acc, c) => acc + (c.units || 0), 0));
+	let totalUnits = $derived(computeTermTotalUnits(term));
+	let nonGpaUnits = $derived(computeTermNonGpaUnits(term));
 	let attemptedUnits = $derived(computeTermAttemptedUnits(term));
 	let earnedUnits = $derived(computeTermUnitsEarned(term, settings));
 	let deansListTier = $derived(getDeansListTier(term, tgpa, settings));
@@ -48,7 +56,7 @@
 				t.id === term.id
 					? {
 							...t,
-							courses: [...t.courses, { id: newId, name: '', units: 3, grade: null }]
+							courses: [...t.courses, CourseSchema.parse({ id: newId })]
 						}
 					: t
 			)
@@ -71,7 +79,7 @@
 
 	function updateCourse(
 		courseId: string,
-		field: 'name' | 'units' | 'grade',
+		field: 'name' | 'units' | 'grade' | 'result',
 		value: string | number | null
 	) {
 		appStore.update((state) => ({
@@ -81,6 +89,20 @@
 					? {
 							...t,
 							courses: t.courses.map((c) => (c.id === courseId ? { ...c, [field]: value } : c))
+						}
+					: t
+			)
+		}));
+	}
+
+	function changeCourseType(courseId: string, type: CourseType) {
+		appStore.update((state) => ({
+			...state,
+			terms: state.terms.map((t) =>
+				t.id === term.id
+					? {
+							...t,
+							courses: t.courses.map((c) => (c.id === courseId ? withCourseType(c, type) : c))
 						}
 					: t
 			)
@@ -109,7 +131,7 @@
 		<div class="flex items-start justify-between gap-2">
 			<!-- Left section: Term Name + Units on top, Dean's List Badge underneath -->
 			<div class="flex min-w-0 flex-1 flex-col gap-1.5">
-				<div class="flex min-w-0 items-center gap-2">
+				<div class="flex min-w-0 flex-wrap items-center gap-2">
 					{#if isEditing}
 						<input
 							class="min-w-0 flex-1 border-b border-primary bg-transparent text-base font-semibold text-foreground focus:outline-none sm:text-lg"
@@ -150,6 +172,15 @@
 						>
 							{totalUnits}
 							{totalUnits === 1 ? 'unit' : 'units'}
+						</span>
+					{/if}
+
+					{#if nonGpaUnits > 0}
+						<span
+							class="inline-flex shrink-0 items-center rounded-md border border-border/50 bg-muted/60 px-2 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground"
+							title="Not counted in GPA or degree units"
+						>
+							+{nonGpaUnits} non-GPA
 						</span>
 					{/if}
 				</div>
@@ -233,6 +264,7 @@
 				{course}
 				onDelete={() => deleteCourse(course.id)}
 				onUpdate={(field, value) => updateCourse(course.id, field, value)}
+				onTypeChange={(type) => changeCourseType(course.id, type)}
 				onNavigate={() => handleNavigate(course.id)}
 			/>
 		{/each}

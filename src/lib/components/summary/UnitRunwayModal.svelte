@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
 	import { calcAtGrade, generateGradeSteps, type GradeStepResult } from '$lib/logic/unitCalc';
-	import { isPassingGrade } from '$lib/logic/gpa';
+	import {
+		computeAttemptedUnits,
+		computeCGPA,
+		computeUnitsEarned,
+		gradedCourses,
+		isPassingGrade
+	} from '$lib/logic/gpa';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Select from '$lib/components/ui/select';
 	import { Input } from '$lib/components/ui/input';
@@ -28,33 +34,17 @@
 
 	// Calculate current CGPA, units earned, attempted units, and check for existing failing grades
 	let stats = $derived.by(() => {
-		let attempted = 0;
-		let earned = 0;
-		let points = 0;
-		let hasFailingGrade = false;
+		const terms = $appStore.terms ?? [];
+		const earned = computeUnitsEarned(terms, settings);
 
-		for (const term of $appStore.terms ?? []) {
-			for (const course of term.courses ?? []) {
-				if (course.grade !== null && course.grade !== undefined && course.units > 0) {
-					attempted += course.units;
-					points += course.units * course.grade;
-
-					if (isPassingGrade(course.grade, settings)) {
-						earned += course.units;
-					} else {
-						hasFailingGrade = true;
-					}
-				}
-			}
-		}
-
-		const cgpa = attempted > 0 ? points / attempted : 0;
 		return {
-			cgpa: Math.round(cgpa * 1000) / 1000,
-			attemptedUnits: attempted,
+			cgpa: Math.round((computeCGPA(terms) ?? 0) * 1000) / 1000,
+			attemptedUnits: computeAttemptedUnits(terms),
 			unitsEarned: earned,
 			remainingUnits: Math.max(0, totalProgramUnits - earned),
-			hasFailingGrade
+			hasFailingGrade: terms.some((t) =>
+				gradedCourses(t.courses).some((c) => !isPassingGrade(c.grade, settings))
+			)
 		};
 	});
 
