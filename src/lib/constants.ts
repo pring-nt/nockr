@@ -1,4 +1,4 @@
-import type { UniversitySettings, AspectRatio } from '$lib/schemas';
+import type { UniversitySettings, ShareFormat } from '$lib/schemas';
 
 // Course Checklist
 
@@ -128,11 +128,10 @@ export const UNIVERSITY_PRESETS = {
 	admu: ADMU_PRESET
 } as const;
 
-export const ASPECT_RATIO_DIMENSIONS: Record<AspectRatio, { width: number; height: number }> = {
-	'9:16': { width: 1080, height: 1920 },
-	'3:4': { width: 1080, height: 1440 },
-	'2:3': { width: 1080, height: 1620 },
-	'1:1': { width: 1080, height: 1080 },
-	'4:3': { width: 1440, height: 1080 },
-	'16:9': { width: 1920, height: 1080 }
+// Captured at 2x, so these are half the exported pixels
+export const SHARE_CANVAS_WIDTH = 540;
+export const SHARE_FORMAT_HEIGHTS: Record<Exclude<ShareFormat, 'sticker'>, number> = {
+	'9:16': 960,
+	'3:4': 720,
+	'1:1': 540
 };

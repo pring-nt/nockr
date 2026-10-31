@@ -1,6 +1,65 @@
-import { toPng } from 'html-to-image';
-import type { Course, ShareConfig, AspectRatio, GradeDisplayMode } from '$lib/schemas';
-import { ASPECT_RATIO_DIMENSIONS } from '$lib/constants';
+import { toBlob } from 'html-to-image';
+import type {
+	Course,
+	ShareLayoutOptions,
+	ShareMessage,
+	ShareSubject,
+	Term,
+	UniversitySettings,
+	ValueDisplay
+} from '$lib/schemas';
+import { computeCGPA, computeTGPA, computeUnitsEarned } from '$lib/logic/gpa';
+import { getDeansListTier, getLatinHonorsTier, isNoFailDisqualified } from '$lib/logic/honors';
+
+export interface ShareRow {
+	id: string;
+	label: string;
+	value: string | null;
+	isMuted?: boolean;
+}
+
+export interface ShareData {
+	heading: string;
+	gpaLabel: string;
+	gpa: string | null;
+	honor: string | null;
+	honorEarned: boolean;
+	courses: ShareRow[];
+	stats: ShareRow[];
+	cgpa: ShareRow | null;
+	trend: number[];
+}
+
+export interface SharePhoto {
+	url: string;
+	zoom: number;
+	x: number;
+	y: number;
+	brightness: number;
+	contrast: number;
+	saturation: number;
+}
+
+export const PHOTO_DEFAULTS = {
+	zoom: 100,
+	x: 50,
+	y: 50,
+	brightness: 100,
+	contrast: 100,
+	saturation: 100
+};
+
+// Twice the widest canvas, which keeps phone photos small enough for the export to embed
+const PHOTO_MAX_EDGE = 2160;
+
+// Kaomoji with combining accents fall apart in the sticker's mono font
+export const NOT_EARNED_MESSAGES: Record<ShareMessage, string> = {
+	'another-term': 'Another term down (・‿・)',
+	'still-climbing': 'Still climbing o(≧▽≦)o',
+	'one-step': 'One step closer (ﾉ◕ヮ◕)ﾉ',
+	progress: 'Progress is progress (＾▽＾)',
+	onward: 'Onward and upward ヽ(・∀・)ﾉ'
+};
 
 const THEME_TOKENS = [
 	'--base',
@@ -50,49 +109,130 @@ export function getThemeStyles(): Record<string, string> {
 	return styles;
 }
 
-export async function captureCanvas(el: HTMLElement, config: ShareConfig): Promise<string> {
-	if (typeof document !== 'undefined') {
-		await document.fonts.ready;
+export async function loadPhoto(file: File): Promise<string> {
+	const bitmap = await createImageBitmap(file);
+	const scale = Math.min(1, PHOTO_MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+
+	const canvas = document.createElement('canvas');
+	canvas.width = Math.round(bitmap.width * scale);
+	canvas.height = Math.round(bitmap.height * scale);
+	canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+	bitmap.close();
+
+	const blob = await new Promise<Blob | null>((done) => canvas.toBlob(done, 'image/jpeg', 0.92));
+	if (!blob) throw new Error('Photo could not be read');
+	return URL.createObjectURL(blob);
+}
+
+export async function captureCanvas(el: HTMLElement): Promise<Blob> {
+	await document.fonts.ready;
+
+	const blob = await toBlob(el, { pixelRatio: 2 });
+	if (!blob) throw new Error('Canvas capture returned nothing');
+	return blob;
+}
+
+export function formatGpa(gpa: number | null, mode: ValueDisplay): string | null {
+	if (gpa === null || mode === 'hidden') return null;
+	return mode === 'masked' ? `${Math.floor(gpa)}.XXX` : gpa.toFixed(3);
+}
+
+export function formatCourseGrade(course: Course, mode: ValueDisplay): string | null {
+	if (mode === 'hidden') return null;
+	if (course.type === 'credited') return 'CR';
+	if (course.type === 'non-academic') {
+		if (course.result === 'pending') return null;
+		return course.result === 'passed' ? 'P' : 'F';
 	}
+	if (course.grade === null) return null;
+	return mode === 'masked' ? `${Math.floor(course.grade)}.XX` : course.grade.toFixed(2);
+}
 
-	let backgroundColor: string | undefined;
+/** TGPA per term scaled to 0-1, where 1 is always the best term regardless of gradeDirection */
+export function getTrend(terms: Term[], settings: UniversitySettings): number[] {
+	const values = terms.map(computeTGPA).filter((tgpa) => tgpa !== null);
+	if (values.length < 2) return [];
 
-	if (config.background === 'solid' && typeof document !== 'undefined') {
-		backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--base').trim();
-	} else if (config.background === 'transparent') {
-		backgroundColor = undefined;
-	}
+	const min = Math.min(...values);
+	const span = Math.max(...values) - min;
+	if (span === 0) return values.map(() => 0.5);
 
-	return toPng(el, {
-		pixelRatio: 2,
-		...(backgroundColor !== undefined && { backgroundColor })
+	return values.map((value) => {
+		const scaled = (value - min) / span;
+		return settings.gradeDirection === 'ascending' ? scaled : 1 - scaled;
 	});
 }
 
-export function getCanvasDimensions(ratio: AspectRatio): { width: number; height: number } {
-	return ASPECT_RATIO_DIMENSIONS[ratio];
+function resolveHonor(tier: { label: string } | null, options: ShareLayoutOptions): string | null {
+	if (!options.showHonors) return null;
+	if (tier) return tier.label;
+	return options.showNotEarnedMessage ? NOT_EARNED_MESSAGES[options.notEarnedMessage] : null;
 }
 
-export function maskGpa(gpa: number): string {
-	return `${Math.floor(gpa)}.XXX`;
-}
+export function buildShareData({
+	terms,
+	term,
+	subject,
+	settings,
+	options,
+	courseModes
+}: {
+	terms: Term[];
+	term: Term | undefined;
+	subject: ShareSubject;
+	settings: UniversitySettings;
+	options: ShareLayoutOptions;
+	courseModes: Record<string, ValueDisplay>;
+}): ShareData {
+	const cgpa = computeCGPA(terms);
 
-export function formatCourseGrade(course: Course, mode: GradeDisplayMode): string | null {
-	if (course.type === 'graded') return maskGrade(course.grade, mode);
-	if (course.type === 'credited') return 'CR';
-	if (course.result === 'pending') return null;
-	return course.result === 'passed' ? 'P' : 'F';
-}
-
-export function maskGrade(grade: number | null, mode: GradeDisplayMode): string | null {
-	if (grade === null) return null;
-
-	switch (mode) {
-		case 'full':
-			return grade.toFixed(2);
-		case 'masked':
-			return `${Math.floor(grade)}.XX`;
-		case 'hidden':
-			return null;
+	if (subject === 'cumulative' || !term) {
+		const tier = isNoFailDisqualified(terms, settings) ? null : getLatinHonorsTier(cgpa, settings);
+		return {
+			heading: 'Cumulative',
+			gpaLabel: 'CGPA',
+			gpa: formatGpa(cgpa, options.gpaDisplay),
+			honor: resolveHonor(tier, options),
+			honorEarned: tier !== null,
+			courses: [],
+			stats: [
+				{ id: 'units', label: 'Units earned', value: String(computeUnitsEarned(terms, settings)) },
+				{ id: 'terms', label: 'Terms', value: String(terms.length) }
+			],
+			cgpa: null,
+			trend: options.showTrend ? getTrend(terms, settings) : []
+		};
 	}
+
+	const tgpa = computeTGPA(term);
+	const tier = getDeansListTier(term, tgpa, settings);
+	const courses = options.showCourses
+		? term.courses.filter((course) => course.type === 'graded' || options.showNonAcademic)
+		: [];
+
+	return {
+		heading: term.name,
+		gpaLabel: 'TGPA',
+		gpa: formatGpa(tgpa, options.gpaDisplay),
+		honor: resolveHonor(tier, options),
+		honorEarned: tier !== null,
+		courses: courses.map((course) => ({
+			id: course.id,
+			label: course.name || 'Untitled Course',
+			value: formatCourseGrade(course, courseModes[course.id] ?? options.gradeDisplay),
+			isMuted: course.type !== 'graded'
+		})),
+		stats: [],
+		cgpa: options.showCgpa
+			? {
+					id: 'cgpa',
+					label: 'CGPA',
+					// Hiding the TGPA shouldn't also blank a CGPA that was asked for
+					value: formatGpa(cgpa, options.gpaDisplay === 'masked' ? 'masked' : 'full')
+				}
+			: null,
+		trend: options.showTrend
+			? getTrend(terms.slice(0, terms.findIndex((t) => t.id === term.id) + 1), settings)
+			: []
+	};
 }
