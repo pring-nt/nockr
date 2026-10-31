@@ -4,6 +4,7 @@ export interface ThemeMeta {
 	name: ThemeName;
 	label: string;
 	isDark: boolean;
+	isUniversity?: boolean;
 }
 
 export const THEMES: ThemeMeta[] = [
@@ -20,6 +21,14 @@ export const THEMES: ThemeMeta[] = [
 	{ name: 'nord', label: 'Nord', isDark: true },
 	{ name: 'solarized-dark', label: 'Solarized Dark', isDark: true },
 	{ name: 'solarized-light', label: 'Solarized Light', isDark: false },
+	{ name: 'dlsu-green-dark', label: 'DLSU Green Dark', isDark: true, isUniversity: true },
+	{ name: 'dlsu-green-light', label: 'DLSU Green Light', isDark: false, isUniversity: true },
+	{ name: 'admu-blue-dark', label: 'ADMU Blue Dark', isDark: true, isUniversity: true },
+	{ name: 'admu-blue-light', label: 'ADMU Blue Light', isDark: false, isUniversity: true },
+	{ name: 'up-maroon-dark', label: 'UP Maroon Dark', isDark: true, isUniversity: true },
+	{ name: 'up-maroon-light', label: 'UP Maroon Light', isDark: false, isUniversity: true },
+	{ name: 'ust-yellow-dark', label: 'UST Yellow Dark', isDark: true, isUniversity: true },
+	{ name: 'ust-yellow-light', label: 'UST Yellow Light', isDark: false, isUniversity: true },
 	{ name: 'custom', label: 'Custom', isDark: true }
 ];
 

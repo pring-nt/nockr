@@ -12,9 +12,15 @@
 
 	// 'custom' opens the palette builder, so it gets its own card
 	const presetThemes = THEMES.filter((theme) => theme.name !== 'custom');
+	const generalThemes = presetThemes.filter((theme) => !theme.isUniversity);
 	const themeGroups = [
-		{ label: 'Dark', themes: presetThemes.filter((theme) => theme.isDark) },
-		{ label: 'Light', themes: presetThemes.filter((theme) => !theme.isDark) }
+		{ label: 'Dark', themes: generalThemes.filter((theme) => theme.isDark) },
+		{ label: 'Light', themes: generalThemes.filter((theme) => !theme.isDark) },
+		{
+			label: 'University Colors',
+			note: 'Inspired by school colors. Nockr is not affiliated with or endorsed by any university.',
+			themes: presetThemes.filter((theme) => theme.isUniversity)
+		}
 	];
 	const swatches = ['--iris', '--rose', '--foam', '--gold', '--love'];
 
@@ -196,7 +202,10 @@
 			<p class="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
 				{group.label}
 			</p>
-			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+			{#if group.note}
+				<p class="text-[11px] text-muted-foreground">{group.note}</p>
+			{/if}
+			<div class={['grid grid-cols-2 gap-2 lg:grid-cols-4', !group.note && 'sm:grid-cols-3']}>
 				{#each group.themes as theme (theme.name)}
 					{@render themeCard(theme)}
 				{/each}
