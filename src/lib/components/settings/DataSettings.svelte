@@ -4,8 +4,9 @@
 	import { toast } from 'svelte-sonner';
 	import ImportModal from '$lib/components/settings/ImportModal.svelte';
 	import { appStore } from '$lib/stores/appState';
+	import { shareStore } from '$lib/stores/shareState';
 	import { themeStore } from '$lib/stores/themeState';
-	import { ThemeSettingsSchema } from '$lib/schemas';
+	import { ShareConfigSchema, ThemeSettingsSchema } from '$lib/schemas';
 
 	let importModalOpen = $state(false);
 	let fileInputEl = $state<HTMLInputElement | null>(null);
@@ -13,7 +14,8 @@
 	function exportState() {
 		const backupData = {
 			...$appStore,
-			theme: $themeStore
+			theme: $themeStore,
+			share: $shareStore
 		};
 		const dataStr =
 			'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backupData, null, 2));
@@ -45,6 +47,9 @@
 
 				const themeResult = ThemeSettingsSchema.safeParse(parsed?.theme);
 				if (themeResult.success) themeStore.set(themeResult.data);
+
+				const shareResult = ShareConfigSchema.safeParse(parsed?.share);
+				if (shareResult.success) shareStore.update(() => shareResult.data);
 
 				toast.success('Backup restored');
 			} catch {
