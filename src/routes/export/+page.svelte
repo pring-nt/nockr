@@ -8,6 +8,7 @@
 		ShareInk,
 		ShareLayout,
 		ShareLayoutOptions,
+		ShareMessage,
 		ShareSubject,
 		ShareTextWeight,
 		ValueDisplay
@@ -19,6 +20,7 @@
 		captureCanvas,
 		getTrend,
 		loadPhoto,
+		NOT_EARNED_MESSAGES,
 		PHOTO_DEFAULTS,
 		type SharePhoto
 	} from '$lib/logic/share';
@@ -27,6 +29,8 @@
 	import { shareStore } from '$lib/stores/shareState';
 	import SegmentedControl from '$lib/components/share/SegmentedControl.svelte';
 	import ShareCanvas from '$lib/components/share/ShareCanvas.svelte';
+	import SharePreviewViewer from '$lib/components/share/SharePreviewViewer.svelte';
+	import ShareSlider from '$lib/components/share/ShareSlider.svelte';
 	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button';
 	import { Switch } from '$lib/components/ui/switch';
@@ -39,7 +43,8 @@
 		Share2,
 		ZoomIn,
 		ZoomOut,
-		RotateCcw
+		RotateCcw,
+		Maximize
 	} from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -262,6 +267,7 @@
 	let effectiveScale = $derived(baseScale * userZoom);
 
 	let backdrop = $state<Backdrop>('dark');
+	let isViewerOpen = $state(false);
 
 	// Held in memory only, so a photo is never saved with the settings
 	let photo = $state<SharePhoto | null>(null);
@@ -294,6 +300,10 @@
 			console.error('Photo failed to load:', err);
 			toast.error('That photo could not be opened');
 		}
+	}
+
+	function setPhotoValue(key: keyof typeof PHOTO_DEFAULTS, value: number) {
+		if (photo) photo[key] = value;
 	}
 
 	function resetPhoto() {
@@ -454,6 +464,18 @@
 				</div>
 			</div>
 
+			<!-- The preview is too small to inspect on a phone, so a tap anywhere opens it full screen -->
+			<button
+				type="button"
+				aria-label="Open full screen preview"
+				onclick={() => (isViewerOpen = true)}
+				class="absolute inset-0 z-10 flex items-end justify-end p-2 sm:hidden"
+			>
+				<span class="rounded-md bg-(--surface)/90 p-1.5 text-(--text) shadow-md">
+					<Maximize class="size-4" />
+				</span>
+			</button>
+
 			<!-- Floating Zoom Toolbar Controls -->
 			<div
 				class="absolute right-3 bottom-3 z-10 hidden items-center gap-1 rounded-lg border border-border/40 bg-(--surface)/90 p-1 text-(--text) shadow-md backdrop-blur-xs sm:flex"
@@ -497,6 +519,16 @@
 					title="Fit to Container"
 				>
 					<RotateCcw class="size-3.5" />
+				</Button>
+
+				<Button
+					variant="ghost"
+					size="icon"
+					class="size-7 border-none"
+					onclick={() => (isViewerOpen = true)}
+					title="Full Screen"
+				>
+					<Maximize class="size-3.5" />
 				</Button>
 			</div>
 		</div>
@@ -571,6 +603,25 @@
 						options.showNotEarnedMessage,
 						(showNotEarnedMessage) => setOptions({ showNotEarnedMessage })
 					)}
+					{#if options.showNotEarnedMessage}
+						<Select.Root
+							type="single"
+							value={options.notEarnedMessage}
+							onValueChange={(value) => setOptions({ notEarnedMessage: value as ShareMessage })}
+						>
+							<Select.Trigger
+								aria-label="Kind message"
+								class="w-full border-none bg-(--highlight-low) text-xs shadow-none hover:bg-(--highlight-med)"
+							>
+								{NOT_EARNED_MESSAGES[options.notEarnedMessage]}
+							</Select.Trigger>
+							<Select.Content>
+								{#each Object.entries(NOT_EARNED_MESSAGES) as [value, label] (value)}
+									<Select.Item {value} {label}>{label}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+					{/if}
 				{/if}
 
 				{#if isTerm}
@@ -696,20 +747,13 @@
 					</Select.Root>
 				</div>
 
-				<label class="grid grid-cols-[84px_minmax(0,1fr)_32px] items-center gap-2 text-xs">
-					<span>Text shadow</span>
-					<input
-						type="range"
-						min="0"
-						max="100"
-						value={config.shadowStrength}
-						oninput={(e) => setConfig({ shadowStrength: e.currentTarget.valueAsNumber })}
-						class="h-6 w-full accent-(--iris)"
-					/>
-					<span class="text-right font-mono text-[11px] text-(--subtle)">
-						{config.shadowStrength}
-					</span>
-				</label>
+				<ShareSlider
+					label="Text shadow"
+					value={config.shadowStrength}
+					min={0}
+					max={100}
+					onChange={(shadowStrength) => setConfig({ shadowStrength })}
+				/>
 
 				<div>
 					{@render sectionLabel('Format')}
@@ -740,21 +784,15 @@
 				</div>
 
 				{#if photo && background === 'photo'}
-					<div class="space-y-2 rounded-lg bg-muted/30 p-3">
+					<div class="space-y-3 rounded-lg bg-muted/30 p-3">
 						{#each photoSliders as slider (slider.key)}
-							<label class="grid grid-cols-[84px_minmax(0,1fr)_32px] items-center gap-2 text-xs">
-								<span>{slider.label}</span>
-								<input
-									type="range"
-									min={slider.min}
-									max={slider.max}
-									bind:value={photo[slider.key]}
-									class="h-6 w-full accent-(--iris)"
-								/>
-								<span class="text-right font-mono text-[11px] text-(--subtle)">
-									{photo[slider.key]}
-								</span>
-							</label>
+							<ShareSlider
+								label={slider.label}
+								value={photo[slider.key]}
+								min={slider.min}
+								max={slider.max}
+								onChange={(value) => setPhotoValue(slider.key, value)}
+							/>
 						{/each}
 
 						<div class="flex gap-2 pt-1">
@@ -797,3 +835,13 @@
 		</div>
 	</div>
 </div>
+
+<SharePreviewViewer
+	bind:open={isViewerOpen}
+	{config}
+	{data}
+	{photo}
+	width={dimensions.width}
+	height={dimensions.height}
+	backdrop={BACKDROPS[backdrop]}
+/>

@@ -2,6 +2,7 @@ import { toBlob } from 'html-to-image';
 import type {
 	Course,
 	ShareLayoutOptions,
+	ShareMessage,
 	ShareSubject,
 	Term,
 	UniversitySettings,
@@ -51,9 +52,13 @@ export const PHOTO_DEFAULTS = {
 // Twice the widest canvas, which keeps phone photos small enough for the export to embed
 const PHOTO_MAX_EDGE = 2160;
 
-const NOT_EARNED_MESSAGE = {
-	term: 'Another term down :)',
-	cumulative: 'Still climbing :)'
+// Kaomoji with combining accents fall apart in the sticker's mono font
+export const NOT_EARNED_MESSAGES: Record<ShareMessage, string> = {
+	'another-term': 'Another term down (・‿・)',
+	'still-climbing': 'Still climbing o(≧▽≦)o',
+	'one-step': 'One step closer (ﾉ◕ヮ◕)ﾉ',
+	progress: 'Progress is progress (＾▽＾)',
+	onward: 'Onward and upward ヽ(・∀・)ﾉ'
 };
 
 const THEME_TOKENS = [
@@ -158,14 +163,10 @@ export function getTrend(terms: Term[], settings: UniversitySettings): number[] 
 	});
 }
 
-function resolveHonor(
-	tier: { label: string } | null,
-	subject: ShareSubject,
-	options: ShareLayoutOptions
-): string | null {
+function resolveHonor(tier: { label: string } | null, options: ShareLayoutOptions): string | null {
 	if (!options.showHonors) return null;
 	if (tier) return tier.label;
-	return options.showNotEarnedMessage ? NOT_EARNED_MESSAGE[subject] : null;
+	return options.showNotEarnedMessage ? NOT_EARNED_MESSAGES[options.notEarnedMessage] : null;
 }
 
 export function buildShareData({
@@ -191,7 +192,7 @@ export function buildShareData({
 			heading: 'Cumulative',
 			gpaLabel: 'CGPA',
 			gpa: formatGpa(cgpa, options.gpaDisplay),
-			honor: resolveHonor(tier, 'cumulative', options),
+			honor: resolveHonor(tier, options),
 			honorEarned: tier !== null,
 			courses: [],
 			stats: [
@@ -213,7 +214,7 @@ export function buildShareData({
 		heading: term.name,
 		gpaLabel: 'TGPA',
 		gpa: formatGpa(tgpa, options.gpaDisplay),
-		honor: resolveHonor(tier, 'term', options),
+		honor: resolveHonor(tier, options),
 		honorEarned: tier !== null,
 		courses: courses.map((course) => ({
 			id: course.id,

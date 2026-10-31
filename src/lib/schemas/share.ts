@@ -27,12 +27,21 @@ export const ValueDisplaySchema = z.enum([
 	'hidden'
 ]);
 
+export const ShareMessageSchema = z.enum([
+	'another-term',
+	'still-climbing',
+	'one-step',
+	'progress',
+	'onward'
+]);
+
 export const ShareLayoutOptionsSchema = z.object({
 	align: z.enum(['left', 'center']).default('center'),
 	gpaDisplay: ValueDisplaySchema.default('full'),
 	gradeDisplay: ValueDisplaySchema.default('full'),
 	showHonors: z.boolean().default(true),
 	showNotEarnedMessage: z.boolean().default(false),
+	notEarnedMessage: ShareMessageSchema.default('another-term'),
 	showCourses: z.boolean().default(true),
 	showNonAcademic: z.boolean().default(false),
 	showTrend: z.boolean().default(false),
@@ -65,6 +74,7 @@ export type ShareLayoutOptions = z.infer<typeof ShareLayoutOptionsSchema>;
 export type ShareSubject = z.infer<typeof ShareSubjectSchema>;
 export type ShareFormat = z.infer<typeof ShareFormatSchema>;
 export type ShareInk = z.infer<typeof ShareInkSchema>;
+export type ShareMessage = z.infer<typeof ShareMessageSchema>;
 export type ShareHighlight = z.infer<typeof ShareHighlightSchema>;
 export type ShareTextWeight = z.infer<typeof ShareTextWeightSchema>;
 export type ValueDisplay = z.infer<typeof ValueDisplaySchema>;

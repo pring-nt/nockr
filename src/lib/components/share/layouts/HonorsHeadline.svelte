@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ShareData } from '$lib/logic/share';
+	import ShareHonorText from '../ShareHonorText.svelte';
 	import ShareRows from '../ShareRows.svelte';
 	import TrendLine from '../TrendLine.svelte';
 
@@ -15,11 +16,13 @@
 </script>
 
 <p
-	class="share-hero w-fit font-serif leading-none {headline.length > 14
-		? 'text-[80px]'
-		: 'text-[104px]'}"
+	class="share-hero w-fit font-serif leading-[1.3] {headline.length > 18
+		? 'text-[60px]'
+		: headline.length > 14
+			? 'text-[80px]'
+			: 'text-[104px]'}"
 >
-	{headline}
+	<ShareHonorText text={headline} />
 </p>
 
 {#if details}
