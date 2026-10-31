@@ -41,7 +41,7 @@
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<div class="flex items-center gap-2">
-				<div class="rounded-lg bg-primary/10 p-2 text-primary">
+				<div class="rounded-md bg-primary/10 p-2 text-primary">
 					<Award size={20} />
 				</div>
 				<div>
@@ -55,7 +55,7 @@
 
 		<div class="space-y-4 py-3">
 			<!-- Current Standing Card -->
-			<div class="relative overflow-hidden rounded-xl border border-border/60 bg-muted/30 p-4">
+			<div class="relative overflow-hidden rounded-lg border border-border/60 bg-muted/30 p-4">
 				<div class="text-xs font-medium text-muted-foreground">Current Standing</div>
 				<div class="mt-1 flex items-baseline justify-between">
 					<span class="gradient-text text-xl font-semibold">
@@ -75,7 +75,7 @@
 			</div>
 
 			<!-- Projected Standing Card -->
-			<div class="relative overflow-hidden rounded-xl border border-primary/20 bg-primary/5 p-4">
+			<div class="relative overflow-hidden rounded-lg border border-primary/20 bg-primary/5 p-4">
 				<div class="flex items-center gap-1.5 text-xs font-medium text-primary">
 					<Sparkles size={14} />
 					<span>Maximum Projected Standing</span>

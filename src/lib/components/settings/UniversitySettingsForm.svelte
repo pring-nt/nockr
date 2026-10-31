@@ -166,7 +166,9 @@
 	<div class="grid items-start gap-4 lg:grid-cols-2">
 		<!-- Preset Selector -->
 		<div class="space-y-2.5">
-			<Label class="text-xs font-semibold text-foreground">University Preset</Label>
+			<Label class="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+				University Preset
+			</Label>
 
 			<div class="space-y-2">
 				<!-- Row 1: DLSU & UP -->
@@ -260,8 +262,8 @@
 		</div>
 
 		<!-- Grade Scale & Direction -->
-		<div class="space-y-3 rounded-xl bg-muted/30 p-3.5">
-			<span class="font-semibold text-foreground">Grading Scale & Direction</span>
+		<div class="space-y-3 rounded-lg bg-muted/30 p-3.5">
+			<p class="font-semibold text-foreground">Grading Scale & Direction</p>
 
 			<div class="grid grid-cols-2 gap-2.5">
 				<div class="space-y-1">
@@ -319,12 +321,12 @@
 
 			<div class="space-y-1">
 				<Label class="text-[11px] text-muted-foreground">Direction</Label>
-				<div class="flex h-9 items-center gap-1 rounded-lg border border-input bg-muted/40 p-1">
+				<div class="flex h-9 items-center gap-1 rounded-md border border-input bg-muted/40 p-1">
 					<button
 						type="button"
 						disabled={isPreset}
 						onclick={() => updateSetting('gradeDirection', 'ascending')}
-						class="h-full flex-1 rounded-md text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 {settings.gradeDirection ===
+						class="h-full flex-1 rounded-sm text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 {settings.gradeDirection ===
 						'ascending'
 							? 'border border-border/40 bg-background font-semibold text-primary shadow-xs'
 							: 'text-muted-foreground hover:text-foreground'}"
@@ -335,7 +337,7 @@
 						type="button"
 						disabled={isPreset}
 						onclick={() => updateSetting('gradeDirection', 'descending')}
-						class="h-full flex-1 rounded-md text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 {settings.gradeDirection ===
+						class="h-full flex-1 rounded-sm text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 {settings.gradeDirection ===
 						'descending'
 							? 'border border-border/40 bg-background font-semibold text-primary shadow-xs'
 							: 'text-muted-foreground hover:text-foreground'}"
@@ -349,7 +351,7 @@
 
 	<div class="grid items-start gap-4 lg:grid-cols-2">
 		<!-- Dean's List Settings -->
-		<div class="space-y-3 rounded-xl bg-muted/30 p-3.5">
+		<div class="space-y-3 rounded-lg bg-muted/30 p-3.5">
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-1.5 font-semibold text-foreground">
 					<GraduationCap size={15} class="text-primary" />
@@ -477,7 +479,7 @@
 		</div>
 
 		<!-- Latin Honors Settings -->
-		<div class="space-y-3 rounded-xl bg-muted/30 p-3.5">
+		<div class="space-y-3 rounded-lg bg-muted/30 p-3.5">
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-1.5 font-semibold text-foreground">
 					<Award size={15} class="text-primary" />

@@ -39,19 +39,19 @@
 			{/each}
 		</nav>
 
-		<div class="min-w-0 space-y-8">
-			<section id="appearance" class="scroll-mt-6 space-y-3">
-				<h2 class="text-sm font-semibold text-foreground">Appearance</h2>
+		<div class="min-w-0 space-y-4 sm:space-y-6">
+			<section id="appearance" class="glass scroll-mt-6 space-y-4 rounded-xl p-4 sm:p-6">
+				<h2 class="text-base font-semibold text-foreground">Appearance</h2>
 				<ThemeSettings />
 			</section>
 
-			<section id="university" class="scroll-mt-6 space-y-3 border-t border-border/40 pt-6">
-				<h2 class="text-sm font-semibold text-foreground">University</h2>
+			<section id="university" class="glass scroll-mt-6 space-y-4 rounded-xl p-4 sm:p-6">
+				<h2 class="text-base font-semibold text-foreground">University</h2>
 				<UniversitySettingsForm />
 			</section>
 
-			<section id="data" class="scroll-mt-6 space-y-3 border-t border-border/40 pt-6">
-				<h2 class="text-sm font-semibold text-foreground">Data and Backup</h2>
+			<section id="data" class="glass scroll-mt-6 space-y-4 rounded-xl p-4 sm:p-6">
+				<h2 class="text-base font-semibold text-foreground">Data and Backup</h2>
 				<DataSettings />
 			</section>
 		</div>

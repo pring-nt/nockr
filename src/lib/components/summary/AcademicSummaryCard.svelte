@@ -37,7 +37,7 @@
 	}
 </script>
 
-<Card class="glass border-border/40">
+<Card class="glass gap-0 border-border/40 py-0 ring-0">
 	<CardContent class="space-y-5 p-5 sm:p-6">
 		<!-- Header Row with Share Action -->
 		<div class="flex items-center justify-between border-b border-border/30 pb-3">
@@ -67,9 +67,9 @@
 		</div>
 
 		<!-- Stats row -->
-		<div class="grid grid-cols-1 items-start gap-6 sm:grid-cols-3 sm:gap-4">
+		<div class="grid grid-cols-2 items-start gap-x-4 gap-y-5 sm:grid-cols-3">
 			<!-- Cumulative GPA Column -->
-			<div class="space-y-2">
+			<div class="col-span-2 space-y-1 sm:col-span-1">
 				<span class="text-xs font-medium tracking-wider text-muted-foreground uppercase">
 					Cumulative GPA
 				</span>
@@ -78,60 +78,6 @@
 					class="gradient-text font-mono text-4xl font-bold tracking-tight text-primary sm:text-5xl"
 				>
 					{cgpa !== null ? cgpa.toFixed(3) : '—'}
-				</div>
-
-				<!-- Parallel Modal Action Pills -->
-				<div class="flex flex-wrap items-center gap-2">
-					<!-- Honors Standing Pill -->
-					<Tooltip.Root>
-						<Tooltip.Trigger>
-							{#snippet child({ props })}
-								<button
-									{...props}
-									type="button"
-									onclick={() => (honorsModalOpen = true)}
-									class="group inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary shadow-xs transition-all hover:border-primary/50 hover:bg-primary/20 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
-								>
-									<Award size={14} class="shrink-0 transition-transform group-hover:scale-110" />
-									<span>Honors Standing</span>
-									<ChevronRight
-										size={13}
-										class="opacity-70 transition-transform group-hover:translate-x-0.5"
-									/>
-								</button>
-							{/snippet}
-						</Tooltip.Trigger>
-						<Tooltip.Content>
-							<p>View Latin honors standing</p>
-						</Tooltip.Content>
-					</Tooltip.Root>
-
-					<!-- Unit Runway Pill (Matched directly to Honors Standing) -->
-					<Tooltip.Root>
-						<Tooltip.Trigger>
-							{#snippet child({ props })}
-								<button
-									{...props}
-									type="button"
-									onclick={() => (unitCalcModalOpen = true)}
-									class="group inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary shadow-xs transition-all hover:border-primary/50 hover:bg-primary/20 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
-								>
-									<Calculator
-										size={14}
-										class="shrink-0 transition-transform group-hover:scale-110"
-									/>
-									<span>Unit Runway</span>
-									<ChevronRight
-										size={13}
-										class="opacity-70 transition-transform group-hover:translate-x-0.5"
-									/>
-								</button>
-							{/snippet}
-						</Tooltip.Trigger>
-						<Tooltip.Content>
-							<p>Calculate unit runway for target honors</p>
-						</Tooltip.Content>
-					</Tooltip.Root>
 				</div>
 			</div>
 
@@ -156,9 +102,60 @@
 			</div>
 		</div>
 
+		<!-- Parallel Modal Action Pills -->
+		<div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+			<!-- Honors Standing Pill -->
+			<Tooltip.Root>
+				<Tooltip.Trigger>
+					{#snippet child({ props })}
+						<button
+							{...props}
+							type="button"
+							onclick={() => (honorsModalOpen = true)}
+							class="group inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2 py-1.5 text-xs font-medium text-primary shadow-xs transition-all hover:border-primary/50 hover:bg-primary/20 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none sm:px-3"
+						>
+							<Award size={14} class="shrink-0 transition-transform group-hover:scale-110" />
+							<span>Honors Standing</span>
+							<ChevronRight
+								size={13}
+								class="hidden opacity-70 transition-transform group-hover:translate-x-0.5 sm:block"
+							/>
+						</button>
+					{/snippet}
+				</Tooltip.Trigger>
+				<Tooltip.Content>
+					<p>View Latin honors standing</p>
+				</Tooltip.Content>
+			</Tooltip.Root>
+
+			<!-- Unit Runway Pill (Matched directly to Honors Standing) -->
+			<Tooltip.Root>
+				<Tooltip.Trigger>
+					{#snippet child({ props })}
+						<button
+							{...props}
+							type="button"
+							onclick={() => (unitCalcModalOpen = true)}
+							class="group inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2 py-1.5 text-xs font-medium text-primary shadow-xs transition-all hover:border-primary/50 hover:bg-primary/20 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none sm:px-3"
+						>
+							<Calculator size={14} class="shrink-0 transition-transform group-hover:scale-110" />
+							<span>Unit Runway</span>
+							<ChevronRight
+								size={13}
+								class="hidden opacity-70 transition-transform group-hover:translate-x-0.5 sm:block"
+							/>
+						</button>
+					{/snippet}
+				</Tooltip.Trigger>
+				<Tooltip.Content>
+					<p>Calculate unit runway for target honors</p>
+				</Tooltip.Content>
+			</Tooltip.Root>
+		</div>
+
 		<!-- Progress bar row -->
 		<div class="space-y-2 border-t border-border/30 pt-2">
-			<div class="flex items-center justify-between text-xs">
+			<div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
 				<div class="flex items-center gap-1.5 text-muted-foreground">
 					<span>Degree Progress</span>
 					<span class="font-mono font-medium text-foreground">({progressPercent}%)</span>
@@ -231,7 +228,7 @@
 			<div class="h-1.5 w-full overflow-hidden rounded-full bg-muted/40">
 				<div
 					use:tween={{ styles: { width: `${progressPercent}%` }, animateOnMount: true }}
-					class="h-full bg-primary"
+					class="h-full rounded-full bg-primary"
 					style="width: 0%"
 				></div>
 			</div>

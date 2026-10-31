@@ -155,7 +155,7 @@
 
 <div
 	class={cn(
-		'flex h-full max-h-full shrink-0 flex-col rounded-xl border p-3 shadow-xs transition-colors duration-150',
+		'relative flex h-full max-h-full shrink-0 flex-col rounded-xl border p-3 shadow-xs transition-colors duration-150',
 		deck ? 'w-full' : 'w-70 backdrop-blur-md',
 		isHovered
 			? 'border-primary/60 bg-primary/10 shadow-lg ring-2 shadow-primary/5 ring-primary/40'
@@ -258,6 +258,14 @@
 			</div>
 		{/each}
 	</div>
+
+	{#if localCourses.length === 0}
+		<p
+			class="pointer-events-none absolute inset-x-6 top-1/2 -translate-y-1/2 text-center text-[11px] text-muted-foreground"
+		>
+			Nothing planned yet. Drag a course here (・‿・)
+		</p>
+	{/if}
 
 	<!-- Inline Add Course Button -->
 	<Button

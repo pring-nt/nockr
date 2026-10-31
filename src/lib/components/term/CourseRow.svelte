@@ -182,7 +182,7 @@
 			type="button"
 			tabindex="-1"
 			onclick={() => updateUnits(-1)}
-			class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
+			class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
 		>
 			<Minus size={12} />
 		</button>
@@ -204,7 +204,7 @@
 			type="button"
 			tabindex="-1"
 			onclick={() => updateUnits(1)}
-			class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
+			class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
 		>
 			<Plus size={12} />
 		</button>
@@ -224,7 +224,7 @@
 				type="button"
 				tabindex="-1"
 				onclick={() => updateGrade(-1)}
-				class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
+				class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
 			>
 				<Minus size={12} />
 			</button>
@@ -251,7 +251,7 @@
 				type="button"
 				tabindex="-1"
 				onclick={() => updateGrade(1)}
-				class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
+				class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
 			>
 				<Plus size={12} />
 			</button>

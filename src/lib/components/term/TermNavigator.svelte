@@ -171,7 +171,7 @@
 	<div class="flex flex-col justify-between gap-4 pt-2 sm:flex-row sm:items-center">
 		<div
 			use:smoothScroll
-			class="flex flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent items-center gap-2 overflow-x-auto overscroll-x-contain pb-2"
+			class="flex flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent items-center gap-2 overflow-x-auto overscroll-x-contain pb-2 max-sm:[scrollbar-width:none]!"
 		>
 			{#each $appStore.terms as term (term.id)}
 				<button
@@ -180,7 +180,7 @@
 						setTerm(String(term.id));
 						setViewMode('focus');
 					}}
-					class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all
+					class="shrink-0 rounded-md px-4 py-1.5 text-sm font-medium transition-all
                   {activeTermId === term.id && viewMode === 'focus'
 						? 'bg-primary text-primary-foreground shadow-sm'
 						: 'bg-muted/50 text-muted-foreground hover:bg-muted'}"

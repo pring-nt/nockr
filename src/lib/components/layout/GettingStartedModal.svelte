@@ -20,9 +20,9 @@
 
 		<div class="mt-3 flex-1 space-y-3 overflow-y-auto px-1">
 			<!-- Step 1 -->
-			<div class="flex gap-3 rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
+			<div class="flex gap-3 rounded-lg border border-border bg-muted/30 p-3.5 sm:p-4">
 				<div
-					class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+					class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
 				>
 					<Settings size={16} />
 				</div>
@@ -38,9 +38,9 @@
 			</div>
 
 			<!-- Step 2 -->
-			<div class="flex gap-3 rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
+			<div class="flex gap-3 rounded-lg border border-border bg-muted/30 p-3.5 sm:p-4">
 				<div
-					class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+					class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
 				>
 					<Ruler size={16} />
 				</div>
@@ -48,16 +48,16 @@
 					<p class="text-sm font-semibold text-foreground">Set your total program units</p>
 					<p class="text-xs leading-relaxed text-muted-foreground">
 						On the <span class="font-medium text-foreground">Overview</span> page, find the degree progress
-						bar on your summary card and click the unit count to edit it. This is used to track how far
-						along you are and powers the unit calculator.
+						bar on your summary card and use the pencil next to your target. This is used to track how
+						far along you are and powers the unit calculator.
 					</p>
 				</div>
 			</div>
 
 			<!-- Step 3 -->
-			<div class="flex gap-3 rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
+			<div class="flex gap-3 rounded-lg border border-border bg-muted/30 p-3.5 sm:p-4">
 				<div
-					class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+					class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
 				>
 					<BookOpen size={16} />
 				</div>
@@ -72,9 +72,9 @@
 			</div>
 
 			<!-- Step 4 — DLSU only -->
-			<div class="flex gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3.5 sm:p-4">
+			<div class="flex gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3.5 sm:p-4">
 				<div
-					class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+					class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
 				>
 					<FileSpreadsheet size={16} />
 				</div>
@@ -82,17 +82,17 @@
 					<div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
 						<p class="text-sm font-semibold text-foreground">Import from ArchersHub</p>
 						<span
-							class="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
+							class="rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
 						>
 							DLSU only
 						</span>
 					</div>
 					<p class="text-xs leading-relaxed text-muted-foreground">
-						Skip manual entry for courses you've already taken. Use the <span
-							class="font-medium text-foreground">spreadsheet icon</span
-						> in the Data section of Settings to import your grade history directly from your ArchersHub
-						Curriculum Progression export. Core courses only — electives and minor courses will need to
-						be added manually.
+						Skip manual entry for courses you've already taken. Use <span
+							class="font-medium text-foreground">Import Grades</span
+						> in the Data section of Settings to bring in your grade history from your ArchersHub Curriculum
+						Progression export, and courses you haven't taken yet fill your checklist. Core courses only
+						— electives and minor courses will need to be added manually.
 					</p>
 				</div>
 			</div>

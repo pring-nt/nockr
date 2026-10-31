@@ -136,7 +136,7 @@
 	}
 </script>
 
-<Card class="glass border-border/40">
+<Card class="glass gap-0 border-border/40 py-0 ring-0">
 	<CardHeader class="p-3 pb-3 sm:p-6 sm:pb-3">
 		<div class="flex items-start justify-between gap-3">
 			<div class="min-w-0 flex-1">
