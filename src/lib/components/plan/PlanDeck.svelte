@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { animate, cubicBezier } from 'animejs';
 	import { appStore } from '$lib/stores/appState';
+	import { isMotionReduced } from '$lib/motion';
 	import { swipeDeck } from '$lib/actions/swipeDeck';
 	import TermColumn from '$lib/components/plan/TermColumn.svelte';
 	import TermReorderDialog from '$lib/components/term/TermReorderDialog.svelte';
@@ -8,7 +10,7 @@
 
 	const SETTLE_MS = 220;
 	const POP_MS = 320;
-	const POP_EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+	const POP_EASE = cubicBezier(0.34, 1.56, 0.64, 1);
 	const COMMIT_RATIO = 0.28;
 	const COMMIT_VELOCITY = 0.5;
 	const MAX_TILT_DEG = 10;
@@ -20,7 +22,7 @@
 	let dx = $state(0);
 	let revealDirection = $state<-1 | 0 | 1>(0);
 	let isSettling = $state(false);
-	let isPopping = $state(false);
+	let revealScale = $state(REVEAL_SCALE);
 	let width = $state(0);
 	let isReorderOpen = $state(false);
 
@@ -41,24 +43,42 @@
 		dx = isAtEnd ? next * 0.3 : next;
 	}
 
-	function settle(to: number, duration: number, onDone?: () => void) {
+	function reset() {
+		dx = 0;
+		revealDirection = 0;
+		revealScale = REVEAL_SCALE;
+		isSettling = false;
+	}
+
+	function settle(to: number, onCommit?: () => void) {
+		if (isMotionReduced()) {
+			onCommit?.();
+			reset();
+			return;
+		}
+
 		isSettling = true;
-		dx = to;
-		window.setTimeout(() => {
-			onDone?.();
-			dx = 0;
-			revealDirection = 0;
-			isPopping = false;
-			isSettling = false;
-		}, duration);
+		const pose = { dx, scale: REVEAL_SCALE };
+
+		animate(pose, {
+			dx: { to, duration: SETTLE_MS, ease: 'outCubic' },
+			scale: { to: onCommit ? 1 : REVEAL_SCALE, duration: POP_MS, ease: POP_EASE },
+			onUpdate: () => {
+				dx = pose.dx;
+				revealScale = pose.scale;
+			},
+			onComplete: () => {
+				onCommit?.();
+				reset();
+			}
+		});
 	}
 
 	function fling(direction: -1 | 1) {
 		const target = terms[activeIndex + direction];
 		if (!target || isSettling) return;
 		revealDirection = direction;
-		isPopping = true;
-		settle(-direction * width * 1.4, POP_MS, () => (activeId = target.id));
+		settle(-direction * width * 1.4, () => (activeId = target.id));
 	}
 
 	function handleRelease(distance: number, velocity: number) {
@@ -68,7 +88,7 @@
 		const direction = distance < 0 ? 1 : -1;
 
 		if (isCommitted && terms[activeIndex + direction]) fling(direction);
-		else settle(0, SETTLE_MS);
+		else settle(0);
 	}
 
 	// A held course needs its target under the finger right away, so this flip does not animate
@@ -152,18 +172,13 @@
 		{#each terms as term, index (term.id)}
 			<div
 				inert={index !== activeIndex}
-				class="absolute inset-x-3 top-1 bottom-3 motion-reduce:transition-none!"
+				class="absolute inset-x-3 top-1 bottom-3"
 				style:z-index={index === activeIndex ? 10 : 0}
 				style:transform={index === activeIndex
 					? `translateX(${dx}px) rotate(${tilt}deg)`
 					: index === revealIndex
-						? `scale(${isPopping ? 1 : REVEAL_SCALE})`
+						? `scale(${revealScale})`
 						: `translateX(${index < activeIndex ? -130 : 130}%)`}
-				style:transition={index === activeIndex && isSettling
-					? `transform ${SETTLE_MS}ms ease-out`
-					: index === revealIndex && isPopping
-						? `transform ${POP_MS}ms ${POP_EASING}`
-						: 'none'}
 			>
 				<TermColumn {term} deck />
 			</div>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
+	import { tween } from '$lib/motion';
 	import { computeCGPA, computeNonGpaUnits, computeUnitsEarned } from '$lib/logic/gpa';
 	import { PenLine, Check, Award, ChevronRight, Share2, Calculator } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -229,8 +230,9 @@
 
 			<div class="h-1.5 w-full overflow-hidden rounded-full bg-muted/40">
 				<div
-					class="h-full bg-primary transition-all duration-500 ease-out"
-					style="width: {progressPercent}%;"
+					use:tween={{ styles: { width: `${progressPercent}%` }, animateOnMount: true }}
+					class="h-full bg-primary"
+					style="width: 0%"
 				></div>
 			</div>
 

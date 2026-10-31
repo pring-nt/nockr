@@ -1,3 +1,5 @@
+import { isMotionReduced } from '$lib/motion';
+
 export interface SmoothScrollController {
 	scrollTo: (position: number) => void;
 }
@@ -95,6 +97,12 @@ export function smoothScroll(
 
 		targetScrollLeft = Math.max(0, Math.min(maxScroll, targetScrollLeft + delta));
 
+		// Easing repaints the whole area every frame, which software rendering can't keep up with
+		if (isMotionReduced()) {
+			node.scrollLeft = targetScrollLeft;
+			return;
+		}
+
 		if (animationFrameId === null) {
 			lastTime = null;
 			animationFrameId = requestAnimationFrame(stepScroll);
@@ -103,6 +111,11 @@ export function smoothScroll(
 
 	function scrollTo(position: number) {
 		targetScrollLeft = position;
+
+		if (isMotionReduced()) {
+			node.scrollLeft = Math.min(position, node.scrollWidth);
+			return;
+		}
 
 		if (animationFrameId === null) {
 			lastTime = null;

@@ -154,14 +154,14 @@
 </script>
 
 <div
-	class="grid grid-cols-[1fr_1fr_32px] items-center gap-x-2 rounded-lg bg-muted/30 p-2 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:rounded-none sm:bg-transparent sm:p-0"
+	class="grid grid-cols-[1fr_1fr_32px] items-center gap-x-2 rounded-lg border border-(--highlight-med)/60 bg-(--overlay)/40 px-2.5 pt-2 pb-1 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0"
 >
 	<!-- Course name -->
 	<input
 		id="course-{course.id}-name"
 		class={cn(
 			'col-span-2 col-start-1 row-start-1 sm:col-span-1',
-			'w-full min-w-0 border-b border-transparent bg-transparent text-sm font-medium text-foreground sm:border-border sm:font-normal',
+			'w-full min-w-0 border-b border-transparent bg-transparent text-sm leading-tight font-medium text-foreground sm:border-border sm:leading-normal sm:font-normal',
 			'truncate pb-0.5 transition-colors focus:border-primary focus:outline-none'
 		)}
 		value={course.name}
@@ -269,7 +269,7 @@
 
 	<CourseMenu
 		type={course.type}
-		triggerClass="col-start-3 row-start-1 h-8 w-8 text-muted-foreground hover:text-foreground sm:col-start-4 sm:h-7 sm:w-7"
+		triggerClass="col-start-3 row-start-1 -my-1.5 h-8 w-8 text-muted-foreground hover:text-foreground sm:col-start-4 sm:my-0 sm:h-7 sm:w-7"
 		{moveTargets}
 		{onTypeChange}
 		{onMove}

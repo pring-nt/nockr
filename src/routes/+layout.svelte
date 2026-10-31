@@ -4,6 +4,7 @@
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { themeStore } from '$lib/stores/themeState';
 	import { applyTheme } from '$lib/themes';
+	import { auroraDrift } from '$lib/motion';
 	import Header from '$lib/components/layout/Header.svelte';
 
 	let { children } = $props();
@@ -93,7 +94,10 @@
 <Toaster />
 
 <Tooltip.Provider delayDuration={300} disableHoverableContent>
-	<div class="aurora-bg"></div>
+	<div class="aurora-bg" use:auroraDrift>
+		<div class="aurora-blob aurora-blob-primary"></div>
+		<div class="aurora-blob aurora-blob-secondary"></div>
+	</div>
 
 	<div class="relative z-0 flex min-h-screen flex-col">
 		<Header />

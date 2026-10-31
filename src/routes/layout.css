@@ -412,9 +412,7 @@
 		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
-.aurora-bg::before,
-.aurora-bg::after {
-	content: '';
+.aurora-blob {
 	position: absolute;
 	filter: blur(100px);
 	opacity: 0.75;
@@ -423,7 +421,7 @@
 }
 
 /* Top Right Liquid Blob (Primary / Iris + Accent / Rose) */
-.aurora-bg::before {
+.aurora-blob-primary {
 	width: 70vw;
 	height: 70vw;
 	top: -20vw;
@@ -435,11 +433,11 @@
 		color-mix(in srgb, var(--love) 10%, transparent) 70%,
 		transparent 85%
 	);
-	animation: liquid-morph-1 22s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+	border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
 }
 
 /* Bottom Left Liquid Blob (Foam + Pine + Subtle Gold) */
-.aurora-bg::after {
+.aurora-blob-secondary {
 	width: 65vw;
 	height: 65vw;
 	bottom: -20vw;
@@ -451,7 +449,7 @@
 		color-mix(in srgb, var(--gold) 8%, transparent) 75%,
 		transparent 90%
 	);
-	animation: liquid-morph-2 28s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+	border-radius: 65% 35% 30% 70% / 55% 30% 70% 45%;
 }
 
 /* Glassmorphism Surface with Refraction Border */
@@ -490,141 +488,6 @@
 	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
-}
-
-/* =========================================
-   ANIMATIONS & INTERACTIONS
-   ========================================= */
-
-@keyframes liquid-morph-1 {
-	0% {
-		transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-		border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
-	}
-	33% {
-		transform: translate3d(-8%, 10%, 0) rotate(110deg) scale(1.12);
-		border-radius: 70% 30% 46% 54% / 30% 60% 40% 70%;
-	}
-	66% {
-		transform: translate3d(5%, -6%, 0) rotate(220deg) scale(0.92);
-		border-radius: 38% 62% 63% 37% / 60% 35% 65% 40%;
-	}
-	100% {
-		transform: translate3d(-3%, 4%, 0) rotate(360deg) scale(1.05);
-		border-radius: 54% 46% 38% 62% / 50% 58% 42% 50%;
-	}
-}
-
-@keyframes liquid-morph-2 {
-	0% {
-		transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-		border-radius: 65% 35% 30% 70% / 55% 30% 70% 45%;
-	}
-	33% {
-		transform: translate3d(10%, -12%, 0) rotate(-130deg) scale(1.15);
-		border-radius: 35% 65% 60% 40% / 60% 45% 55% 40%;
-	}
-	66% {
-		transform: translate3d(-6%, 8%, 0) rotate(-250deg) scale(0.9);
-		border-radius: 50% 50% 35% 65% / 40% 65% 35% 60%;
-	}
-	100% {
-		transform: translate3d(4%, -4%, 0) rotate(-360deg) scale(1.08);
-		border-radius: 60% 40% 52% 48% / 45% 52% 48% 55%;
-	}
-}
-
-@keyframes drift {
-	0%,
-	100% {
-		transform: translate3d(0, 0, 0) scale(1);
-	}
-	33% {
-		transform: translate3d(40px, -60px, 0) scale(1.08);
-	}
-	66% {
-		transform: translate3d(-30px, 40px, 0) scale(0.95);
-	}
-}
-
-@keyframes fadeInUp {
-	from {
-		opacity: 0;
-		transform: translate3d(0, 16px, 0);
-	}
-	to {
-		opacity: 1;
-		transform: translate3d(0, 0, 0);
-	}
-}
-
-.fade-in-up {
-	animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes barGrow {
-	from {
-		clip-path: inset(0 100% 0 0);
-	}
-	to {
-		clip-path: inset(0 0% 0 0);
-	}
-}
-
-.bar-grow {
-	animation: barGrow 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes pulseDot {
-	0%,
-	100% {
-		opacity: 1;
-		transform: scale(1);
-	}
-	50% {
-		opacity: 0.4;
-		transform: scale(0.8);
-	}
-}
-
-.pulse-dot {
-	animation: pulseDot 1.4s ease-in-out infinite;
-}
-
-.shimmer {
-	position: relative;
-	overflow: hidden;
-	isolation: isolate;
-	background: color-mix(in srgb, var(--card) 60%, transparent);
-	border: 1px solid color-mix(in srgb, var(--secondary) 10%, transparent);
-}
-
-.shimmer::after {
-	content: '';
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	width: 30%;
-	pointer-events: none;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		color-mix(in srgb, var(--primary) 15%, transparent) 40%,
-		color-mix(in srgb, var(--foreground) 20%, transparent) 50%,
-		color-mix(in srgb, var(--primary) 15%, transparent) 60%,
-		transparent 100%
-	);
-	animation: shimmer 2.2s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-	0% {
-		transform: translateX(-100%);
-	}
-	100% {
-		transform: translateX(350%);
-	}
 }
 
 /* =========================================
@@ -675,9 +538,7 @@
 /* =========================================
    NO-GPU SOFTWARE RENDER FALLBACKS
    ========================================= */
-.no-gpu .aurora-bg::before,
-.no-gpu .aurora-bg::after {
-	animation: none !important;
+.no-gpu .aurora-blob {
 	display: none !important;
 }
 
@@ -689,6 +550,12 @@
 	) !important;
 }
 
+/* Backdrop blur re-rasterizes on every scroll frame, which software rendering can't keep up with */
+.no-gpu [class*='backdrop-blur'] {
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+}
+
 .no-gpu .glass {
 	backdrop-filter: none !important;
 	-webkit-backdrop-filter: none !important;
@@ -698,19 +565,6 @@
 
 .no-gpu .gradient-text {
 	filter: none !important;
-}
-
-.no-gpu .shimmer::after {
-	animation: none !important;
-	display: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.aurora-bg::before,
-	.aurora-bg::after,
-	.shimmer::after {
-		animation: none !important;
-	}
 }
 
 /* Instantly complete all component transitions & animations on CPU rendering */

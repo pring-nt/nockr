@@ -14,7 +14,7 @@
 	import TermCard from '$lib/components/term/TermCard.svelte';
 	import TermReorderDialog from '$lib/components/term/TermReorderDialog.svelte';
 	import { tick } from 'svelte';
-	import { fly } from 'svelte/transition';
+	import { enter, enterStagger } from '$lib/motion';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { smoothScroll } from '$lib/actions/smoothScroll';
@@ -257,7 +257,7 @@
 
 			{#key activeTermId}
 				{@const term = activeTerm}
-				<div in:fly={{ y: 10, duration: 200, opacity: 0 }}>
+				<div use:enter>
 					<TermCard
 						{term}
 						onDelete={() => deleteTerm(term.id)}
@@ -269,7 +269,7 @@
 
 		<!-- Grid View -->
 	{:else if viewMode === 'grid'}
-		<div class="animate-in space-y-6 duration-300 fade-in">
+		<div use:enterStagger class="space-y-6">
 			{#each $appStore.terms as term (term.id)}
 				<div id="term-card-{term.id}" class="scroll-mt-20">
 					<TermCard
