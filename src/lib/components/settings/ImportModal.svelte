@@ -152,12 +152,14 @@
 						<span>Know before you import</span>
 					</div>
 					<p class="leading-relaxed">
-						The Core Courses export only covers your core curriculum. Tech electives and courses
-						taken out of sequence will not appear — add these manually after importing.
+						The Core Courses export doesn't include electives or courses taken out of sequence, so
+						you'll need to add those yourself after importing.
 					</p>
 					<p class="mt-1.5 leading-relaxed">
-						If you are enrolled in a minor program, some minor courses may appear incorrectly or be
-						missing entirely due to how ArchersHub generates this export.
+						It can also list courses that aren't on your flowchart, since some programs seem to have
+						extra courses added in ArchersHub, often for students taking a minor. Minor courses can
+						be missing too, so check your terms after importing and remove anything that doesn't
+						belong.
 					</p>
 					<p class="mt-2 text-[10px] text-muted-foreground/70">
 						Nockr is not affiliated with De La Salle University.
@@ -246,8 +248,8 @@
 					<DialogTitle class="text-lg font-bold sm:text-xl">Import Complete</DialogTitle>
 				</DialogHeader>
 				<p class="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground">
-					Import complete. Tech electives and out-of-sequence courses were not included — add these
-					manually if needed.
+					Electives and out-of-sequence courses were not included, so add those yourself. Remove any
+					courses that aren't on your flowchart.
 				</p>
 				<Button onclick={() => handleOpenChange(false)} class="mt-2 w-full sm:w-auto" size="sm"
 					>Done</Button

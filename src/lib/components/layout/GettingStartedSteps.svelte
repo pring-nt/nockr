@@ -137,8 +137,8 @@
 				<span class="space-y-0.5">
 					<span class="block text-sm font-semibold text-foreground">Import from ArchersHub</span>
 					<span class="block text-xs leading-relaxed text-muted-foreground">
-						Brings in your grade history and fills your checklist. Core courses only, so add
-						electives and minors yourself.
+						Brings in your grade history and fills your checklist. Electives aren't included, and
+						some courses may not be on your flowchart, so check your terms afterward.
 					</span>
 				</span>
 			</button>
