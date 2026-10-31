@@ -2,7 +2,7 @@
 	import { tick } from 'svelte';
 	import type { ShareConfig } from '$lib/schemas';
 	import { SHARE_CANVAS_WIDTH, SHARE_FORMAT_HEIGHTS } from '$lib/constants';
-	import { getThemeStyles, type ShareData } from '$lib/logic/share';
+	import { getThemeStyles, type ShareData, type SharePhoto } from '$lib/logic/share';
 	import { themeStore } from '$lib/stores/themeState';
 	import { THEMES } from '$lib/themes';
 	import { Target } from 'lucide-svelte';
@@ -12,6 +12,12 @@
 
 	const PADDING = 40;
 	const INK_COLORS = { white: '#ffffff', black: '#111111', theme: 'var(--text)' };
+	const TEXT_WEIGHTS = {
+		light: { body: 300, hero: 400 },
+		regular: { body: 400, hero: 500 },
+		medium: { body: 500, hero: 500 },
+		bold: { body: 500, hero: 500 }
+	};
 	const LAYOUTS = {
 		'stat-stack': StatStack,
 		'honors-headline': HonorsHeadline,
@@ -21,10 +27,12 @@
 	let {
 		config,
 		data,
+		photo,
 		canvasRef = $bindable()
 	}: {
 		config: ShareConfig;
 		data: ShareData;
+		photo?: SharePhoto | null;
 		canvasRef?: HTMLElement;
 	} = $props();
 
@@ -54,17 +62,26 @@
 	let hasDarkShadow = $derived(config.ink === 'white' || (config.ink === 'theme' && isThemeDark));
 	let shadowColor = $derived(hasDarkShadow ? '0, 0, 0' : '255, 255, 255');
 
+	// 50 is the base shadow, so the slider can go either way from it
+	function shadow(alpha: number) {
+		return `rgba(${shadowColor}, ${Math.min(1, (alpha * config.shadowStrength) / 50)})`;
+	}
+
 	let styleString = $derived(
 		[
 			`width: ${SHARE_CANVAS_WIDTH}px`,
 			height ? `height: ${height}px` : '',
 			`padding: ${PADDING}px`,
 			`text-align: ${align}`,
+			`font-weight: ${TEXT_WEIGHTS[config.textWeight].body}`,
+			`--hero-weight: ${TEXT_WEIGHTS[config.textWeight].hero}`,
+			// DM Mono stops at 500, so Bold is drawn with a stroke
+			config.textWeight === 'bold' ? '-webkit-text-stroke: 0.7px currentColor' : '',
 			`color: ${INK_COLORS[config.ink]}`,
-			config.showShadow
-				? `text-shadow: 0 1px 2px rgba(${shadowColor}, 0.75), 0 2px 10px rgba(${shadowColor}, 0.6), 0 6px 32px rgba(${shadowColor}, 0.5)`
+			config.shadowStrength > 0
+				? `text-shadow: 0 1px 2px ${shadow(0.75)}, 0 2px 10px ${shadow(0.6)}, 0 6px 32px ${shadow(0.5)}`
 				: '',
-			`--ink-filter: ${config.showShadow ? `drop-shadow(0 2px 6px rgba(${shadowColor}, 0.7))` : 'none'}`,
+			`--ink-filter: ${config.shadowStrength > 0 ? `drop-shadow(0 2px 6px ${shadow(0.7)})` : 'none'}`,
 			config.highlight === 'none' ? '' : '--hero: var(--iris)',
 			// A picked theme comes from data-theme, so the site's values must not override it
 			...(config.theme === 'site' ? Object.entries(themeStyles).map(([k, v]) => `${k}:${v}`) : [])
@@ -83,6 +100,18 @@
 	class="relative flex flex-col justify-center overflow-hidden font-sans select-none
     {config.background === 'theme' ? 'bg-(--base)' : 'bg-transparent'}"
 >
+	{#if photo && config.background === 'photo'}
+		<div class="pointer-events-none absolute inset-0 overflow-hidden">
+			<img
+				src={photo.url}
+				alt=""
+				class="size-full object-cover"
+				style="object-position: {photo.x}% {photo.y}%; transform-origin: {photo.x}% {photo.y}%; transform: scale({photo.zoom /
+					100}); filter: brightness({photo.brightness}%) contrast({photo.contrast}%) saturate({photo.saturation}%);"
+			/>
+		</div>
+	{/if}
+
 	{#if config.background === 'theme'}
 		<div
 			class="pointer-events-none absolute inset-0"

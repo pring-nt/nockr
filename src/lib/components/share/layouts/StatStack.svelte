@@ -6,7 +6,7 @@
 	let { data }: { data: ShareData } = $props();
 </script>
 
-<p class="truncate text-[28px]">{data.heading}</p>
+<p class="share-truncate text-[28px]">{data.heading}</p>
 
 {#if data.gpa}
 	<p class="mt-3 text-[28px]">{data.gpaLabel}</p>

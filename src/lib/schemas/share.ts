@@ -15,6 +15,8 @@ export const ShareFormatSchema = z.enum([
 
 export const ShareInkSchema = z.enum(['white', 'black', 'theme']);
 
+export const ShareTextWeightSchema = z.enum(['light', 'regular', 'medium', 'bold']);
+
 export const ShareHighlightSchema = z.enum(['none', 'accent', 'gradient']);
 
 export const ShareThemeSchema = z.enum(['site', ...ThemeNameSchema.options]);
@@ -43,9 +45,10 @@ export const ShareConfigSchema = z.object({
 	format: ShareFormatSchema.default('sticker'),
 	ink: ShareInkSchema.default('white'),
 	highlight: ShareHighlightSchema.default('accent'),
+	textWeight: ShareTextWeightSchema.default('regular'),
 	theme: ShareThemeSchema.default('site'),
-	showShadow: z.boolean().default(true),
-	background: z.enum(['transparent', 'theme']).default('transparent'),
+	shadowStrength: z.number().min(0).max(100).default(50),
+	background: z.enum(['transparent', 'theme', 'photo']).default('transparent'),
 	showWatermark: z.boolean().default(true),
 	layouts: z
 		.object({
@@ -63,4 +66,5 @@ export type ShareSubject = z.infer<typeof ShareSubjectSchema>;
 export type ShareFormat = z.infer<typeof ShareFormatSchema>;
 export type ShareInk = z.infer<typeof ShareInkSchema>;
 export type ShareHighlight = z.infer<typeof ShareHighlightSchema>;
+export type ShareTextWeight = z.infer<typeof ShareTextWeightSchema>;
 export type ValueDisplay = z.infer<typeof ValueDisplaySchema>;

@@ -29,6 +29,28 @@ export interface ShareData {
 	trend: number[];
 }
 
+export interface SharePhoto {
+	url: string;
+	zoom: number;
+	x: number;
+	y: number;
+	brightness: number;
+	contrast: number;
+	saturation: number;
+}
+
+export const PHOTO_DEFAULTS = {
+	zoom: 100,
+	x: 50,
+	y: 50,
+	brightness: 100,
+	contrast: 100,
+	saturation: 100
+};
+
+// Twice the widest canvas, which keeps phone photos small enough for the export to embed
+const PHOTO_MAX_EDGE = 2160;
+
 const NOT_EARNED_MESSAGE = {
 	term: 'Another term down :)',
 	cumulative: 'Still climbing :)'
@@ -80,6 +102,21 @@ export function getThemeStyles(): Record<string, string> {
 	}
 
 	return styles;
+}
+
+export async function loadPhoto(file: File): Promise<string> {
+	const bitmap = await createImageBitmap(file);
+	const scale = Math.min(1, PHOTO_MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+
+	const canvas = document.createElement('canvas');
+	canvas.width = Math.round(bitmap.width * scale);
+	canvas.height = Math.round(bitmap.height * scale);
+	canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+	bitmap.close();
+
+	const blob = await new Promise<Blob | null>((done) => canvas.toBlob(done, 'image/jpeg', 0.92));
+	if (!blob) throw new Error('Photo could not be read');
+	return URL.createObjectURL(blob);
 }
 
 export async function captureCanvas(el: HTMLElement): Promise<Blob> {

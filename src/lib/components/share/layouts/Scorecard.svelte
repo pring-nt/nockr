@@ -12,7 +12,7 @@
 	<div class="my-4 border-t-[3px] border-current" style="filter: var(--ink-filter);"></div>
 {/snippet}
 
-<p class="truncate text-[34px] font-medium">{data.heading}</p>
+<p class="share-truncate text-[34px] font-medium">{data.heading}</p>
 {@render rule()}
 
 {#if rows.length > 0}

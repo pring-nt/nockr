@@ -9,11 +9,19 @@
 		ShareLayout,
 		ShareLayoutOptions,
 		ShareSubject,
+		ShareTextWeight,
 		ValueDisplay
 	} from '$lib/schemas';
 	import { SHARE_CANVAS_WIDTH, SHARE_FORMAT_HEIGHTS } from '$lib/constants';
 	import { isCourseFinished } from '$lib/logic/gpa';
-	import { buildShareData, captureCanvas, getTrend } from '$lib/logic/share';
+	import {
+		buildShareData,
+		captureCanvas,
+		getTrend,
+		loadPhoto,
+		PHOTO_DEFAULTS,
+		type SharePhoto
+	} from '$lib/logic/share';
 	import { appStore } from '$lib/stores/appState';
 	import { THEMES } from '$lib/themes';
 	import { shareStore } from '$lib/stores/shareState';
@@ -35,9 +43,9 @@
 	} from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 
-	type Backdrop = 'dark' | 'light' | 'checker' | 'photo';
+	type Backdrop = 'dark' | 'light' | 'checker';
 
-	const BACKDROPS: Record<Exclude<Backdrop, 'photo'>, string> = {
+	const BACKDROPS: Record<Backdrop, string> = {
 		dark: '#20242c',
 		light: '#eef0f2',
 		checker: 'repeating-conic-gradient(#d4d4d4 0 25%, #ffffff 0 50%) 0 0 / 20px 20px'
@@ -80,13 +88,32 @@
 	];
 	const backgroundOptions: { label: string; value: ShareConfig['background'] }[] = [
 		{ label: 'Transparent', value: 'transparent' },
-		{ label: 'Theme', value: 'theme' }
+		{ label: 'Theme', value: 'theme' },
+		{ label: 'Photo', value: 'photo' }
 	];
 	const backdropOptions: { label: string; value: Backdrop }[] = [
 		{ label: 'Dark', value: 'dark' },
 		{ label: 'Light', value: 'light' },
-		{ label: 'Checker', value: 'checker' },
-		{ label: 'Photo', value: 'photo' }
+		{ label: 'Checker', value: 'checker' }
+	];
+	const textWeightOptions: { label: string; value: ShareTextWeight }[] = [
+		{ label: 'Light', value: 'light' },
+		{ label: 'Regular', value: 'regular' },
+		{ label: 'Medium', value: 'medium' },
+		{ label: 'Bold', value: 'bold' }
+	];
+	const photoSliders: {
+		key: keyof typeof PHOTO_DEFAULTS;
+		label: string;
+		min: number;
+		max: number;
+	}[] = [
+		{ key: 'zoom', label: 'Zoom', min: 100, max: 300 },
+		{ key: 'x', label: 'Horizontal', min: 0, max: 100 },
+		{ key: 'y', label: 'Vertical', min: 0, max: 100 },
+		{ key: 'brightness', label: 'Brightness', min: 40, max: 160 },
+		{ key: 'contrast', label: 'Contrast', min: 50, max: 150 },
+		{ key: 'saturation', label: 'Saturation', min: 0, max: 200 }
 	];
 
 	let canvasEl = $state<HTMLElement | undefined>();
@@ -235,35 +262,46 @@
 	let effectiveScale = $derived(baseScale * userZoom);
 
 	let backdrop = $state<Backdrop>('dark');
-	let photoUrl = $state<string | null>(null);
 
-	let backdropStyle = $derived(
-		backdrop === 'photo' && photoUrl
-			? `background: center / cover no-repeat url(${photoUrl});`
-			: `background: ${BACKDROPS[backdrop === 'photo' ? 'dark' : backdrop]};`
+	// Held in memory only, so a photo is never saved with the settings
+	let photo = $state<SharePhoto | null>(null);
+	let background = $derived(
+		config.background === 'photo' && !photo ? 'transparent' : config.background
 	);
 
-	function setBackdrop(value: Backdrop) {
-		if (value === 'photo' && !photoUrl) {
+	function setBackground(value: ShareConfig['background']) {
+		if (value === 'photo' && !photo) {
 			photoInputEl?.click();
 			return;
 		}
-		backdrop = value;
+		// A crop to the text would throw away most of the photo
+		const format = value === 'photo' && config.format === 'sticker' ? '9:16' : config.format;
+		setConfig({ background: value, format });
 	}
 
-	function handlePhoto(event: Event) {
+	async function handlePhoto(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
+		input.value = '';
 		if (!file) return;
 
-		if (photoUrl) URL.revokeObjectURL(photoUrl);
-		photoUrl = URL.createObjectURL(file);
-		backdrop = 'photo';
-		input.value = '';
+		try {
+			const url = await loadPhoto(file);
+			if (photo) URL.revokeObjectURL(photo.url);
+			photo = { url, ...PHOTO_DEFAULTS };
+			setBackground('photo');
+		} catch (err) {
+			console.error('Photo failed to load:', err);
+			toast.error('That photo could not be opened');
+		}
+	}
+
+	function resetPhoto() {
+		if (photo) Object.assign(photo, PHOTO_DEFAULTS);
 	}
 
 	$effect(() => () => {
-		if (photoUrl) URL.revokeObjectURL(photoUrl);
+		if (photo) URL.revokeObjectURL(photo.url);
 	});
 
 	let fileName = $derived(
@@ -393,7 +431,7 @@
 		<!-- Live Canvas Preview Target -->
 		<div
 			class="sticky top-2 z-20 order-1 flex h-72 w-full shrink-0 flex-col overflow-hidden rounded-xl border border-border/50 shadow-lg sm:h-125 lg:top-6 lg:z-auto lg:order-2 lg:col-span-8 lg:h-160 lg:shadow-none"
-			style={backdropStyle}
+			style="background: {BACKDROPS[backdrop]};"
 		>
 			<!-- Scrollable Viewport -->
 			<div
@@ -411,7 +449,7 @@
 						style="width: {dimensions.width}px; transform: scale({effectiveScale}); transform-origin: top left;"
 						class="absolute top-0 left-0"
 					>
-						<ShareCanvas {config} {data} bind:canvasRef={canvasEl} />
+						<ShareCanvas {config} {data} {photo} bind:canvasRef={canvasEl} />
 					</div>
 				</div>
 			</div>
@@ -607,6 +645,16 @@
 				</div>
 
 				<div>
+					{@render sectionLabel('Text thickness')}
+					<SegmentedControl
+						label="Text thickness"
+						options={textWeightOptions}
+						value={config.textWeight}
+						onChange={(textWeight) => setConfig({ textWeight })}
+					/>
+				</div>
+
+				<div>
 					{@render sectionLabel('Highlight')}
 					<SegmentedControl
 						label="Highlight"
@@ -648,9 +696,20 @@
 					</Select.Root>
 				</div>
 
-				{@render toggle('Text shadow', config.showShadow, (showShadow) =>
-					setConfig({ showShadow })
-				)}
+				<label class="grid grid-cols-[84px_minmax(0,1fr)_32px] items-center gap-2 text-xs">
+					<span>Text shadow</span>
+					<input
+						type="range"
+						min="0"
+						max="100"
+						value={config.shadowStrength}
+						oninput={(e) => setConfig({ shadowStrength: e.currentTarget.valueAsNumber })}
+						class="h-6 w-full accent-(--iris)"
+					/>
+					<span class="text-right font-mono text-[11px] text-(--subtle)">
+						{config.shadowStrength}
+					</span>
+				</label>
 
 				<div>
 					{@render sectionLabel('Format')}
@@ -667,31 +726,74 @@
 					<SegmentedControl
 						label="Background"
 						options={backgroundOptions}
-						value={config.background}
-						onChange={(background) => setConfig({ background })}
+						value={background}
+						onChange={setBackground}
+					/>
+					<input
+						bind:this={photoInputEl}
+						type="file"
+						accept="image/*"
+						aria-label="Choose a photo"
+						class="hidden"
+						onchange={handlePhoto}
 					/>
 				</div>
+
+				{#if photo && background === 'photo'}
+					<div class="space-y-2 rounded-lg bg-muted/30 p-3">
+						{#each photoSliders as slider (slider.key)}
+							<label class="grid grid-cols-[84px_minmax(0,1fr)_32px] items-center gap-2 text-xs">
+								<span>{slider.label}</span>
+								<input
+									type="range"
+									min={slider.min}
+									max={slider.max}
+									bind:value={photo[slider.key]}
+									class="h-6 w-full accent-(--iris)"
+								/>
+								<span class="text-right font-mono text-[11px] text-(--subtle)">
+									{photo[slider.key]}
+								</span>
+							</label>
+						{/each}
+
+						<div class="flex gap-2 pt-1">
+							<Button
+								variant="ghost"
+								size="sm"
+								onclick={() => photoInputEl?.click()}
+								class="h-8 flex-1 bg-(--highlight-low) text-xs hover:bg-(--highlight-med)"
+							>
+								Change photo
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								onclick={resetPhoto}
+								class="h-8 flex-1 bg-(--highlight-low) text-xs hover:bg-(--highlight-med)"
+							>
+								Reset
+							</Button>
+						</div>
+
+						<p class="text-[11px] text-(--subtle)">
+							Your photo stays on this device and is not saved.
+						</p>
+					</div>
+				{/if}
 			</div>
 
-			<div class="border-t border-border/50 pt-4">
-				{@render sectionLabel('Preview on')}
-				<SegmentedControl
-					label="Preview backdrop"
-					options={backdropOptions}
-					value={backdrop}
-					onChange={setBackdrop}
-				/>
-				<input
-					bind:this={photoInputEl}
-					type="file"
-					accept="image/*"
-					class="hidden"
-					onchange={handlePhoto}
-				/>
-				<p class="mt-2 text-[11px] text-(--subtle)">
-					Preview only. Your photo stays on this device and is never part of the export.
-				</p>
-			</div>
+			{#if background === 'transparent'}
+				<div class="border-t border-border/50 pt-4">
+					{@render sectionLabel('Preview on')}
+					<SegmentedControl
+						label="Preview backdrop"
+						options={backdropOptions}
+						value={backdrop}
+						onChange={(value) => (backdrop = value)}
+					/>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

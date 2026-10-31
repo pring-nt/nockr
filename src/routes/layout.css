@@ -642,6 +642,19 @@
 	margin-inline: auto;
 }
 
+.share-hero {
+	font-weight: var(--hero-weight);
+}
+
+/* Truncating clips at the padding box, so the padding keeps the blurred text-shadow inside it */
+.share-truncate {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	margin: -40px;
+	padding: 40px;
+}
+
 [data-highlight='accent'] .share-hero {
 	color: var(--iris);
 }
@@ -653,6 +666,7 @@
 	-webkit-text-fill-color: transparent;
 	/* A text-shadow would show through the transparent fill */
 	text-shadow: none;
+	-webkit-text-stroke-color: transparent;
 	filter: var(--ink-filter);
 }
 

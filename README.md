@@ -59,7 +59,7 @@ Answers the question: given your current CGPA and remaining units, how many unit
 13 built-in themes (dark and light variants) plus a custom 15-token palette editor. Themes apply before the first paint — no flash of unstyled content. Custom themes can be exported as a `.css` file and imported back.
 
 ### Export Page
-Turn a term or your cumulative standing into a transparent PNG sticker to place over any photo. Choose from three layouts, and each one remembers what it shows. GPA and course grades can be shown in full, as a whole number, or hidden, down to each course. Export as a cropped sticker or at 9:16, 3:4, or 1:1.
+Turn a term or your cumulative standing into a transparent PNG sticker to place over any photo. Choose from three layouts, and each one remembers what it shows. GPA and course grades can be shown in full, as a whole number, or hidden, down to each course. Export as a cropped sticker or at 9:16, 3:4, or 1:1, on a transparent, theme, or photo background, with basic photo adjustments. Photos stay on your device.
 
 ---
 

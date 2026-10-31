@@ -23,7 +23,9 @@
 </p>
 
 {#if details}
-	<p class="mt-4 truncate text-[28px]">{details}</p>
+	<div class="mt-4">
+		<p class="share-truncate text-[28px]">{details}</p>
+	</div>
 {/if}
 
 {#if data.trend.length > 0}

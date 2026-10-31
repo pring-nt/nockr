@@ -7,7 +7,7 @@
 <div class="grid gap-1 text-[26px] leading-snug {className}">
 	{#each rows as row (row.id)}
 		<div class="flex justify-between gap-6 {row.isMuted ? 'opacity-75' : ''}">
-			<span class="min-w-0 truncate">{row.label}</span>
+			<span class="share-truncate min-w-0">{row.label}</span>
 			{#if row.value}
 				<span class="shrink-0">{row.value}</span>
 			{/if}
