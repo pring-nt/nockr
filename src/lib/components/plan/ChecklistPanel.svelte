@@ -50,7 +50,15 @@
 		{ value: 'term', label: 'By term' }
 	];
 
-	let isOpen = $derived($appStore.ui?.checklistPanelOpen ?? true);
+	let {
+		embedded = false,
+		onDragChange
+	}: {
+		embedded?: boolean;
+		onDragChange?: (isDragging: boolean) => void;
+	} = $props();
+
+	let isOpen = $derived(embedded || ($appStore.ui?.checklistPanelOpen ?? true));
 	let items = $derived($appStore.courseChecklist ?? []);
 	let terms = $derived($appStore.terms);
 	let settings = $derived($appStore.universitySettings);
@@ -90,11 +98,13 @@
 
 	function handleConsider(e: CustomEvent<DndEvent<ChecklistDragItem>>) {
 		isDragging = true;
+		onDragChange?.(true);
 		dragItems = e.detail.items;
 	}
 
 	function handleFinalize(e: CustomEvent<DndEvent<ChecklistDragItem>>) {
 		isDragging = false;
+		onDragChange?.(false);
 
 		// A course dropped on a term leaves this list short, so only a drop back here is a reorder
 		if (isReorderable && e.detail.items.length === items.length) {
@@ -231,15 +241,17 @@
 					</Tooltip.Content>
 				</Tooltip.Root>
 
-				<Button
-					variant="ghost"
-					size="icon"
-					class="h-7 w-7 shrink-0"
-					aria-label="Collapse checklist"
-					onclick={togglePanel}
-				>
-					<ChevronLeft size={16} />
-				</Button>
+				{#if !embedded}
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-7 w-7 shrink-0"
+						aria-label="Collapse checklist"
+						onclick={togglePanel}
+					>
+						<ChevronLeft size={16} />
+					</Button>
+				{/if}
 			</div>
 		{:else}
 			<div class="flex w-full justify-center">

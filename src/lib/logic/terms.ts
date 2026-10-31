@@ -17,6 +17,23 @@ export function moveTerm(terms: Term[], from: number, to: number): Term[] {
 	return renumberTerms(next);
 }
 
+export function moveCourse(
+	terms: Term[],
+	courseId: string,
+	fromTermId: string,
+	toTermId: string
+): Term[] {
+	const course = terms.find((t) => t.id === fromTermId)?.courses.find((c) => c.id === courseId);
+	if (!course) return terms;
+
+	return terms.map((term) => {
+		if (term.id === fromTermId) {
+			return { ...term, courses: term.courses.filter((c) => c.id !== courseId) };
+		}
+		return term.id === toTermId ? { ...term, courses: [...term.courses, course] } : term;
+	});
+}
+
 export function removeTerm(terms: Term[], id: string): Term[] {
 	return renumberTerms(terms.filter((t) => t.id !== id));
 }

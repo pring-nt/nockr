@@ -24,7 +24,7 @@
 	import { GripVertical, Plus, Trash2, Share2 } from 'lucide-svelte';
 	import { cn } from '$lib/utils.js';
 
-	let { term }: { term: Term } = $props();
+	let { term, deck = false }: { term: Term; deck?: boolean } = $props();
 
 	let settings = $derived($appStore.universitySettings);
 	let localCourses = $state<Course[]>(untrack(() => [...term.courses]));
@@ -154,22 +154,27 @@
 
 <div
 	class={cn(
-		'flex h-full max-h-full w-70 shrink-0 flex-col rounded-xl border p-3 shadow-xs backdrop-blur-md transition-colors duration-150',
+		'flex h-full max-h-full shrink-0 flex-col rounded-xl border p-3 shadow-xs transition-colors duration-150',
+		deck ? 'w-full' : 'w-70 backdrop-blur-md',
 		isHovered
 			? 'border-primary/60 bg-primary/10 shadow-lg ring-2 shadow-primary/5 ring-primary/40'
-			: 'border-border/50 bg-background/40'
+			: 'border-border/50 bg-background/40',
+		// The deck stacks cards, so the top one has to stay opaque
+		deck && 'bg-card'
 	)}
 >
 	<!-- Column Header -->
 	<div class="mb-3 shrink-0 border-b border-border/40 pb-2.5">
 		<div class="flex items-start justify-between gap-1">
-			<div
-				use:dragHandle
-				aria-label="Drag to reorder {term.name}"
-				class="mt-0.5 shrink-0 cursor-grab text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
-			>
-				<GripVertical size={14} />
-			</div>
+			{#if !deck}
+				<div
+					use:dragHandle
+					aria-label="Drag to reorder {term.name}"
+					class="mt-0.5 shrink-0 cursor-grab text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
+				>
+					<GripVertical size={14} />
+				</div>
+			{/if}
 
 			<div class="min-w-0 flex-1">
 				{#if isEditingTerm}
@@ -281,7 +286,12 @@
 	<!-- Draggable Drop Zone -->
 	<div
 		bind:this={dropZoneRef}
-		use:dndzone={{ items: localCourses, flipDurationMs: 200, dropTargetStyle: {} }}
+		use:dndzone={{
+			items: localCourses,
+			flipDurationMs: 200,
+			dropTargetStyle: {},
+			delayTouchStart: 350
+		}}
 		onconsider={handleConsider}
 		onfinalize={handleFinalize}
 		class="min-h-0 flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent space-y-2 overflow-y-auto p-0.5"

@@ -2,6 +2,7 @@
 	import type { Course, CourseResult, CourseType, UniversitySettings } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
 	import { isCourseFinished, withCourseType } from '$lib/logic/gpa';
+	import { moveCourse } from '$lib/logic/terms';
 	import { Minus, Plus, GripVertical } from 'lucide-svelte';
 	import CourseMenu from '$lib/components/term/CourseMenu.svelte';
 	import CourseResultControl from '$lib/components/term/CourseResultControl.svelte';
@@ -26,6 +27,7 @@
 
 	let minUnits = $derived(course.type === 'graded' ? 1 : 0);
 	let isFinished = $derived(isCourseFinished(course));
+	let moveTargets = $derived($appStore.terms.filter((t) => t.id !== termId));
 
 	let isFailingGrade = $derived(
 		course.grade !== null && failingGrade !== null && course.grade === failingGrade
@@ -57,6 +59,13 @@
 					courses: t.courses.map((c) => (c.id === course.id ? withCourseType(c, type) : c))
 				};
 			})
+		}));
+	}
+
+	function moveToTerm(targetTermId: string) {
+		appStore.update((state) => ({
+			...state,
+			terms: moveCourse(state.terms, course.id, termId, targetTermId)
 		}));
 	}
 
@@ -221,7 +230,9 @@
 		<CourseMenu
 			type={course.type}
 			triggerClass="h-6 w-6 shrink-0 text-muted-foreground/50 hover:text-foreground"
+			{moveTargets}
 			onTypeChange={changeType}
+			onMove={moveToTerm}
 			onDelete={deleteCourse}
 		/>
 	</div>

@@ -1,18 +1,22 @@
 <script lang="ts">
-	import type { CourseType } from '$lib/schemas';
-	import { EllipsisVertical, Trash2 } from 'lucide-svelte';
+	import type { CourseType, Term } from '$lib/schemas';
+	import { CalendarArrowUp, EllipsisVertical, Trash2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 
 	let {
 		type,
 		triggerClass,
+		moveTargets = [],
 		onTypeChange,
+		onMove,
 		onDelete
 	}: {
 		type: CourseType;
 		triggerClass?: string;
+		moveTargets?: Term[];
 		onTypeChange: (type: CourseType) => void;
+		onMove?: (termId: string) => void;
 		onDelete: () => void;
 	} = $props();
 
@@ -39,6 +43,22 @@
 	</DropdownMenu.Trigger>
 
 	<DropdownMenu.Content align="end" class="w-56">
+		{#if moveTargets.length > 0}
+			<DropdownMenu.Sub>
+				<DropdownMenu.SubTrigger>
+					<CalendarArrowUp size={14} />
+					Move to term
+				</DropdownMenu.SubTrigger>
+				<DropdownMenu.SubContent class="max-h-64 overflow-y-auto">
+					{#each moveTargets as term (term.id)}
+						<DropdownMenu.Item onclick={() => onMove?.(term.id)}>{term.name}</DropdownMenu.Item>
+					{/each}
+				</DropdownMenu.SubContent>
+			</DropdownMenu.Sub>
+
+			<DropdownMenu.Separator />
+		{/if}
+
 		<DropdownMenu.Label>Course type</DropdownMenu.Label>
 		<DropdownMenu.RadioGroup
 			value={type}
