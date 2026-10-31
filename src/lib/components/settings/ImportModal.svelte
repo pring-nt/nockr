@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Term } from '$lib/schemas';
+	import { mergeChecklist, type ChecklistSeed } from '$lib/logic/checklist';
 	import { parseGradeExport } from '$lib/logic/import';
 	import { appStore } from '$lib/stores/appState';
 	import { Button } from '$lib/components/ui/button';
@@ -24,6 +25,7 @@
 	let isParsing = $state(false);
 	let errorMessage = $state<string | null>(null);
 	let parsedTerms = $state<Term[]>([]);
+	let parsedChecklist = $state<ChecklistSeed[]>([]);
 	let fileInputEl = $state<HTMLInputElement | null>(null);
 
 	let totalCoursesCount = $derived(parsedTerms.reduce((acc, term) => acc + term.courses.length, 0));
@@ -36,6 +38,7 @@
 		isParsing = false;
 		errorMessage = null;
 		parsedTerms = [];
+		parsedChecklist = [];
 		if (fileInputEl) fileInputEl.value = '';
 	}
 
@@ -67,6 +70,7 @@
 
 		if (result.status === 'ok') {
 			parsedTerms = result.terms;
+			parsedChecklist = result.checklist;
 			step = 'confirm';
 		} else {
 			errorMessage = result.message;
@@ -76,7 +80,8 @@
 	function executeImport() {
 		appStore.update((state) => ({
 			...state,
-			terms: parsedTerms
+			terms: parsedTerms,
+			courseChecklist: mergeChecklist(state.courseChecklist, parsedChecklist)
 		}));
 		step = 'success';
 	}
@@ -174,6 +179,11 @@
 						<p class="mb-2 text-[11px] text-muted-foreground">
 							{nonGpaCoursesCount} of these are non-academic or credited, so they are not counted in your
 							GPA.
+						</p>
+					{/if}
+					{#if parsedChecklist.length > 0}
+						<p class="mb-2 text-[11px] text-muted-foreground">
+							{parsedChecklist.length} upcoming courses will go on your Plan checklist.
 						</p>
 					{/if}
 					<div

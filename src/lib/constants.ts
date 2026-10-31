@@ -1,8 +1,8 @@
 import type { UniversitySettings, AspectRatio } from '$lib/schemas';
 
-// GE Checklist
+// Course Checklist
 
-export const DEFAULT_GE_LIST = [
+export const DLSU_CHECKLIST = [
 	{ id: 'LCFILIA', label: 'LCFILIA' },
 	{ id: 'LCFILIB', label: 'LCFILIB' },
 	{ id: 'LCENWRD', label: 'LCENWRD' },

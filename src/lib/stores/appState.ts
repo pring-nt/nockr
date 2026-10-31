@@ -1,6 +1,13 @@
 import { writable } from 'svelte/store';
-import { AppStateSchema, CourseResultSchema, CourseTypeSchema, type AppState } from '$lib/schemas';
-import { DLSU_PRESET, DEFAULT_GE_LIST, UNIVERSITY_PRESETS } from '$lib/constants';
+import {
+	AppStateSchema,
+	ChecklistItemSchema,
+	CourseResultSchema,
+	CourseTypeSchema,
+	type AppState
+} from '$lib/schemas';
+import { DLSU_PRESET, UNIVERSITY_PRESETS } from '$lib/constants';
+import { defaultChecklist } from '$lib/logic/checklist';
 
 const STORAGE_KEY = 'nockr_state';
 const THEME_STORAGE_KEY = 'nockr_theme';
@@ -63,14 +70,26 @@ function syncUniversitySettings(rawSettings: unknown): AppState['universitySetti
 	return parsed.success ? parsed.data : DLSU_PRESET;
 }
 
+/** Renames the fields of the GE checklist, which Zod would otherwise strip and lose */
+function migrateState(json: Record<string, unknown> | null): Record<string, unknown> | null {
+	if (!json || json.geChecklist === undefined) return json;
+
+	const { geChecklist, ...state } = json;
+	const { gePanelOpen, ...ui } = (state.ui ?? {}) as Record<string, unknown>;
+
+	return {
+		...state,
+		courseChecklist: geChecklist,
+		ui: { ...ui, checklistPanelOpen: gePanelOpen },
+		version: '1.3.0'
+	};
+}
+
 function buildFreshState(): AppState {
 	return AppStateSchema.parse({
 		universitySettings: DLSU_PRESET,
 		customSettingsCache: undefined,
-		geChecklist: DEFAULT_GE_LIST.map((item) => ({
-			...item,
-			completed: false
-		})),
+		courseChecklist: defaultChecklist(DLSU_PRESET.mode),
 		terms: []
 	});
 }
@@ -84,7 +103,7 @@ function getInitialState(): AppState {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (!raw) return buildFreshState();
 
-		const json = JSON.parse(raw) as Record<string, unknown> | null;
+		const json = migrateState(JSON.parse(raw) as Record<string, unknown> | null);
 
 		// Legacy Theme Migration: Copy legacy theme state to nockr_theme before appState overwrites nockr_state
 		if (json?.theme && !localStorage.getItem(THEME_STORAGE_KEY)) {
@@ -135,9 +154,12 @@ function getInitialState(): AppState {
 			terms: recoveredTerms,
 			universitySettings: syncedSettings,
 			customSettingsCache: json?.customSettingsCache ?? undefined,
-			geChecklist: Array.isArray(json?.geChecklist)
-				? json.geChecklist
-				: DEFAULT_GE_LIST.map((item) => ({ ...item, completed: false, isCustom: false }))
+			courseChecklist: Array.isArray(json?.courseChecklist)
+				? (json.courseChecklist as unknown[]).flatMap((item) => {
+						const parsedItem = ChecklistItemSchema.safeParse(item);
+						return parsedItem.success ? [parsedItem.data] : [];
+					})
+				: defaultChecklist(DLSU_PRESET.mode)
 		};
 
 		const secondAttempt = AppStateSchema.safeParse(recoveryCandidate);
@@ -190,7 +212,7 @@ function createAppStore() {
 			}
 
 			try {
-				const json: unknown = JSON.parse(e.newValue);
+				const json = migrateState(JSON.parse(e.newValue) as Record<string, unknown> | null);
 				const parsed = AppStateSchema.safeParse(json);
 				if (parsed.success) {
 					internalSet({
@@ -224,13 +246,10 @@ function createAppStore() {
 		set,
 		update,
 
-		resetGEChecklist() {
+		resetChecklist() {
 			update((state) => ({
 				...state,
-				geChecklist: DEFAULT_GE_LIST.map((item) => ({
-					...item,
-					completed: false
-				}))
+				courseChecklist: defaultChecklist(state.universitySettings.mode)
 			}));
 		},
 

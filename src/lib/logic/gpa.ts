@@ -19,6 +19,11 @@ export function isCourseFinished(course: Course): boolean {
 	return course.type === 'credited' || course.result !== 'pending';
 }
 
+export function isCoursePassed(course: Course, settings?: UniversitySettings): boolean {
+	if (course.type === 'graded') return isPassingGrade(course.grade, settings);
+	return course.type === 'credited' || course.result === 'passed';
+}
+
 /** Graded courses need at least 1 unit, so returning to 'graded' lifts a 0-unit course */
 export function withCourseType(course: Course, type: CourseType): Course {
 	return { ...course, type, units: type === 'graded' ? Math.max(1, course.units) : course.units };
