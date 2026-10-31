@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
+	import { tween } from '$lib/motion';
 	import ChecklistPanel from '$lib/components/plan/ChecklistPanel.svelte';
 	import { ChevronUp } from 'lucide-svelte';
 	import { cn } from '$lib/utils.js';
 
 	let isOpen = $state(false);
 	let isDragging = $state(false);
+
+	// Anime can't convert to dvh, so this resolves the 55dvh height to pixels when it toggles
+	let height = $derived(
+		isOpen && !isDragging ? `${Math.round(window.innerHeight * 0.55)}px` : '0px'
+	);
 </script>
 
 <!-- Not a modal sheet: a course dragged out of here has to reach the term cards behind it -->
@@ -20,12 +26,7 @@
 		<ChevronUp size={16} class={cn('transition-transform', isOpen && 'rotate-180')} />
 	</button>
 
-	<div
-		class={cn(
-			'overflow-hidden transition-[height] duration-200 motion-reduce:transition-none',
-			isOpen && !isDragging ? 'h-[55dvh]' : 'h-0'
-		)}
-	>
+	<div use:tween={{ styles: { height } }} class="overflow-hidden" style="height: 0px">
 		<ChecklistPanel
 			embedded
 			onDragChange={(dragging) => (isDragging = dragging)}

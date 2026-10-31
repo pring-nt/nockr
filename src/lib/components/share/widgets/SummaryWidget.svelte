@@ -86,10 +86,7 @@
 		</div>
 
 		<div class="h-3 w-full overflow-hidden rounded-full bg-muted">
-			<div
-				class="h-full bg-primary transition-all duration-500 ease-out"
-				style="width: {progressPercent}%;"
-			></div>
+			<div class="h-full bg-primary" style="width: {progressPercent}%;"></div>
 		</div>
 	</div>
 </div>

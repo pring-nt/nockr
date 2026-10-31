@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
+	import { tween } from '$lib/motion';
 	import ChecklistDrawer from '$lib/components/plan/ChecklistDrawer.svelte';
 	import ChecklistPanel from '$lib/components/plan/ChecklistPanel.svelte';
 	import PlanCanvas from '$lib/components/plan/PlanCanvas.svelte';
@@ -29,8 +30,9 @@
 {:else}
 	<div class="flex h-[calc(100vh-var(--header-height,56px))] overflow-hidden bg-transparent">
 		<aside
-			class="shrink-0 overflow-hidden border-r border-border/40 transition-all duration-200"
-			style="width: {panelOpen ? '260px' : '40px'}"
+			use:tween={{ styles: { width: panelOpen ? '260px' : '40px' } }}
+			class="shrink-0 overflow-hidden border-r border-border/40"
+			style="width: 260px"
 		>
 			<ChecklistPanel />
 		</aside>
