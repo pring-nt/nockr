@@ -23,6 +23,7 @@
 	import { appStore } from '$lib/stores/appState';
 	import { themeStore } from '$lib/stores/themeState';
 	import { UNIVERSITY_PRESETS } from '$lib/constants';
+	import { defaultChecklist, isUntouchedChecklist } from '$lib/logic/checklist';
 	import {
 		ThemeSettingsSchema,
 		type UniversitySettings,
@@ -115,7 +116,10 @@
 			return {
 				...state,
 				customSettingsCache: customCache,
-				universitySettings: { ...preset }
+				universitySettings: { ...preset },
+				courseChecklist: isUntouchedChecklist(state.courseChecklist)
+					? defaultChecklist(preset.mode)
+					: state.courseChecklist
 			};
 		});
 	}

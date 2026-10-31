@@ -1,7 +1,8 @@
 import type { Term, Course, CourseResult, CourseType } from '$lib/schemas';
+import type { ChecklistSeed } from './checklist';
 
 export type ImportResult =
-	| { status: 'ok'; terms: Term[] }
+	| { status: 'ok'; terms: Term[]; checklist: ChecklistSeed[] }
 	| { status: 'empty'; message: string }
 	| { status: 'error'; message: string };
 
@@ -16,7 +17,8 @@ interface RawRow {
 	enrolled: boolean;
 }
 
-const INCLUDE_STATUSES = ['passed', 'failed', 'registered', 'credited'];
+const PLANNED_STATUS = 'yet to register';
+const INCLUDE_STATUSES = ['passed', 'failed', 'registered', 'credited', PLANNED_STATUS];
 
 const STATUS_RESULTS: Record<string, CourseResult> = {
 	passed: 'passed',
@@ -74,10 +76,11 @@ function parseHTMLTable(html: string): RawRow[] {
 		if (!INCLUDE_STATUSES.includes(status)) return [];
 
 		// Session is '-' for curriculum placeholders, so only real enrollments have an
-		// academic year here. Credited courses are the exception: they were never enrolled in
+		// academic year here. Credited courses were never enrolled in, and planned ones are kept
+		// for the checklist
 		const session = sessionRaw.trim().replace(/^'+/, '').replace(/'+$/, '');
 		const enrolled = Boolean(session) && session !== '-';
-		if (!enrolled && status !== 'credited') return [];
+		if (!enrolled && status !== 'credited' && status !== PLANNED_STATUS) return [];
 
 		const credits = parseFloat(creditsRaw);
 		if (isNaN(credits)) return [];
@@ -129,6 +132,18 @@ function toCourse(row: RawRow): Course {
 	};
 }
 
+/** The rest of the curriculum, once per course code even when the export repeats a row */
+function toChecklistSeeds(rows: RawRow[]): ChecklistSeed[] {
+	const planned = rows.filter((r) => r.status === PLANNED_STATUS);
+	const seen = new Map(planned.map((r) => [r.courseCode, r]));
+
+	return Array.from(seen.values()).map((r) => ({
+		label: r.courseCode,
+		units: r.credits,
+		type: r.type
+	}));
+}
+
 export async function parseGradeExport(file: File): Promise<ImportResult> {
 	try {
 		const html = await file.text();
@@ -141,7 +156,7 @@ export async function parseGradeExport(file: File): Promise<ImportResult> {
 		}
 
 		const raw = parseHTMLTable(html);
-		const rows = deduplicateRows(raw);
+		const rows = deduplicateRows(raw.filter((r) => r.status !== PLANNED_STATUS));
 
 		if (rows.length === 0) {
 			return {
@@ -179,7 +194,7 @@ export async function parseGradeExport(file: File): Promise<ImportResult> {
 			});
 		}
 
-		return { status: 'ok', terms };
+		return { status: 'ok', terms, checklist: toChecklistSeeds(raw) };
 	} catch (err) {
 		return {
 			status: 'error',

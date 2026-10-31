@@ -49,8 +49,8 @@ Custom mode exposes full control over grade bounds, direction, step size, honor 
 ### Plan Page
 A separate full-screen flowchart view of all terms. Courses can be dragged between terms — the move carries the full course object (name, units, grade). Changes sync back to the main tracker immediately.
 
-### GE Checklist
-A collapsible panel on the Plan page listing general education requirements. Ships with a DLSU preset list; custom items can be added and removed. Completion state is persisted.
+### Course Checklist
+A collapsible panel on the Plan page listing the courses in your curriculum. Drag a course onto a term to plan it, or move it there if it is already placed. Items check off on their own from your grades, and manual checks cover anything taken elsewhere. Ships with a DLSU GE preset; other universities start empty. Courses can be added one at a time, pasted as a list, or filled in by an ArchersHub import.
 
 ### Unit Calculator
 Answers the question: given your current CGPA and remaining units, how many units of a given grade can you still afford before dropping below your target Latin Honor? Calculates for every grade step defined in your university settings, including the failing grade where applicable.
@@ -111,7 +111,7 @@ src/
 │   ├── components/
 │   │   ├── honors/         # Latin Honors modal
 │   │   ├── layout/         # Header shell
-│   │   ├── plan/           # TermColumn, CourseCard, GEPanel (Plan page)
+│   │   ├── plan/           # TermColumn, CourseCard, ChecklistPanel (Plan page)
 │   │   ├── settings/       # Settings sidebar, theme picker
 │   │   ├── share/          # Share canvas, widgets
 │   │   ├── summary/        # Academic summary card & unit calculator
@@ -125,12 +125,12 @@ src/
 │   ├── schemas/            # Zod schemas for all data types
 │   ├── stores/             # localStorage-backed Svelte store
 │   ├── themes/             # Theme metadata + CSS variable applicator
-│   └── constants.ts        # University presets, GE list, aspect ratio dimensions
+│   └── constants.ts        # University presets, default checklist, aspect ratio dimensions
 └── routes/
     ├── +layout.svelte      # Theme hydration, aurora background, GPU detection
     ├── +page.svelte        # Main tracker (summary + term navigator)
     ├── plan/
-    │   └── +page.svelte    # Plan page (flowchart + GE checklist)
+    │   └── +page.svelte    # Plan page (flowchart + course checklist)
     ├── export/
     │   └── +page.svelte    # Export page (toggleable widgets, aspect ratios)
     └── layout.css          # Theme variables, glass/aurora utilities, .no-gpu fallbacks

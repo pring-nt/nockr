@@ -3,6 +3,7 @@
 	import { flip } from 'svelte/animate';
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, type DndEvent } from 'svelte-dnd-action';
 	import { appStore } from '$lib/stores/appState';
+	import { placeChecklistItem, type ChecklistDragItem } from '$lib/logic/checklist';
 	import { CourseSchema, type Term, type Course } from '$lib/schemas';
 	import {
 		computeTGPA,
@@ -25,6 +26,7 @@
 	let termNameEdit = $state(untrack(() => term.name));
 	let isHovered = $state(false);
 	let isDndActive = $state(false);
+	let isDragOrigin = false;
 	let dropZoneRef = $state<HTMLElement | null>(null);
 
 	$effect(() => {
@@ -42,6 +44,10 @@
 
 	function isShadowItem(item: Course): boolean {
 		return Boolean((item as Record<string, unknown>)[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+	}
+
+	function isChecklistItem(item: Course): boolean {
+		return 'fromChecklist' in item;
 	}
 
 	function startEditing() {
@@ -98,9 +104,14 @@
 	}
 
 	function handleConsider(e: CustomEvent<DndEvent<Course>>) {
-		isDndActive = true;
-		if (e.detail.info.trigger === 'draggedEntered') isHovered = true;
-		else if (e.detail.info.trigger === 'draggedLeft') isHovered = false;
+		const { trigger } = e.detail.info;
+		if (trigger === 'dragStarted') isDragOrigin = true;
+
+		// Only the origin and landing columns get a finalize, so a drag passing over has to let go here
+		isDndActive = trigger !== 'draggedLeft' || isDragOrigin;
+
+		if (trigger === 'draggedEntered') isHovered = true;
+		else if (trigger === 'draggedLeft') isHovered = false;
 
 		localCourses = e.detail.items;
 	}
@@ -108,6 +119,25 @@
 	function handleFinalize(e: CustomEvent<DndEvent<Course>>) {
 		isHovered = false;
 		isDndActive = false;
+		isDragOrigin = false;
+
+		const dropIndex = e.detail.items.findIndex(isChecklistItem);
+		if (dropIndex !== -1) {
+			const dropped = e.detail.items[dropIndex] as unknown as ChecklistDragItem;
+			localCourses = e.detail.items.filter((item) => !isChecklistItem(item));
+			appStore.update((state) => ({
+				...state,
+				terms: placeChecklistItem(
+					state.terms,
+					dropped,
+					term.id,
+					state.universitySettings,
+					dropIndex
+				)
+			}));
+			return;
+		}
+
 		localCourses = e.detail.items;
 		appStore.update((state) => ({
 			...state,

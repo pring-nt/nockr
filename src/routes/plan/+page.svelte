@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
-	import GEPanel from '$lib/components/plan/GEPanel.svelte';
+	import ChecklistPanel from '$lib/components/plan/ChecklistPanel.svelte';
 	import PlanCanvas from '$lib/components/plan/PlanCanvas.svelte';
 
-	let panelOpen = $derived($appStore.ui?.gePanelOpen ?? true);
+	let panelOpen = $derived($appStore.ui?.checklistPanelOpen ?? true);
 </script>
 
 <svelte:head>
@@ -15,7 +15,7 @@
 		class="shrink-0 overflow-hidden border-r border-border/40 transition-all duration-200"
 		style="width: {panelOpen ? '260px' : '40px'}"
 	>
-		<GEPanel />
+		<ChecklistPanel />
 	</aside>
 
 	<PlanCanvas />
