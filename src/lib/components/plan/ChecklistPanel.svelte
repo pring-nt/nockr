@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MAX_CHECKLIST_PASTE_CHARS, MAX_COURSE_NAME } from '$lib/schemas';
 	import { untrack } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, type DndEvent } from 'svelte-dnd-action';
@@ -396,6 +397,7 @@
 				<Input
 					type="text"
 					bind:value={newItemLabel}
+					maxlength={MAX_COURSE_NAME}
 					placeholder="Add a course..."
 					class="h-10 bg-background/40 text-xs backdrop-blur-xs md:h-8"
 				/>
@@ -439,6 +441,7 @@
 
 		<textarea
 			bind:value={pasteText}
+			maxlength={MAX_CHECKLIST_PASTE_CHARS}
 			rows="8"
 			aria-label="Course list"
 			placeholder={PASTE_PLACEHOLDER}

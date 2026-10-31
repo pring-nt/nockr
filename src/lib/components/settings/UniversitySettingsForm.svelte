@@ -5,9 +5,11 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { Plus, Trash2, Check, Award, GraduationCap, Lock, Copy } from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
 	import { appStore } from '$lib/stores/appState';
+	import { getSettingsProblem } from '$lib/logic/validation';
 	import { UNIVERSITY_PRESETS } from '$lib/constants';
-	import type { UniversitySettings, HonorTier } from '$lib/schemas';
+	import { MAX_LABEL, type UniversitySettings, type HonorTier } from '$lib/schemas';
 
 	let settings = $derived($appStore.universitySettings);
 	let isPreset = $derived(settings.mode !== 'custom');
@@ -102,16 +104,19 @@
 	/* Unfocus numeric parse handlers */
 	function commitNumericSetting(
 		key: keyof UniversitySettings,
-		rawValue: string,
+		input: HTMLInputElement,
 		fallback: number | null
 	) {
-		const trimmed = rawValue.trim();
-		if (trimmed === '') {
-			updateSetting(key, fallback);
+		const parsed = parseFloat(input.value.trim());
+		const value = isNaN(parsed) ? fallback : parsed;
+
+		const problem = getSettingsProblem({ ...settings, [key]: value });
+		if (problem) {
+			toast.error(problem);
+			input.value = String(settings[key] ?? '');
 			return;
 		}
-		const parsed = parseFloat(trimmed);
-		updateSetting(key, isNaN(parsed) ? fallback : parsed);
+		updateSetting(key, value);
 	}
 
 	function commitTierBound(
@@ -242,7 +247,7 @@
 						step="0.1"
 						disabled={isPreset}
 						value={settings.gradeMin}
-						onblur={(e) => commitNumericSetting('gradeMin', e.currentTarget.value, 0)}
+						onblur={(e) => commitNumericSetting('gradeMin', e.currentTarget, 0)}
 						class="h-8 bg-background font-mono text-xs"
 					/>
 				</div>
@@ -254,7 +259,7 @@
 						step="0.1"
 						disabled={isPreset}
 						value={settings.gradeMax}
-						onblur={(e) => commitNumericSetting('gradeMax', e.currentTarget.value, 4.0)}
+						onblur={(e) => commitNumericSetting('gradeMax', e.currentTarget, 4.0)}
 						class="h-8 bg-background font-mono text-xs"
 					/>
 				</div>
@@ -268,7 +273,7 @@
 						step="0.01"
 						disabled={isPreset}
 						value={settings.gradeStep}
-						onblur={(e) => commitNumericSetting('gradeStep', e.currentTarget.value, 0.25)}
+						onblur={(e) => commitNumericSetting('gradeStep', e.currentTarget, 0.25)}
 						class="h-8 bg-background font-mono text-xs"
 						placeholder="e.g. 0.25"
 					/>
@@ -281,7 +286,7 @@
 						step="0.1"
 						disabled={isPreset}
 						value={settings.failingGrade ?? ''}
-						onblur={(e) => commitNumericSetting('failingGrade', e.currentTarget.value, null)}
+						onblur={(e) => commitNumericSetting('failingGrade', e.currentTarget, null)}
 						class="h-8 bg-background font-mono text-xs"
 						placeholder="e.g. 0.0 or 5.0"
 					/>
@@ -341,6 +346,7 @@
 							type="text"
 							disabled={isPreset}
 							value={settings.deansListLabel}
+							maxlength={MAX_LABEL}
 							oninput={(e) => updateSetting('deansListLabel', e.currentTarget.value)}
 							class="h-8 bg-background text-xs"
 						/>
@@ -353,7 +359,7 @@
 								type="number"
 								disabled={isPreset}
 								value={settings.deansListMinUnits}
-								onblur={(e) => commitNumericSetting('deansListMinUnits', e.currentTarget.value, 0)}
+								onblur={(e) => commitNumericSetting('deansListMinUnits', e.currentTarget, 0)}
 								class="h-8 bg-background font-mono text-xs"
 							/>
 						</div>
@@ -366,7 +372,7 @@
 								disabled={isPreset}
 								value={settings.deansListMinCourseGrade ?? ''}
 								onblur={(e) =>
-									commitNumericSetting('deansListMinCourseGrade', e.currentTarget.value, null)}
+									commitNumericSetting('deansListMinCourseGrade', e.currentTarget, null)}
 								class="h-8 bg-background font-mono text-xs"
 								placeholder="None"
 							/>
@@ -396,6 +402,7 @@
 									type="text"
 									disabled={isPreset}
 									value={tier.label}
+									maxlength={MAX_LABEL}
 									oninput={(e) =>
 										updateTier('deansListTiers', tier.id, 'label', e.currentTarget.value)}
 									class="h-7 w-full bg-background text-xs sm:w-auto sm:flex-1"
@@ -469,6 +476,7 @@
 							type="text"
 							disabled={isPreset}
 							value={settings.latinHonorsLabel}
+							maxlength={MAX_LABEL}
 							oninput={(e) => updateSetting('latinHonorsLabel', e.currentTarget.value)}
 							class="h-8 bg-background text-xs"
 						/>
@@ -510,6 +518,7 @@
 									type="text"
 									disabled={isPreset}
 									value={tier.label}
+									maxlength={MAX_LABEL}
 									oninput={(e) =>
 										updateTier('latinHonorsTiers', tier.id, 'label', e.currentTarget.value)}
 									class="h-7 w-full bg-background text-xs sm:w-auto sm:flex-1"

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MAX_TERM_NAME } from '$lib/schemas';
 	import { tick, untrack } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import {
@@ -182,6 +183,7 @@
 					<input
 						class="w-full border-b border-primary bg-transparent text-sm font-semibold text-foreground focus:outline-none"
 						bind:value={termNameEdit}
+						maxlength={MAX_TERM_NAME}
 						onblur={commitRename}
 						onkeydown={(e) => e.key === 'Enter' && commitRename()}
 						use:focusOnMount

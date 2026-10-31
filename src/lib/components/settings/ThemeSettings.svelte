@@ -1,12 +1,20 @@
 <script lang="ts">
 	import { Plus, Check, Download, Upload } from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { themeStore } from '$lib/stores/themeState';
 	import { THEMES, type ThemeMeta } from '$lib/themes';
-	import type { ThemeName, CustomTheme } from '$lib/schemas';
+	import {
+		CustomThemeSchema,
+		MAX_HEX_COLOR,
+		MAX_THEME_BYTES,
+		isHexColor,
+		type CustomTheme,
+		type ThemeName
+	} from '$lib/schemas';
 
 	let customDialogOpen = $state(false);
 
@@ -119,6 +127,7 @@
 	}
 
 	function applyCustomTheme() {
+		customColors = CustomThemeSchema.parse({ ...customColors });
 		$themeStore = {
 			active: 'custom',
 			custom: { ...customColors }
@@ -149,23 +158,35 @@
 	}
 
 	function importThemeCSS(event: Event) {
-		const file = (event.target as HTMLInputElement).files?.[0];
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
+		// Reset so the same file can be re-imported if needed
+		target.value = '';
 		if (!file) return;
+
+		if (file.size > MAX_THEME_BYTES) {
+			toast.error('That file is too large to be a theme.');
+			return;
+		}
 
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			const css = e.target?.result as string;
 			// Matches lines like:  --base: #191724;
 			const varRegex = /(--[\w-]+):\s*(#[0-9a-fA-F]{3,8})/g;
+			let imported = 0;
 			let match;
 			while ((match = varRegex.exec(css)) !== null) {
 				const key = CSS_VAR_REVERSE_MAP[match[1]];
-				if (key) customColors[key] = match[2];
+				if (key && isHexColor(match[2])) {
+					customColors[key] = match[2];
+					imported += 1;
+				}
 			}
+			if (imported === 0) toast.error('No theme colors were found in that file.');
 		};
+		reader.onerror = () => toast.error('That file could not be read.');
 		reader.readAsText(file);
-		// Reset so the same file can be re-imported if needed
-		(event.target as HTMLInputElement).value = '';
 	}
 </script>
 
@@ -265,6 +286,7 @@
 									</div>
 									<Input
 										bind:value={customColors[field.id]}
+										maxlength={MAX_HEX_COLOR}
 										class="h-7 w-20 px-2 font-mono text-[10px] uppercase"
 									/>
 								</div>

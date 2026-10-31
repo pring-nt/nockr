@@ -1,6 +1,8 @@
 import {
 	ChecklistItemSchema,
 	CourseSchema,
+	MAX_CHECKLIST_PASTE_LINES,
+	MAX_COURSE_UNITS,
 	type ChecklistFilter,
 	type ChecklistItem,
 	type ChecklistSort,
@@ -141,13 +143,15 @@ export function mergeChecklist(items: ChecklistItem[], seeds: ChecklistSeed[]): 
 
 /** Reads one course per line as `CODE` or `CODE, units`. Tabs work too, for spreadsheet pastes. */
 export function parseChecklistLines(text: string): ChecklistSeed[] {
-	return text.split(/\r?\n/).flatMap((line): ChecklistSeed[] => {
+	const lines = text.split(/\r?\n/).slice(0, MAX_CHECKLIST_PASTE_LINES);
+
+	return lines.flatMap((line): ChecklistSeed[] => {
 		const [labelRaw, unitsRaw] = line.split(/[,\t]/);
 		const label = labelRaw.trim();
 		if (!label) return [];
 
 		const parsed = parseInt(unitsRaw ?? '', 10);
-		const units = isNaN(parsed) ? 3 : Math.max(0, Math.min(12, parsed));
+		const units = isNaN(parsed) ? 3 : Math.max(0, Math.min(MAX_COURSE_UNITS, parsed));
 		return [{ label, units, type: units === 0 ? 'non-academic' : 'graded' }];
 	});
 }

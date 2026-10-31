@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MAX_COURSE_NAME } from '$lib/schemas';
 	import type { Course, CourseResult, CourseType, UniversitySettings } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
 	import { isCourseFinished, withCourseType } from '$lib/logic/gpa';
@@ -222,6 +223,7 @@
 				isFinished && 'focus:text-foreground'
 			)}
 			value={course.name}
+			maxlength={MAX_COURSE_NAME}
 			placeholder="Course name"
 			oninput={handleNameInput}
 			onkeydown={onNameKeydown}

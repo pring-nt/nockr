@@ -9,6 +9,8 @@ import {
 } from '$lib/schemas';
 import { DLSU_PRESET, UNIVERSITY_PRESETS } from '$lib/constants';
 import { defaultChecklist, isUntouchedChecklist } from '$lib/logic/checklist';
+import { clearInvalidGrades, repairState } from '$lib/logic/validation';
+import { saveToStorage } from './persist';
 
 const STORAGE_KEY = 'nockr_state';
 const THEME_STORAGE_KEY = 'nockr_theme';
@@ -184,17 +186,11 @@ function getInitialState(): AppState {
 }
 
 function createAppStore() {
-	const initialState = getInitialState();
+	const initialState = repairState(getInitialState());
 	const store = writable<AppState>(initialState);
 
 	function persist(state: AppState) {
-		if (typeof localStorage !== 'undefined') {
-			try {
-				localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-			} catch (error) {
-				console.error('[Nockr] Failed to persist state:', error);
-			}
-		}
+		saveToStorage(STORAGE_KEY, state);
 	}
 
 	// Persist synchronized state immediately to migrate legacy localStorage values
@@ -216,10 +212,12 @@ function createAppStore() {
 				const json = migrateState(JSON.parse(e.newValue) as Record<string, unknown> | null);
 				const parsed = AppStateSchema.safeParse(json);
 				if (parsed.success) {
-					internalSet({
-						...parsed.data,
-						universitySettings: syncUniversitySettings(parsed.data.universitySettings)
-					});
+					internalSet(
+						repairState({
+							...parsed.data,
+							universitySettings: syncUniversitySettings(parsed.data.universitySettings)
+						})
+					);
 				} else {
 					console.warn('[Nockr] Multi-tab sync payload invalid:', parsed.error);
 				}
@@ -290,16 +288,23 @@ function createAppStore() {
 			set(buildFreshState());
 		},
 
-		/** Loads a backup file through the same migration and validation as saved state */
-		restore(json: unknown): boolean {
-			const parsed = AppStateSchema.safeParse(migrateState(json as Record<string, unknown> | null));
-			if (!parsed.success) return false;
+		/**
+		 * Reads a backup through the same migration and validation as saved state, without applying
+		 * it. Every field has a default, so anything without terms would otherwise pass as empty.
+		 */
+		readBackup(json: unknown): { state: AppState; clearedGrades: number } | null {
+			const migrated = migrateState(json as Record<string, unknown> | null);
+			if (!Array.isArray(migrated?.terms)) return null;
 
-			set({
+			const parsed = AppStateSchema.safeParse(migrated);
+			if (!parsed.success) return null;
+
+			const state = repairState({
 				...parsed.data,
 				universitySettings: syncUniversitySettings(parsed.data.universitySettings)
 			});
-			return true;
+			const { terms, cleared } = clearInvalidGrades(state.terms, state.universitySettings);
+			return { state: { ...state, terms }, clearedGrades: cleared };
 		}
 	};
 }

@@ -1,5 +1,6 @@
 import {
 	DEFAULT_PROGRAM_UNITS,
+	MAX_PROGRAM_UNITS,
 	type AppState,
 	type HonorTier,
 	type UniversitySettings
@@ -7,7 +8,7 @@ import {
 import { isPassingGrade } from './gpa';
 
 export function isValidProgramUnits(units: number | null | undefined): units is number {
-	return Number.isInteger(units) && (units as number) > 0;
+	return Number.isInteger(units) && (units as number) > 0 && (units as number) <= MAX_PROGRAM_UNITS;
 }
 
 /** A total still on the default was never chosen, unless the user said to keep it */
