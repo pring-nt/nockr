@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, type DndEvent } from 'svelte-dnd-action';
+	import {
+		dndzone,
+		dragHandle,
+		SHADOW_ITEM_MARKER_PROPERTY_NAME,
+		type DndEvent
+	} from 'svelte-dnd-action';
 	import { appStore } from '$lib/stores/appState';
 	import { placeChecklistItem, type ChecklistDragItem } from '$lib/logic/checklist';
+	import { removeTerm } from '$lib/logic/terms';
 	import { CourseSchema, type Term, type Course } from '$lib/schemas';
 	import {
 		computeTGPA,
@@ -15,7 +21,7 @@
 	import CourseCard from '$lib/components/plan/CourseCard.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { Plus, Trash2, Share2 } from 'lucide-svelte';
+	import { GripVertical, Plus, Trash2, Share2 } from 'lucide-svelte';
 	import { cn } from '$lib/utils.js';
 
 	let { term }: { term: Term } = $props();
@@ -72,7 +78,7 @@
 	function deleteTerm() {
 		appStore.update((state) => ({
 			...state,
-			terms: state.terms.filter((t) => t.id !== term.id)
+			terms: removeTerm(state.terms, term.id)
 		}));
 	}
 
@@ -157,6 +163,14 @@
 	<!-- Column Header -->
 	<div class="mb-3 shrink-0 border-b border-border/40 pb-2.5">
 		<div class="flex items-start justify-between gap-1">
+			<div
+				use:dragHandle
+				aria-label="Drag to reorder {term.name}"
+				class="mt-0.5 shrink-0 cursor-grab text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
+			>
+				<GripVertical size={14} />
+			</div>
+
 			<div class="min-w-0 flex-1">
 				{#if isEditingTerm}
 					<input

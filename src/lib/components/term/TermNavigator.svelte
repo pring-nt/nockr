@@ -1,8 +1,18 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
-	import { Plus, GraduationCap, ChevronLeft, ChevronRight, LayoutGrid, Eye } from 'lucide-svelte';
+	import {
+		ArrowLeftRight,
+		Plus,
+		GraduationCap,
+		ChevronLeft,
+		ChevronRight,
+		LayoutGrid,
+		Eye
+	} from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { removeTerm } from '$lib/logic/terms';
 	import TermCard from '$lib/components/term/TermCard.svelte';
+	import TermReorderDialog from '$lib/components/term/TermReorderDialog.svelte';
 	import { tick } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { page } from '$app/state';
@@ -10,6 +20,7 @@
 	import { smoothScroll } from '$lib/actions/smoothScroll';
 
 	let viewMode = $derived($appStore.ui?.cardViewMode ?? 'focus');
+	let isReorderOpen = $state(false);
 
 	function setViewMode(mode: 'focus' | 'grid') {
 		appStore.update((state) => ({
@@ -108,7 +119,7 @@
 
 		appStore.update((state) => ({
 			...state,
-			terms: state.terms.filter((t) => t.id !== id)
+			terms: removeTerm(state.terms, id)
 		}));
 	}
 
@@ -200,8 +211,22 @@
 				<LayoutGrid size={14} class="mr-1.5" />
 				<span class="text-xs">All</span>
 			</Button>
+			{#if $appStore.terms.length > 1}
+				<Button
+					variant="ghost"
+					size="icon"
+					class="h-7 w-7 text-muted-foreground hover:text-foreground"
+					aria-label="Reorder terms"
+					title="Reorder terms"
+					onclick={() => (isReorderOpen = true)}
+				>
+					<ArrowLeftRight size={14} />
+				</Button>
+			{/if}
 		</div>
 	</div>
+
+	<TermReorderDialog bind:open={isReorderOpen} />
 
 	<!-- Focus View -->
 	{#if viewMode === 'focus' && activeTerm}
