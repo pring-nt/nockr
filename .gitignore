@@ -27,3 +27,6 @@ vite.config.ts.timestamp-*
 /.idea
 
 worker-configuration.d.ts
+
+# Claude Code
+/CLAUDE.md

@@ -13,7 +13,7 @@ function getInitialTheme(): ThemeSettings {
 		// 1. Primary check: Dedicated theme key
 		const raw = localStorage.getItem(THEME_STORAGE_KEY);
 		if (raw) {
-			const parsed = JSON.parse(raw);
+			const parsed: unknown = JSON.parse(raw);
 			const result = ThemeSettingsSchema.safeParse(parsed);
 			if (result.success) return result.data;
 		}
@@ -21,7 +21,7 @@ function getInitialTheme(): ThemeSettings {
 		// 2. Legacy Migration Fallback: Read theme from nockr_state
 		const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
 		if (legacyRaw) {
-			const parsed = JSON.parse(legacyRaw);
+			const parsed = JSON.parse(legacyRaw) as { theme?: unknown } | null;
 			if (parsed?.theme) {
 				const result = ThemeSettingsSchema.safeParse(parsed.theme);
 				if (result.success) {
@@ -53,7 +53,7 @@ function createThemeStore() {
 			}
 
 			try {
-				const json = JSON.parse(e.newValue);
+				const json: unknown = JSON.parse(e.newValue);
 				const parsed = ThemeSettingsSchema.safeParse(json);
 				if (parsed.success) {
 					internalSet(parsed.data);

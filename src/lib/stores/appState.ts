@@ -82,7 +82,7 @@ function getInitialState(): AppState {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (!raw) return buildFreshState();
 
-		const json = JSON.parse(raw);
+		const json = JSON.parse(raw) as Record<string, unknown> | null;
 
 		// Legacy Theme Migration: Copy legacy theme state to nockr_theme before appState overwrites nockr_state
 		if (json?.theme && !localStorage.getItem(THEME_STORAGE_KEY)) {
@@ -146,7 +146,7 @@ function getInitialState(): AppState {
 		return {
 			...fresh,
 			terms: recoveredTerms,
-			customSettingsCache: json?.customSettingsCache,
+			customSettingsCache: json?.customSettingsCache as AppState['customSettingsCache'],
 			universitySettings: syncedSettings
 		};
 	} catch (error) {
@@ -186,7 +186,7 @@ function createAppStore() {
 			}
 
 			try {
-				const json = JSON.parse(e.newValue);
+				const json: unknown = JSON.parse(e.newValue);
 				const parsed = AppStateSchema.safeParse(json);
 				if (parsed.success) {
 					internalSet({

@@ -1,0 +1,12 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"entry": ["src/routes/**/+*.{svelte,ts}"],
+	"project": ["src/**/*.{ts,svelte,css}"],
+	"ignore": ["src/lib/components/ui/**"],
+	"ignoreExportsUsedInFile": true,
+	"ignoreIssues": {
+		"src/lib/logic/honors.ts": ["exports"],
+		"src/lib/logic/unitCalc.ts": ["exports"],
+		"src/lib/schemas/app.ts": ["types"]
+	}
+}

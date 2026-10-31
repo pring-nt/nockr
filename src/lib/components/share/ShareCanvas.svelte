@@ -2,7 +2,7 @@
 	import { tick } from 'svelte';
 	import type { ShareConfig, Term } from '$lib/schemas';
 	import { getThemeStyles, getCanvasDimensions } from '$lib/logic/share';
-	import { appStore } from '$lib/stores/appState';
+	import { themeStore } from '$lib/stores/themeState';
 	import SummaryWidget from './widgets/SummaryWidget.svelte';
 	import TermHeaderWidget from './widgets/TermHeaderWidget.svelte';
 	import CourseListWidget from './widgets/CourseListWidget.svelte';
@@ -21,7 +21,7 @@
 	let themeStyles = $state<Record<string, string>>({});
 
 	$effect(() => {
-		const _activeTheme = $appStore.theme;
+		const _activeTheme = $themeStore;
 		if (_activeTheme) {
 			tick().then(() => {
 				themeStyles = getThemeStyles();
