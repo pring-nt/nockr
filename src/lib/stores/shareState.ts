@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { ShareConfigSchema, type ShareConfig } from '$lib/schemas';
+import { ShareConfigSchema, type ShareConfig, type ShareLayoutOptions } from '$lib/schemas';
 
 const SHARE_STORAGE_KEY = 'nockr_share';
 
@@ -38,7 +38,18 @@ function createShareStore() {
 		});
 	}
 
-	return { subscribe, update };
+	function setConfig(changes: Partial<ShareConfig>) {
+		update((state) => ({ ...state, ...changes }));
+	}
+
+	function setOptions(changes: Partial<ShareLayoutOptions>) {
+		update((state) => ({
+			...state,
+			layouts: { ...state.layouts, [state.layout]: { ...state.layouts[state.layout], ...changes } }
+		}));
+	}
+
+	return { subscribe, update, setConfig, setOptions };
 }
 
 export const shareStore = createShareStore();

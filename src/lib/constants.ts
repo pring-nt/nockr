@@ -128,6 +128,14 @@ export const UNIVERSITY_PRESETS = {
 	admu: ADMU_PRESET
 } as const;
 
+export const PREVIEW_BACKDROPS = {
+	dark: '#20242c',
+	light: '#eef0f2',
+	checker: 'repeating-conic-gradient(#d4d4d4 0 25%, #ffffff 0 50%) 0 0 / 20px 20px'
+};
+
+export type PreviewBackdrop = keyof typeof PREVIEW_BACKDROPS;
+
 // Captured at 2x, so these are half the exported pixels
 export const SHARE_CANVAS_WIDTH = 540;
 export const SHARE_FORMAT_HEIGHTS: Record<Exclude<ShareFormat, 'sticker'>, number> = {
