@@ -1,7 +1,12 @@
 <script lang="ts">
 	import type { Term } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
-	import { computeTGPA, computeTermAttemptedUnits, computeTermUnitsEarned } from '$lib/logic/gpa';
+	import {
+		computeTGPA,
+		computeTermAttemptedUnits,
+		computeTermTotalUnits,
+		computeTermUnitsEarned
+	} from '$lib/logic/gpa';
 	import { getDeansListTier } from '$lib/logic/honors';
 	import { maskGpa as maskGpaFn } from '$lib/logic/share';
 	import { GraduationCap } from 'lucide-svelte';
@@ -18,7 +23,7 @@
 
 	let settings = $derived($appStore.universitySettings);
 	let tgpa = $derived(term ? computeTGPA(term) : null);
-	let totalUnits = $derived(term ? term.courses.reduce((acc, c) => acc + (c.units || 0), 0) : 0);
+	let totalUnits = $derived(term ? computeTermTotalUnits(term) : 0);
 	let attemptedUnits = $derived(term ? computeTermAttemptedUnits(term) : 0);
 	let earnedUnits = $derived(term ? computeTermUnitsEarned(term, settings) : 0);
 

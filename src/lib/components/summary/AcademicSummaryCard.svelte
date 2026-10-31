@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/appState';
-	import { computeCGPA, computeUnitsEarned } from '$lib/logic/gpa';
+	import { computeCGPA, computeNonGpaUnits, computeUnitsEarned } from '$lib/logic/gpa';
 	import { PenLine, Check, Award, ChevronRight, Share2, Calculator } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
@@ -11,6 +11,7 @@
 
 	let cgpa = $derived(computeCGPA($appStore.terms));
 	let unitsEarned = $derived(computeUnitsEarned($appStore.terms, $appStore.universitySettings));
+	let nonGpaUnits = $derived(computeNonGpaUnits($appStore.terms));
 	let totalProgramUnits = $derived($appStore.totalProgramUnits ?? 165);
 	let remainingUnits = $derived(Math.max(0, totalProgramUnits - unitsEarned));
 	let progressPercent = $derived(
@@ -232,6 +233,13 @@
 					style="width: {progressPercent}%;"
 				></div>
 			</div>
+
+			{#if nonGpaUnits > 0}
+				<p class="text-[11px] text-muted-foreground">
+					+{nonGpaUnits} non-GPA {nonGpaUnits === 1 ? 'unit' : 'units'}, not counted toward your
+					target
+				</p>
+			{/if}
 		</div>
 	</CardContent>
 </Card>

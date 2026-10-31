@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { AppStateSchema, type AppState } from '$lib/schemas';
+import { AppStateSchema, CourseResultSchema, CourseTypeSchema, type AppState } from '$lib/schemas';
 import { DLSU_PRESET, DEFAULT_GE_LIST, UNIVERSITY_PRESETS } from '$lib/constants';
 
 const STORAGE_KEY = 'nockr_state';
@@ -10,6 +10,8 @@ interface UnvalidatedCourse {
 	name?: unknown;
 	units?: unknown;
 	grade?: unknown;
+	type?: unknown;
+	result?: unknown;
 }
 
 interface UnvalidatedTerm {
@@ -119,7 +121,9 @@ function getInitialState(): AppState {
 					id: typeof c?.id === 'string' ? c.id : crypto.randomUUID(),
 					name: typeof c?.name === 'string' ? c.name : '',
 					units: typeof c?.units === 'number' ? c.units : 3,
-					grade: typeof c?.grade === 'number' ? c.grade : null
+					grade: typeof c?.grade === 'number' ? c.grade : null,
+					type: CourseTypeSchema.catch('graded').parse(c?.type),
+					result: CourseResultSchema.catch('pending').parse(c?.result)
 				}))
 			};
 		});
