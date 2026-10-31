@@ -420,14 +420,14 @@
 						</div>
 
 						{#each settings.deansListTiers as tier (tier.id)}
-							<div class="flex items-center gap-1.5">
+							<div class="flex flex-wrap items-center gap-1.5 sm:flex-nowrap">
 								<Input
 									type="text"
 									disabled={isPreset}
 									value={tier.label}
 									oninput={(e) =>
 										updateTier('deansListTiers', tier.id, 'label', e.currentTarget.value)}
-									class="h-7 flex-1 bg-background text-xs"
+									class="h-7 w-full bg-background text-xs sm:w-auto sm:flex-1"
 								/>
 								<Input
 									type="number"
@@ -534,14 +534,14 @@
 						</div>
 
 						{#each settings.latinHonorsTiers as tier (tier.id)}
-							<div class="flex items-center gap-1.5">
+							<div class="flex flex-wrap items-center gap-1.5 sm:flex-nowrap">
 								<Input
 									type="text"
 									disabled={isPreset}
 									value={tier.label}
 									oninput={(e) =>
 										updateTier('latinHonorsTiers', tier.id, 'label', e.currentTarget.value)}
-									class="h-7 flex-1 bg-background text-xs"
+									class="h-7 w-full bg-background text-xs sm:w-auto sm:flex-1"
 								/>
 								<Input
 									type="number"

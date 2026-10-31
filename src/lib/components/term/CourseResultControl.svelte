@@ -49,7 +49,9 @@
 </script>
 
 {#if course.type === 'credited'}
-	<p class="pb-0.5 text-center text-xs text-muted-foreground">Credited</p>
+	<p class="pb-0.5 text-center text-xs leading-8 text-muted-foreground sm:leading-normal">
+		Credited
+	</p>
 {:else}
 	<div class="grid grid-cols-2 gap-1 pb-0.5" role="group" aria-label="Course result">
 		<button
@@ -62,7 +64,7 @@
 			onclick={() => toggle('passed')}
 			onkeydown={handleKeydown}
 			class={cn(
-				'h-5 rounded text-xs font-medium transition-colors',
+				'h-8 rounded text-xs font-medium transition-colors sm:h-5',
 				course.result === 'passed'
 					? 'bg-primary/15 text-primary'
 					: 'text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground'
@@ -79,7 +81,7 @@
 			onclick={() => toggle('failed')}
 			onkeydown={handleKeydown}
 			class={cn(
-				'h-5 rounded text-xs font-medium transition-colors',
+				'h-8 rounded text-xs font-medium transition-colors sm:h-5',
 				course.result === 'failed'
 					? 'bg-destructive/15 text-destructive'
 					: 'text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground'

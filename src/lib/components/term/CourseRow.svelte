@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Course, CourseResult, CourseType } from '$lib/schemas';
+	import type { Course, CourseResult, CourseType, Term } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
 	import { Minus, Plus } from 'lucide-svelte';
 	import CourseMenu from './CourseMenu.svelte';
@@ -8,15 +8,19 @@
 
 	let {
 		course,
+		moveTargets,
 		onDelete,
 		onUpdate,
 		onTypeChange,
+		onMove,
 		onNavigate
 	}: {
 		course: Course;
+		moveTargets: Term[];
 		onDelete: () => void;
 		onUpdate: (field: 'name' | 'units' | 'grade' | 'result', value: string | number | null) => void;
 		onTypeChange: (type: CourseType) => void;
+		onMove: (termId: string) => void;
 		onNavigate: () => void;
 	} = $props();
 
@@ -150,13 +154,14 @@
 </script>
 
 <div
-	class="grid grid-cols-[1fr_60px_72px_28px] items-center gap-1.5 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2"
+	class="grid grid-cols-[1fr_1fr_32px] items-center gap-x-2 rounded-lg bg-muted/30 p-2 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:rounded-none sm:bg-transparent sm:p-0"
 >
 	<!-- Course name -->
 	<input
 		id="course-{course.id}-name"
 		class={cn(
-			'w-full min-w-0 border-b border-border bg-transparent text-sm text-foreground',
+			'col-span-2 col-start-1 row-start-1 sm:col-span-1',
+			'w-full min-w-0 border-b border-transparent bg-transparent text-sm font-medium text-foreground sm:border-border sm:font-normal',
 			'truncate pb-0.5 transition-colors focus:border-primary focus:outline-none'
 		)}
 		value={course.name}
@@ -168,7 +173,8 @@
 	<!-- Units Stepper -->
 	<div
 		class={cn(
-			'flex items-center justify-between border-b border-border',
+			'col-start-1 row-start-2 sm:col-start-2 sm:row-start-1',
+			'flex items-center justify-between border-b border-transparent sm:border-border',
 			'pb-0.5 transition-colors focus-within:border-primary'
 		)}
 	>
@@ -176,7 +182,7 @@
 			type="button"
 			tabindex="-1"
 			onclick={() => updateUnits(-1)}
-			class="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+			class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
 		>
 			<Minus size={12} />
 		</button>
@@ -198,7 +204,7 @@
 			type="button"
 			tabindex="-1"
 			onclick={() => updateUnits(1)}
-			class="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+			class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
 		>
 			<Plus size={12} />
 		</button>
@@ -208,8 +214,9 @@
 	{#if course.type === 'graded'}
 		<div
 			class={cn(
+				'col-start-2 row-start-2 sm:col-start-3 sm:row-start-1',
 				'flex items-center justify-between border-b pb-0.5 transition-colors',
-				isFailingGrade ? 'border-destructive' : 'border-border',
+				isFailingGrade ? 'border-destructive' : 'border-transparent sm:border-border',
 				!isFailingGrade && 'focus-within:border-primary'
 			)}
 		>
@@ -217,7 +224,7 @@
 				type="button"
 				tabindex="-1"
 				onclick={() => updateGrade(-1)}
-				class="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+				class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
 			>
 				<Minus size={12} />
 			</button>
@@ -244,24 +251,28 @@
 				type="button"
 				tabindex="-1"
 				onclick={() => updateGrade(1)}
-				class="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+				class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground sm:h-5 sm:w-5"
 			>
 				<Plus size={12} />
 			</button>
 		</div>
 	{:else}
-		<CourseResultControl
-			{course}
-			id="course-{course.id}-grade"
-			onChange={(result: CourseResult) => onUpdate('result', result)}
-			{onNavigate}
-		/>
+		<div class="col-start-2 row-start-2 sm:col-start-3 sm:row-start-1">
+			<CourseResultControl
+				{course}
+				id="course-{course.id}-grade"
+				onChange={(result: CourseResult) => onUpdate('result', result)}
+				{onNavigate}
+			/>
+		</div>
 	{/if}
 
 	<CourseMenu
 		type={course.type}
-		triggerClass="h-7 w-7 text-muted-foreground hover:text-foreground"
+		triggerClass="col-start-3 row-start-1 h-8 w-8 text-muted-foreground hover:text-foreground sm:col-start-4 sm:h-7 sm:w-7"
+		{moveTargets}
 		{onTypeChange}
+		{onMove}
 		{onDelete}
 	/>
 </div>

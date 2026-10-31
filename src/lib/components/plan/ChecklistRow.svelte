@@ -79,7 +79,7 @@
 
 <div
 	class={cn(
-		'group flex items-center gap-2 rounded-lg border px-2.5 py-2 text-xs transition-colors',
+		'group flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm transition-colors md:gap-2 md:px-2.5 md:py-2 md:text-xs',
 		isEditing ? 'cursor-auto' : 'cursor-grab active:cursor-grabbing',
 		isDone && 'border-primary/30 bg-primary/5 text-foreground',
 		itemState.status === 'failed' && 'border-destructive/30 bg-destructive/5 text-foreground',
@@ -125,11 +125,13 @@
 		</button>
 
 		<div class="min-w-0 flex-1" role="presentation" ondblclick={startEditing}>
-			<p class={cn('truncate font-medium', isDone && 'line-through opacity-80')}>{item.label}</p>
+			<p class={cn('truncate leading-snug font-medium', isDone && 'line-through opacity-80')}>
+				{item.label}
+			</p>
 			{#if statusLabel}
 				<p
 					class={cn(
-						'truncate text-[10px]',
+						'mt-0.5 truncate text-[11px] md:text-[10px]',
 						itemState.status === 'failed' ? 'text-destructive' : 'text-muted-foreground'
 					)}
 				>
@@ -139,7 +141,7 @@
 		</div>
 
 		<span
-			class="shrink-0 font-mono text-[10px] text-muted-foreground"
+			class="shrink-0 font-mono text-xs text-muted-foreground md:text-[10px]"
 			title="{item.units} {item.units === 1 ? 'unit' : 'units'}"
 		>
 			{item.units}{item.type === 'graded' ? '' : '*'}
@@ -152,7 +154,7 @@
 						{...props}
 						variant="ghost"
 						size="icon"
-						class="h-6 w-6 shrink-0 text-muted-foreground/60 hover:text-foreground"
+						class="h-8 w-8 shrink-0 text-muted-foreground/60 hover:text-foreground md:h-6 md:w-6"
 						aria-label="Options for {item.label}"
 					>
 						<EllipsisVertical size={13} />

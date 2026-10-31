@@ -19,12 +19,13 @@
 		computeTermUnitsEarned
 	} from '$lib/logic/gpa';
 	import CourseCard from '$lib/components/plan/CourseCard.svelte';
+	import TermMenu from '$lib/components/term/TermMenu.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { GripVertical, Plus, Trash2, Share2 } from 'lucide-svelte';
+	import { GripVertical, Plus } from 'lucide-svelte';
 	import { cn } from '$lib/utils.js';
 
-	let { term }: { term: Term } = $props();
+	let { term, deck = false }: { term: Term; deck?: boolean } = $props();
 
 	let settings = $derived($appStore.universitySettings);
 	let localCourses = $state<Course[]>(untrack(() => [...term.courses]));
@@ -154,22 +155,27 @@
 
 <div
 	class={cn(
-		'flex h-full max-h-full w-70 shrink-0 flex-col rounded-xl border p-3 shadow-xs backdrop-blur-md transition-colors duration-150',
+		'flex h-full max-h-full shrink-0 flex-col rounded-xl border p-3 shadow-xs transition-colors duration-150',
+		deck ? 'w-full' : 'w-70 backdrop-blur-md',
 		isHovered
 			? 'border-primary/60 bg-primary/10 shadow-lg ring-2 shadow-primary/5 ring-primary/40'
-			: 'border-border/50 bg-background/40'
+			: 'border-border/50 bg-background/40',
+		// The deck stacks cards, so the top one has to stay opaque
+		deck && 'bg-card'
 	)}
 >
 	<!-- Column Header -->
 	<div class="mb-3 shrink-0 border-b border-border/40 pb-2.5">
 		<div class="flex items-start justify-between gap-1">
-			<div
-				use:dragHandle
-				aria-label="Drag to reorder {term.name}"
-				class="mt-0.5 shrink-0 cursor-grab text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
-			>
-				<GripVertical size={14} />
-			</div>
+			{#if !deck}
+				<div
+					use:dragHandle
+					aria-label="Drag to reorder {term.name}"
+					class="mt-0.5 shrink-0 cursor-grab text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
+				>
+					<GripVertical size={14} />
+				</div>
+			{/if}
 
 			<div class="min-w-0 flex-1">
 				{#if isEditingTerm}
@@ -200,88 +206,41 @@
 				{/if}
 			</div>
 
-			<div class="flex shrink-0 items-center gap-0.5">
-				<Tooltip.Root>
-					<Tooltip.Trigger>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								href="/export?termId={term.id}"
-								variant="ghost"
-								size="icon"
-								class="h-6 w-6 text-muted-foreground hover:text-foreground"
-							>
-								<Share2 size={13} />
-							</Button>
-						{/snippet}
-					</Tooltip.Trigger>
-					<Tooltip.Content>
-						<p>Export term card</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
-
-				<Tooltip.Root>
-					<Tooltip.Trigger>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								variant="ghost"
-								size="icon"
-								onclick={deleteTerm}
-								class="h-6 w-6 text-muted-foreground hover:text-destructive"
-							>
-								<Trash2 size={13} />
-							</Button>
-						{/snippet}
-					</Tooltip.Trigger>
-					<Tooltip.Content>
-						<p>Delete term</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
-			</div>
+			<TermMenu
+				termId={term.id}
+				termName={term.name}
+				triggerClass="h-8 w-8 md:h-6 md:w-6"
+				onRename={startEditing}
+				onDelete={deleteTerm}
+			/>
 		</div>
 
-		<!-- Prominent Stats Badges -->
-		<div class="mt-2 flex items-center gap-1.5">
+		<p class="mt-1 font-mono text-[11px] text-muted-foreground">
 			{#if attemptedUnits > 0 && earnedUnits < attemptedUnits}
-				<span
-					class="inline-flex items-center rounded-md border border-destructive/30 bg-destructive/10 px-2 py-0.5 font-mono text-[11px] font-bold text-destructive"
-					title="{attemptedUnits - earnedUnits} units failed in this term"
-				>
+				<span class="text-destructive" title="{attemptedUnits - earnedUnits} units failed">
 					{earnedUnits}/{totalUnits} earned
 				</span>
 			{:else}
-				<span
-					class="inline-flex items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
-				>
-					{totalUnits}
-					{totalUnits === 1 ? 'unit' : 'units'}
-				</span>
+				{totalUnits} {totalUnits === 1 ? 'unit' : 'units'}
 			{/if}
-
 			{#if nonGpaUnits > 0}
-				<span
-					class="inline-flex items-center rounded-md border border-border/50 bg-muted/60 px-2 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground"
-					title="Not counted in GPA or degree units"
-				>
-					+{nonGpaUnits} non-GPA
-				</span>
+				<span title="Not counted in GPA or degree units">· +{nonGpaUnits} non-GPA</span>
 			{/if}
-
 			{#if tgpa !== null}
-				<span
-					class="inline-flex items-center rounded-md border border-border/50 bg-muted/60 px-2 py-0.5 font-mono text-[11px] font-semibold text-foreground"
-				>
-					TGPA {tgpa.toFixed(3)}
-				</span>
+				<span class="text-foreground">· TGPA {tgpa.toFixed(3)}</span>
 			{/if}
-		</div>
+		</p>
 	</div>
 
 	<!-- Draggable Drop Zone -->
 	<div
 		bind:this={dropZoneRef}
-		use:dndzone={{ items: localCourses, flipDurationMs: 200, dropTargetStyle: {} }}
+		use:dndzone={{
+			items: localCourses,
+			flipDurationMs: 200,
+			dropTargetStyle: {},
+			delayTouchStart: 350
+		}}
 		onconsider={handleConsider}
 		onfinalize={handleFinalize}
 		class="min-h-0 flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent space-y-2 overflow-y-auto p-0.5"

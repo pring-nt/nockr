@@ -2,6 +2,7 @@
 	import type { Course, CourseResult, CourseType, UniversitySettings } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
 	import { isCourseFinished, withCourseType } from '$lib/logic/gpa';
+	import { moveCourse } from '$lib/logic/terms';
 	import { Minus, Plus, GripVertical } from 'lucide-svelte';
 	import CourseMenu from '$lib/components/term/CourseMenu.svelte';
 	import CourseResultControl from '$lib/components/term/CourseResultControl.svelte';
@@ -26,6 +27,7 @@
 
 	let minUnits = $derived(course.type === 'graded' ? 1 : 0);
 	let isFinished = $derived(isCourseFinished(course));
+	let moveTargets = $derived($appStore.terms.filter((t) => t.id !== termId));
 
 	let isFailingGrade = $derived(
 		course.grade !== null && failingGrade !== null && course.grade === failingGrade
@@ -57,6 +59,13 @@
 					courses: t.courses.map((c) => (c.id === course.id ? withCourseType(c, type) : c))
 				};
 			})
+		}));
+	}
+
+	function moveToTerm(targetTermId: string) {
+		appStore.update((state) => ({
+			...state,
+			terms: moveCourse(state.terms, course.id, termId, targetTermId)
 		}));
 	}
 
@@ -220,8 +229,10 @@
 
 		<CourseMenu
 			type={course.type}
-			triggerClass="h-6 w-6 shrink-0 text-muted-foreground/50 hover:text-foreground"
+			triggerClass="h-8 w-8 shrink-0 text-muted-foreground/50 hover:text-foreground md:h-6 md:w-6"
+			{moveTargets}
 			onTypeChange={changeType}
+			onMove={moveToTerm}
 			onDelete={deleteCourse}
 		/>
 	</div>
@@ -241,7 +252,7 @@
 					type="button"
 					tabindex="-1"
 					onclick={() => updateUnits(-1)}
-					class="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+					class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground md:h-4 md:w-4"
 				>
 					<Minus size={11} />
 				</button>
@@ -266,7 +277,7 @@
 					type="button"
 					tabindex="-1"
 					onclick={() => updateUnits(1)}
-					class="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+					class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground md:h-4 md:w-4"
 				>
 					<Plus size={11} />
 				</button>
@@ -290,7 +301,7 @@
 						type="button"
 						tabindex="-1"
 						onclick={() => updateGrade(-1)}
-						class="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+						class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground md:h-4 md:w-4"
 					>
 						<Minus size={11} />
 					</button>
@@ -321,7 +332,7 @@
 						type="button"
 						tabindex="-1"
 						onclick={() => updateGrade(1)}
-						class="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground"
+						class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted/50 hover:text-foreground md:h-4 md:w-4"
 					>
 						<Plus size={11} />
 					</button>

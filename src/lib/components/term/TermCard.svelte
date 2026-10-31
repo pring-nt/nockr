@@ -9,12 +9,14 @@
 		computeTermUnitsEarned,
 		withCourseType
 	} from '$lib/logic/gpa';
+	import { moveCourse } from '$lib/logic/terms';
 	import { getDeansListTier } from '$lib/logic/honors';
-	import { Plus, Trash2, GraduationCap, Share2 } from 'lucide-svelte';
+	import { Plus, GraduationCap } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardHeader, CardContent } from '$lib/components/ui/card/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import CourseRow from './CourseRow.svelte';
+	import TermMenu from './TermMenu.svelte';
 	import { tick } from 'svelte';
 
 	let {
@@ -34,6 +36,7 @@
 	let attemptedUnits = $derived(computeTermAttemptedUnits(term));
 	let earnedUnits = $derived(computeTermUnitsEarned(term, settings));
 	let deansListTier = $derived(getDeansListTier(term, tgpa, settings));
+	let moveTargets = $derived($appStore.terms.filter((t) => t.id !== term.id));
 
 	let isEditing = $state(false);
 	let editName = $state('');
@@ -109,6 +112,13 @@
 		}));
 	}
 
+	function moveCourseTo(courseId: string, targetTermId: string) {
+		appStore.update((state) => ({
+			...state,
+			terms: moveCourse(state.terms, courseId, term.id, targetTermId)
+		}));
+	}
+
 	function handleNavigate(courseId: string) {
 		const idx = term.courses.findIndex((c) => c.id === courseId);
 		if (idx === -1) return;
@@ -128,77 +138,57 @@
 
 <Card class="glass border-border/40">
 	<CardHeader class="p-3 pb-3 sm:p-6 sm:pb-3">
-		<div class="flex items-start justify-between gap-2">
-			<!-- Left section: Term Name + Units on top, Dean's List Badge underneath -->
-			<div class="flex min-w-0 flex-1 flex-col gap-1.5">
-				<div class="flex min-w-0 flex-wrap items-center gap-2">
-					{#if isEditing}
-						<input
-							class="min-w-0 flex-1 border-b border-primary bg-transparent text-base font-semibold text-foreground focus:outline-none sm:text-lg"
-							bind:value={editName}
-							onblur={commitRename}
-							onkeydown={(e) => e.key === 'Enter' && commitRename()}
-							use:focusOnMount
-						/>
-					{:else}
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										class="cursor-pointer truncate text-left text-base font-semibold text-foreground transition-colors hover:text-primary sm:text-lg"
-										ondblclick={startEditing}
-									>
-										{term.name}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>
-								<p>Double-click to rename</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					{/if}
+		<div class="flex items-start justify-between gap-3">
+			<div class="min-w-0 flex-1">
+				{#if isEditing}
+					<input
+						class="w-full border-b border-primary bg-transparent text-base font-semibold text-foreground focus:outline-none sm:text-lg"
+						bind:value={editName}
+						onblur={commitRename}
+						onkeydown={(e) => e.key === 'Enter' && commitRename()}
+						use:focusOnMount
+					/>
+				{:else}
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props })}
+								<button
+									{...props}
+									class="block max-w-full cursor-pointer truncate text-left text-base font-semibold text-foreground transition-colors hover:text-primary sm:text-lg"
+									ondblclick={startEditing}
+								>
+									{term.name}
+								</button>
+							{/snippet}
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							<p>Double-click to rename</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
+				{/if}
 
+				<p class="mt-0.5 font-mono text-[11px] text-muted-foreground">
 					{#if attemptedUnits > 0 && earnedUnits < attemptedUnits}
-						<span
-							class="inline-flex shrink-0 items-center rounded-md border border-destructive/30 bg-destructive/10 px-2 py-0.5 font-mono text-[11px] font-bold text-destructive"
-							title="{attemptedUnits - earnedUnits} units failed in this term"
-						>
+						<span class="text-destructive" title="{attemptedUnits - earnedUnits} units failed">
 							{earnedUnits}/{totalUnits} earned
 						</span>
 					{:else}
-						<span
-							class="inline-flex shrink-0 items-center rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary"
-						>
-							{totalUnits}
-							{totalUnits === 1 ? 'unit' : 'units'}
-						</span>
+						{totalUnits} {totalUnits === 1 ? 'unit' : 'units'}
 					{/if}
-
 					{#if nonGpaUnits > 0}
-						<span
-							class="inline-flex shrink-0 items-center rounded-md border border-border/50 bg-muted/60 px-2 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground"
-							title="Not counted in GPA or degree units"
-						>
-							+{nonGpaUnits} non-GPA
-						</span>
+						<span title="Not counted in GPA or degree units">· +{nonGpaUnits} non-GPA</span>
 					{/if}
-				</div>
+				</p>
 
 				{#if deansListTier}
-					<div>
-						<span
-							class="inline-flex items-center gap-1.5 rounded-full border border-primary/35 bg-linear-to-r from-primary/20 via-primary/10 to-accent/20 px-2.5 py-0.5 text-[10px] font-semibold shadow-xs ring-1 ring-primary/20 transition-all hover:scale-105 sm:text-xs"
-						>
-							<GraduationCap size={13} class="shrink-0 text-primary" />
-							<span class="gradient-text font-bold">{deansListTier.label}</span>
-						</span>
-					</div>
+					<p class="mt-1 flex items-center gap-1 text-[11px] font-semibold sm:text-xs">
+						<GraduationCap size={13} class="shrink-0 text-primary" />
+						<span class="gradient-text truncate">{deansListTier.label}</span>
+					</p>
 				{/if}
 			</div>
 
-			<!-- Right section: TGPA & Actions -->
-			<div class="flex shrink-0 items-center gap-2 sm:gap-3">
+			<div class="flex shrink-0 items-start gap-1">
 				<div class="text-right">
 					<p class="text-[10px] text-muted-foreground sm:text-xs">TGPA</p>
 					<p class="gradient-text text-base font-bold text-primary sm:text-lg">
@@ -206,43 +196,13 @@
 					</p>
 				</div>
 
-				<Tooltip.Root>
-					<Tooltip.Trigger>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								href="/export?termId={term.id}"
-								variant="ghost"
-								size="icon"
-								class="h-7 w-7 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
-							>
-								<Share2 size={16} />
-							</Button>
-						{/snippet}
-					</Tooltip.Trigger>
-					<Tooltip.Content>
-						<p>Export term card</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
-
-				<Tooltip.Root>
-					<Tooltip.Trigger>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								variant="ghost"
-								size="icon"
-								onclick={onDelete}
-								class="h-7 w-7 text-muted-foreground hover:text-destructive sm:h-8 sm:w-8"
-							>
-								<Trash2 size={16} />
-							</Button>
-						{/snippet}
-					</Tooltip.Trigger>
-					<Tooltip.Content>
-						<p>Delete term</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
+				<TermMenu
+					termId={term.id}
+					termName={term.name}
+					triggerClass="h-9 w-9 sm:h-8 sm:w-8"
+					onRename={startEditing}
+					{onDelete}
+				/>
 			</div>
 		</div>
 	</CardHeader>
@@ -250,9 +210,9 @@
 	<CardContent class="space-y-2 p-3 pt-0 sm:p-6 sm:pt-0">
 		{#if term.courses.length > 0}
 			<div
-				class="mb-1 grid grid-cols-[1fr_60px_72px_28px] gap-1.5 px-0.5 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:px-1"
+				class="mb-1 grid grid-cols-[1fr_1fr_32px] gap-x-2 px-2 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:px-1"
 			>
-				<p class="text-[11px] text-muted-foreground sm:text-xs">Course</p>
+				<p class="hidden text-[11px] text-muted-foreground sm:block sm:text-xs">Course</p>
 				<p class="text-center text-[11px] text-muted-foreground sm:text-xs">Units</p>
 				<p class="text-center text-[11px] text-muted-foreground sm:text-xs">Grade</p>
 				<span></span>
@@ -262,9 +222,11 @@
 		{#each term.courses as course (course.id)}
 			<CourseRow
 				{course}
+				{moveTargets}
 				onDelete={() => deleteCourse(course.id)}
 				onUpdate={(field, value) => updateCourse(course.id, field, value)}
 				onTypeChange={(type) => changeCourseType(course.id, type)}
+				onMove={(termId) => moveCourseTo(course.id, termId)}
 				onNavigate={() => handleNavigate(course.id)}
 			/>
 		{/each}
