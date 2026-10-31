@@ -1,37 +1,66 @@
 // src/lib/schemas/share.ts
 import { z } from 'zod';
+import { ThemeNameSchema } from './theme';
 
-export const AspectRatioSchema = z.enum([
+export const ShareLayoutSchema = z.enum(['stat-stack', 'honors-headline', 'scorecard']);
+
+export const ShareSubjectSchema = z.enum(['term', 'cumulative']);
+
+export const ShareFormatSchema = z.enum([
+	'sticker', // Cropped to its content
 	'9:16', // 1080 × 1920 — Story
 	'3:4', // 1080 × 1440 — Portrait
-	'2:3', // 1080 × 1620 — Tall
-	'1:1', // 1080 × 1080 — Square
-	'4:3', // 1440 × 1080 — Landscape
-	'16:9' // 1920 × 1080 — Wide
+	'1:1' // 1080 × 1080 — Square
 ]);
 
-export const GradeDisplayModeSchema = z.enum([
-	'full', // 3.83
-	'masked', // 3.XX
-	'hidden' // column removed entirely
+export const ShareInkSchema = z.enum(['white', 'black', 'theme']);
+
+export const ShareHighlightSchema = z.enum(['none', 'accent', 'gradient']);
+
+export const ShareThemeSchema = z.enum(['site', ...ThemeNameSchema.options]);
+
+export const ValueDisplaySchema = z.enum([
+	'full', // 3.750
+	'masked', // 3.XXX
+	'hidden'
 ]);
+
+export const ShareLayoutOptionsSchema = z.object({
+	align: z.enum(['left', 'center']).default('center'),
+	gpaDisplay: ValueDisplaySchema.default('full'),
+	gradeDisplay: ValueDisplaySchema.default('full'),
+	showHonors: z.boolean().default(true),
+	showNotEarnedMessage: z.boolean().default(false),
+	showCourses: z.boolean().default(true),
+	showNonAcademic: z.boolean().default(false),
+	showTrend: z.boolean().default(false),
+	showCgpa: z.boolean().default(false)
+});
 
 export const ShareConfigSchema = z.object({
-	widgets: z.object({
-		academicSummary: z.boolean().default(false),
-		termHeader: z.boolean().default(true),
-		courseList: z.boolean().default(true),
-		deansListBadge: z.boolean().default(true),
-		latinHonorsBadge: z.boolean().default(true)
-	}),
-	privacy: z.object({
-		maskGPA: z.boolean().default(false), // 3.83 -> 3.XX
-		courseGradeDisplay: GradeDisplayModeSchema.default('full')
-	}),
-	aspectRatio: AspectRatioSchema.default('3:4'),
-	background: z.enum(['theme', 'solid', 'transparent']).default('solid')
+	layout: ShareLayoutSchema.default('stat-stack'),
+	subject: ShareSubjectSchema.default('term'),
+	format: ShareFormatSchema.default('sticker'),
+	ink: ShareInkSchema.default('white'),
+	highlight: ShareHighlightSchema.default('accent'),
+	theme: ShareThemeSchema.default('site'),
+	showShadow: z.boolean().default(true),
+	background: z.enum(['transparent', 'theme']).default('transparent'),
+	showWatermark: z.boolean().default(true),
+	layouts: z
+		.object({
+			'stat-stack': ShareLayoutOptionsSchema.prefault({}),
+			'honors-headline': ShareLayoutOptionsSchema.prefault({ showCourses: false }),
+			scorecard: ShareLayoutOptionsSchema.prefault({ align: 'left' })
+		})
+		.prefault({})
 });
 
 export type ShareConfig = z.infer<typeof ShareConfigSchema>;
-export type AspectRatio = z.infer<typeof AspectRatioSchema>;
-export type GradeDisplayMode = z.infer<typeof GradeDisplayModeSchema>;
+export type ShareLayout = z.infer<typeof ShareLayoutSchema>;
+export type ShareLayoutOptions = z.infer<typeof ShareLayoutOptionsSchema>;
+export type ShareSubject = z.infer<typeof ShareSubjectSchema>;
+export type ShareFormat = z.infer<typeof ShareFormatSchema>;
+export type ShareInk = z.infer<typeof ShareInkSchema>;
+export type ShareHighlight = z.infer<typeof ShareHighlightSchema>;
+export type ValueDisplay = z.infer<typeof ValueDisplaySchema>;

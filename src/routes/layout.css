@@ -637,6 +637,25 @@
 	-webkit-text-fill-color: transparent;
 }
 
+/* Sticker highlight: only the key value takes the color, the rest stays in the text color */
+[data-align='center'] p.share-hero {
+	margin-inline: auto;
+}
+
+[data-highlight='accent'] .share-hero {
+	color: var(--iris);
+}
+
+[data-highlight='gradient'] .share-hero {
+	background: linear-gradient(135deg, var(--iris) 0%, var(--foam) 55%, var(--rose) 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	/* A text-shadow would show through the transparent fill */
+	text-shadow: none;
+	filter: var(--ink-filter);
+}
+
 /* =========================================
    SCROLLBARS
    ========================================= */

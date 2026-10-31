@@ -1,24 +1,35 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import type { ShareConfig, Term } from '$lib/schemas';
-	import { getThemeStyles, getCanvasDimensions } from '$lib/logic/share';
+	import type { ShareConfig } from '$lib/schemas';
+	import { SHARE_CANVAS_WIDTH, SHARE_FORMAT_HEIGHTS } from '$lib/constants';
+	import { getThemeStyles, type ShareData } from '$lib/logic/share';
 	import { themeStore } from '$lib/stores/themeState';
-	import SummaryWidget from './widgets/SummaryWidget.svelte';
-	import TermHeaderWidget from './widgets/TermHeaderWidget.svelte';
-	import CourseListWidget from './widgets/CourseListWidget.svelte';
+	import { THEMES } from '$lib/themes';
 	import { Target } from 'lucide-svelte';
+	import HonorsHeadline from './layouts/HonorsHeadline.svelte';
+	import Scorecard from './layouts/Scorecard.svelte';
+	import StatStack from './layouts/StatStack.svelte';
+
+	const PADDING = 40;
+	const INK_COLORS = { white: '#ffffff', black: '#111111', theme: 'var(--text)' };
+	const LAYOUTS = {
+		'stat-stack': StatStack,
+		'honors-headline': HonorsHeadline,
+		scorecard: Scorecard
+	};
 
 	let {
 		config,
-		term,
+		data,
 		canvasRef = $bindable()
 	}: {
-		config: ShareConfig & { showWatermark?: boolean };
-		term?: Term;
+		config: ShareConfig;
+		data: ShareData;
 		canvasRef?: HTMLElement;
 	} = $props();
 
 	let themeStyles = $state<Record<string, string>>({});
+	let contentHeight = $state(0);
 
 	$effect(() => {
 		const _activeTheme = $themeStore;
@@ -29,35 +40,49 @@
 		}
 	});
 
-	let dimensions = $derived(getCanvasDimensions(config.aspectRatio));
+	let Layout = $derived(LAYOUTS[config.layout]);
+	let align = $derived(config.layouts[config.layout].align);
+	let height = $derived(config.format === 'sticker' ? null : SHARE_FORMAT_HEIGHTS[config.format]);
 
-	let isLandscape = $derived(config.aspectRatio === '4:3' || config.aspectRatio === '16:9');
-	let isSquare = $derived(config.aspectRatio === '1:1');
-	let isTallPortrait = $derived(config.aspectRatio === '9:16');
+	// A long course list has to shrink to fit instead of being cut off by the format
+	let fitScale = $derived(
+		height && contentHeight > height - PADDING * 2 ? (height - PADDING * 2) / contentHeight : 1
+	);
 
-	let showSummary = $derived(config.widgets.academicSummary);
-	let showHeader = $derived(!!term && config.widgets.termHeader);
-	let showCourses = $derived(!!term && config.widgets.courseList);
-
-	let activeCount = $derived((showSummary ? 1 : 0) + (showHeader ? 1 : 0) + (showCourses ? 1 : 0));
+	let stickerTheme = $derived(config.theme === 'site' ? $themeStore.active : config.theme);
+	let isThemeDark = $derived(THEMES.find((t) => t.name === stickerTheme)?.isDark ?? true);
+	let hasDarkShadow = $derived(config.ink === 'white' || (config.ink === 'theme' && isThemeDark));
+	let shadowColor = $derived(hasDarkShadow ? '0, 0, 0' : '255, 255, 255');
 
 	let styleString = $derived(
-		`width: ${dimensions.width}px; height: ${dimensions.height}px; ` +
-			Object.entries(themeStyles)
-				.map(([k, v]) => `${k}:${v}`)
-				.join(';')
+		[
+			`width: ${SHARE_CANVAS_WIDTH}px`,
+			height ? `height: ${height}px` : '',
+			`padding: ${PADDING}px`,
+			`text-align: ${align}`,
+			`color: ${INK_COLORS[config.ink]}`,
+			config.showShadow
+				? `text-shadow: 0 1px 2px rgba(${shadowColor}, 0.75), 0 2px 10px rgba(${shadowColor}, 0.6), 0 6px 32px rgba(${shadowColor}, 0.5)`
+				: '',
+			`--ink-filter: ${config.showShadow ? `drop-shadow(0 2px 6px rgba(${shadowColor}, 0.7))` : 'none'}`,
+			config.highlight === 'none' ? '' : '--hero: var(--iris)',
+			// A picked theme comes from data-theme, so the site's values must not override it
+			...(config.theme === 'site' ? Object.entries(themeStyles).map(([k, v]) => `${k}:${v}`) : [])
+		]
+			.filter(Boolean)
+			.join(';')
 	);
 </script>
 
 <div
 	bind:this={canvasRef}
 	style={styleString}
-	class="relative flex flex-col justify-center overflow-hidden p-10 font-sans text-(--text) select-none
-    {config.background === 'solid' ? 'bg-(--surface)' : ''}
-    {config.background === 'theme' ? 'bg-(--base)' : ''}
-    {config.background === 'transparent' ? 'bg-transparent' : ''}"
+	data-theme={config.theme === 'site' ? undefined : config.theme}
+	data-highlight={config.highlight}
+	data-align={align}
+	class="relative flex flex-col justify-center overflow-hidden font-sans select-none
+    {config.background === 'theme' ? 'bg-(--base)' : 'bg-transparent'}"
 >
-	<!-- Ambient Core Gradient & Noise Texture for Theme Background Mode -->
 	{#if config.background === 'theme'}
 		<div
 			class="pointer-events-none absolute inset-0"
@@ -70,174 +95,34 @@
             transparent 75%
           ),
           radial-gradient(
-            circle at 85% 15%,
-            color-mix(in srgb, var(--iris, var(--primary)) 15%, transparent) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
             circle at 15% 85%,
             color-mix(in srgb, var(--pine, var(--subtle)) 12%, transparent) 0%,
             transparent 50%
           );
       "
 		></div>
-		<svg
-			class="pointer-events-none absolute inset-0 size-full opacity-[0.04]"
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<filter id="shareCanvasNoiseFilter">
-				<feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
-			</filter>
-			<rect width="100%" height="100%" filter="url(#shareCanvasNoiseFilter)" />
-		</svg>
 	{/if}
 
-	<!-- Main Content Stack -->
-	<div class="relative z-10 my-auto flex w-full flex-col gap-6">
-		<!-- Integrated Header Watermark -->
-		{#if config.showWatermark ?? true}
-			<div class="flex flex-col items-center justify-center gap-1.5 text-center drop-shadow-md">
-				<div class="flex items-center gap-3.5">
-					<div class="rounded-2xl border border-(--iris)/30 bg-(--iris)/15 p-2.5 text-(--iris)">
-						<Target size={40} />
-					</div>
-					<h2 class="gradient-text text-5xl font-black tracking-wider">Nockr</h2>
-				</div>
-				<div
-					class="flex items-center gap-2 text-xs font-bold tracking-wider text-(--subtle) uppercase"
-				>
-					<span>Academic Performance Tracker</span>
-					<span class="opacity-50">•</span>
-					<span class="font-mono text-[11px] tracking-normal lowercase"
-						>nockr.nockr-app.workers.dev</span
+	<div
+		bind:clientHeight={contentHeight}
+		class="relative shrink-0"
+		style="transform: scale({fitScale});"
+	>
+		<Layout {data} />
+
+		{#if config.showWatermark}
+			<div class="mt-7 flex flex-col gap-1 {align === 'center' ? 'items-center' : 'items-start'}">
+				<div class="flex items-center gap-2.5">
+					<span
+						class="rounded-md border-2 border-current p-1"
+						style="color: var(--hero, inherit); filter: var(--ink-filter);"
 					>
+						<Target size={26} />
+					</span>
+					<span class="text-[34px] leading-none font-medium tracking-tight">Nockr</span>
 				</div>
+				<span class="text-[20px] opacity-80">nockr.nockr-app.workers.dev</span>
 			</div>
 		{/if}
-
-		<!-- Body Widgets Layout -->
-		<div class="w-full">
-			{#if isLandscape}
-				{#if showCourses && (showSummary || showHeader)}
-					<!-- Balanced 2-Column Landscape Layout -->
-					<div class="grid w-full grid-cols-12 items-start gap-6">
-						<div class="col-span-5 space-y-6">
-							{#if showSummary}
-								<SummaryWidget
-									maskGpa={config.privacy.maskGPA}
-									showHonors={config.widgets.latinHonorsBadge}
-								/>
-							{/if}
-							{#if showHeader}
-								<TermHeaderWidget
-									{term}
-									maskGpa={config.privacy.maskGPA}
-									showDeansListBadge={config.widgets.deansListBadge}
-								/>
-							{/if}
-						</div>
-
-						<div class="col-span-7">
-							<CourseListWidget
-								courses={term?.courses ?? []}
-								gradeDisplay={config.privacy.courseGradeDisplay}
-							/>
-						</div>
-					</div>
-				{:else}
-					<div class="mx-auto w-full max-w-3xl space-y-6">
-						{#if showSummary}
-							<SummaryWidget
-								maskGpa={config.privacy.maskGPA}
-								showHonors={config.widgets.latinHonorsBadge}
-							/>
-						{/if}
-						{#if showHeader}
-							<TermHeaderWidget
-								{term}
-								maskGpa={config.privacy.maskGPA}
-								showDeansListBadge={config.widgets.deansListBadge}
-							/>
-						{/if}
-						{#if showCourses}
-							<CourseListWidget
-								courses={term?.courses ?? []}
-								gradeDisplay={config.privacy.courseGradeDisplay}
-							/>
-						{/if}
-					</div>
-				{/if}
-			{:else if isSquare && activeCount === 3}
-				<div class="w-full space-y-5">
-					<div class="grid grid-cols-12 items-start gap-5">
-						<div class="col-span-6">
-							<SummaryWidget
-								maskGpa={config.privacy.maskGPA}
-								showHonors={config.widgets.latinHonorsBadge}
-							/>
-						</div>
-						{#if showHeader}
-							<div class="col-span-6">
-								<TermHeaderWidget
-									{term}
-									maskGpa={config.privacy.maskGPA}
-									showDeansListBadge={config.widgets.deansListBadge}
-								/>
-							</div>
-						{/if}
-					</div>
-					{#if showCourses}
-						<CourseListWidget
-							courses={term?.courses ?? []}
-							gradeDisplay={config.privacy.courseGradeDisplay}
-						/>
-					{/if}
-				</div>
-			{:else if isTallPortrait}
-				<div class="mx-auto w-full max-w-3xl space-y-6">
-					{#if showSummary}
-						<SummaryWidget
-							maskGpa={config.privacy.maskGPA}
-							showHonors={config.widgets.latinHonorsBadge}
-						/>
-					{/if}
-					{#if showHeader}
-						<TermHeaderWidget
-							{term}
-							maskGpa={config.privacy.maskGPA}
-							showDeansListBadge={config.widgets.deansListBadge}
-						/>
-					{/if}
-					{#if showCourses}
-						<CourseListWidget
-							courses={term?.courses ?? []}
-							gradeDisplay={config.privacy.courseGradeDisplay}
-						/>
-					{/if}
-				</div>
-			{:else}
-				<div class="mx-auto w-full max-w-2xl space-y-5">
-					{#if showSummary}
-						<SummaryWidget
-							maskGpa={config.privacy.maskGPA}
-							showHonors={config.widgets.latinHonorsBadge}
-						/>
-					{/if}
-					{#if showHeader}
-						<TermHeaderWidget
-							{term}
-							maskGpa={config.privacy.maskGPA}
-							showDeansListBadge={config.widgets.deansListBadge}
-						/>
-					{/if}
-					{#if showCourses}
-						<CourseListWidget
-							courses={term?.courses ?? []}
-							gradeDisplay={config.privacy.courseGradeDisplay}
-						/>
-					{/if}
-				</div>
-			{/if}
-		</div>
 	</div>
 </div>
