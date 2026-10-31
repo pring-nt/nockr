@@ -389,10 +389,10 @@
 		</div>
 	</header>
 
-	<div class="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12">
+	<div class="flex flex-col gap-6 sm:gap-8 lg:grid lg:grid-cols-12">
 		<!-- Live Canvas Preview Target -->
 		<div
-			class="relative order-1 flex h-95 w-full flex-col overflow-hidden rounded-xl border border-border/50 sm:h-125 lg:sticky lg:top-6 lg:order-2 lg:col-span-8 lg:h-160"
+			class="sticky top-2 z-20 order-1 flex h-72 w-full shrink-0 flex-col overflow-hidden rounded-xl border border-border/50 shadow-lg sm:h-125 lg:top-6 lg:z-auto lg:order-2 lg:col-span-8 lg:h-160 lg:shadow-none"
 			style={backdropStyle}
 		>
 			<!-- Scrollable Viewport -->
@@ -418,7 +418,7 @@
 
 			<!-- Floating Zoom Toolbar Controls -->
 			<div
-				class="absolute right-3 bottom-3 z-10 flex items-center gap-1 rounded-lg border border-border/40 bg-(--surface)/90 p-1 text-(--text) shadow-md backdrop-blur-xs"
+				class="absolute right-3 bottom-3 z-10 hidden items-center gap-1 rounded-lg border border-border/40 bg-(--surface)/90 p-1 text-(--text) shadow-md backdrop-blur-xs sm:flex"
 			>
 				<Button
 					variant="ghost"
