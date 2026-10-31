@@ -207,7 +207,7 @@
 		</div>
 	</CardHeader>
 
-	<CardContent class="space-y-2 p-3 pt-0 sm:p-6 sm:pt-0">
+	<CardContent class="space-y-3 p-3 pt-0 sm:space-y-2 sm:p-6 sm:pt-0">
 		{#if term.courses.length > 0}
 			<div
 				class="mb-1 grid grid-cols-[1fr_1fr_32px] gap-x-2 px-2 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:px-1"
