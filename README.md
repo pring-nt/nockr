@@ -167,6 +167,13 @@ Marketing images live in [`docs/promo`](docs/promo), and the social sharing card
 | `story.png` | 1080 × 1920 | Instagram and Facebook stories |
 | `stickers-wide.png` | 1600 × 900 | Feature posts and link banners |
 | `phones-wide.png` | 1600 × 900 | Feature posts and link banners |
+| `tour-wide.png` | 1600 × 900 | One image covering every page |
+| `overview-wide.png` | 1600 × 900 | Overview page |
+| `honors-wide.png` | 1600 × 900 | Honors Standing and Unit Runway |
+| `plan-wide.png` | 1600 × 900 | Plan page |
+| `export-wide.png` | 1600 × 900 | Export page |
+| `themes-wide.png` | 1600 × 900 | Themes in Settings |
+| `university-wide.png` | 1600 × 900 | University rules in Settings |
 
 ---
 

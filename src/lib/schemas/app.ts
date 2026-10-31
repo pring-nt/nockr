@@ -3,12 +3,15 @@ import { TermSchema } from './term';
 import { ChecklistFilterSchema, ChecklistItemSchema, ChecklistSortSchema } from './checklist';
 import { UniversitySettingsSchema } from './university';
 
+export const DEFAULT_PROGRAM_UNITS = 165;
+
 export const UISettingsSchema = z.object({
 	cardViewMode: z.enum(['focus', 'grid']).default('focus'),
 	checklistPanelOpen: z.boolean().default(true),
 	checklistFilter: ChecklistFilterSchema.default('all'),
 	checklistSort: ChecklistSortSchema.default('custom'),
-	hasSeenOnboarding: z.boolean().default(false)
+	hasSeenOnboarding: z.boolean().default(false),
+	hasConfirmedUnits: z.boolean().default(false)
 });
 
 export const AppStateSchema = z.object({
@@ -17,7 +20,7 @@ export const AppStateSchema = z.object({
 	universitySettings: UniversitySettingsSchema.default(() => UniversitySettingsSchema.parse({})),
 	customSettingsCache: UniversitySettingsSchema.optional(),
 	ui: UISettingsSchema.default(() => UISettingsSchema.parse({})),
-	totalProgramUnits: z.number().int().default(165),
+	totalProgramUnits: z.number().int().default(DEFAULT_PROGRAM_UNITS),
 	version: z.string().default('1.3.0')
 });
 
