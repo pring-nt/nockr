@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { ThemeSettingsSchema, type ThemeSettings } from '$lib/schemas';
+import { saveToStorage } from './persist';
 
 const THEME_STORAGE_KEY = 'nockr_theme';
 const LEGACY_STORAGE_KEY = 'nockr_state';
@@ -65,26 +66,14 @@ function createThemeStore() {
 	}
 
 	function set(value: ThemeSettings) {
-		if (typeof localStorage !== 'undefined') {
-			try {
-				localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(value));
-			} catch (e) {
-				console.error('[Nockr] Failed to save theme state:', e);
-			}
-		}
+		saveToStorage(THEME_STORAGE_KEY, value);
 		internalSet(value);
 	}
 
 	function update(fn: (state: ThemeSettings) => ThemeSettings) {
 		internalUpdate((current) => {
 			const next = fn(current);
-			if (typeof localStorage !== 'undefined') {
-				try {
-					localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(next));
-				} catch (e) {
-					console.error('[Nockr] Failed to save theme state:', e);
-				}
-			}
+			saveToStorage(THEME_STORAGE_KEY, next);
 			return next;
 		});
 	}

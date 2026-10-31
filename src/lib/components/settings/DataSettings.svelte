@@ -1,15 +1,34 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Download, FileSpreadsheet, Upload } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import ImportModal from '$lib/components/settings/ImportModal.svelte';
 	import { appStore } from '$lib/stores/appState';
 	import { shareStore } from '$lib/stores/shareState';
 	import { themeStore } from '$lib/stores/themeState';
-	import { ShareConfigSchema, ThemeSettingsSchema } from '$lib/schemas';
+	import {
+		MAX_BACKUP_BYTES,
+		ShareConfigSchema,
+		ThemeSettingsSchema,
+		type AppState
+	} from '$lib/schemas';
+
+	interface PendingBackup {
+		state: AppState;
+		clearedGrades: number;
+		theme: unknown;
+		share: unknown;
+	}
 
 	let importModalOpen = $state(false);
 	let fileInputEl = $state<HTMLInputElement | null>(null);
+	let pendingBackup = $state.raw<PendingBackup | null>(null);
+
+	let pendingTerms = $derived(pendingBackup?.state.terms.length ?? 0);
+	let pendingCourses = $derived(
+		pendingBackup?.state.terms.reduce((total, term) => total + term.courses.length, 0) ?? 0
+	);
 
 	function exportState() {
 		const backupData = {
@@ -33,32 +52,53 @@
 	function importState(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const file = target.files?.[0];
+		target.value = '';
 		if (!file) return;
+
+		if (file.size > MAX_BACKUP_BYTES) {
+			toast.error('That file is too large to be a Nockr backup, so nothing was changed.');
+			return;
+		}
 
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			try {
 				const parsed = JSON.parse(e.target?.result as string);
+				const backup = appStore.readBackup(parsed);
 
-				if (!appStore.restore(parsed)) {
-					toast.error('That backup could not be read, so nothing was changed.');
+				if (!backup) {
+					toast.error('That file is not a Nockr backup, so nothing was changed.');
 					return;
 				}
-
-				const themeResult = ThemeSettingsSchema.safeParse(parsed?.theme);
-				if (themeResult.success) themeStore.set(themeResult.data);
-
-				const shareResult = ShareConfigSchema.safeParse(parsed?.share);
-				if (shareResult.success) shareStore.update(() => shareResult.data);
-
-				toast.success('Backup restored');
+				pendingBackup = { ...backup, theme: parsed.theme, share: parsed.share };
 			} catch {
 				toast.error('That file is not a valid JSON backup.');
-			} finally {
-				target.value = '';
 			}
 		};
+		reader.onerror = () => toast.error('That file could not be read.');
 		reader.readAsText(file);
+	}
+
+	function restoreBackup() {
+		if (!pendingBackup) return;
+		const { state, clearedGrades, theme, share } = pendingBackup;
+		pendingBackup = null;
+
+		appStore.set(state);
+
+		const themeResult = ThemeSettingsSchema.safeParse(theme);
+		if (themeResult.success) themeStore.set(themeResult.data);
+
+		const shareResult = ShareConfigSchema.safeParse(share);
+		if (shareResult.success) shareStore.update(() => shareResult.data);
+
+		if (clearedGrades > 0) {
+			toast.warning(
+				`Backup restored. ${clearedGrades} ${clearedGrades === 1 ? 'grade was' : 'grades were'} outside your grading scale and got cleared.`
+			);
+		} else {
+			toast.success('Backup restored');
+		}
 	}
 </script>
 
@@ -104,3 +144,26 @@
 <input bind:this={fileInputEl} type="file" accept=".json" class="hidden" onchange={importState} />
 
 <ImportModal bind:open={importModalOpen} />
+
+<Dialog.Root
+	open={pendingBackup !== null}
+	onOpenChange={(isOpen) => {
+		if (!isOpen) pendingBackup = null;
+	}}
+>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>Restore this backup?</Dialog.Title>
+			<Dialog.Description class="text-xs">
+				Found {pendingTerms}
+				{pendingTerms === 1 ? 'term' : 'terms'} and {pendingCourses}
+				{pendingCourses === 1 ? 'course' : 'courses'}. This replaces everything you have here now,
+				and it can't be undone.
+			</Dialog.Description>
+		</Dialog.Header>
+		<Dialog.Footer>
+			<Button variant="outline" onclick={() => (pendingBackup = null)}>Cancel</Button>
+			<Button variant="destructive" onclick={restoreBackup}>Replace my data</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

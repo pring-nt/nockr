@@ -1,8 +1,17 @@
-import type { Term, Course, CourseResult, CourseType } from '$lib/schemas';
+import { z } from 'zod';
+import {
+	MAX_COURSE_UNITS,
+	MAX_IMPORT_BYTES,
+	TermSchema,
+	type Course,
+	type CourseResult,
+	type CourseType,
+	type Term
+} from '$lib/schemas';
 import type { ChecklistSeed } from './checklist';
 
 export type ImportResult =
-	| { status: 'ok'; terms: Term[]; checklist: ChecklistSeed[] }
+	| { status: 'ok'; terms: Term[]; checklist: ChecklistSeed[]; skipped: number }
 	| { status: 'empty'; message: string }
 	| { status: 'error'; message: string };
 
@@ -18,6 +27,7 @@ interface RawRow {
 }
 
 const PLANNED_STATUS = 'yet to register';
+const MAX_ARCHERSHUB_GRADE = 4;
 const INCLUDE_STATUSES = ['passed', 'failed', 'registered', 'credited', PLANNED_STATUS];
 
 const STATUS_RESULTS: Record<string, CourseResult> = {
@@ -54,6 +64,14 @@ function classifyCourse(
 		return 'non-academic';
 	}
 	return status === 'passed' && grade === null ? 'non-academic' : 'graded';
+}
+
+/** A wrong table should lose the odd row, never reach the store with values schemas reject */
+function isUsableRow(row: RawRow): boolean {
+	const hasValidGrade = row.grade === null || (row.grade >= 0 && row.grade <= MAX_ARCHERSHUB_GRADE);
+	return (
+		Boolean(row.courseCode) && hasValidGrade && row.credits >= 0 && row.credits <= MAX_COURSE_UNITS
+	);
 }
 
 function parseHTMLTable(html: string): RawRow[] {
@@ -145,17 +163,23 @@ function toChecklistSeeds(rows: RawRow[]): ChecklistSeed[] {
 }
 
 export async function parseGradeExport(file: File): Promise<ImportResult> {
+	if (file.size > MAX_IMPORT_BYTES) {
+		return { status: 'error', message: 'That file is too large to be a grade export.' };
+	}
+
 	try {
 		const html = await file.text();
 
-		if (!html.trim().toLowerCase().startsWith('<')) {
+		if (!html.trim().startsWith('<') || !/<table[\s>]/i.test(html)) {
 			return {
 				status: 'error',
 				message: 'File does not appear to be a valid ArchersHub grade export.'
 			};
 		}
 
-		const raw = parseHTMLTable(html);
+		const allRows = parseHTMLTable(html);
+		const raw = allRows.filter(isUsableRow);
+		const skipped = allRows.length - raw.length;
 		const rows = deduplicateRows(raw.filter((r) => r.status !== PLANNED_STATUS));
 
 		if (rows.length === 0) {
@@ -194,11 +218,14 @@ export async function parseGradeExport(file: File): Promise<ImportResult> {
 			});
 		}
 
-		return { status: 'ok', terms, checklist: toChecklistSeeds(raw) };
+		const parsedTerms = z.array(TermSchema).safeParse(terms);
+		if (!parsedTerms.success) {
+			return { status: 'error', message: 'Some courses in that file could not be read.' };
+		}
+
+		return { status: 'ok', terms: parsedTerms.data, checklist: toChecklistSeeds(raw), skipped };
 	} catch (err) {
-		return {
-			status: 'error',
-			message: `Failed to parse file: ${String(err)}`
-		};
+		console.error('[Nockr] Failed to read grade export:', err);
+		return { status: 'error', message: 'That file could not be read.' };
 	}
 }

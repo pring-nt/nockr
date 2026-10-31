@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { HonorTierSchema } from './honors';
+import { boundedText, MAX_LABEL } from './limits';
 
 export const UniversitySettingsSchema = z.object({
 	// Added 'up' to the allowed modes!
@@ -11,14 +12,14 @@ export const UniversitySettingsSchema = z.object({
 	gradeStep: z.number().default(0.5),
 
 	deansListEnabled: z.boolean().default(true),
-	deansListLabel: z.string().default("Dean's List"),
+	deansListLabel: boundedText(MAX_LABEL).default("Dean's List"),
 	deansListTiers: z.array(HonorTierSchema).default([]),
 
 	deansListMinUnits: z.number().default(0),
 	deansListMinCourseGrade: z.number().nullable().default(null),
 
 	latinHonorsEnabled: z.boolean().default(true),
-	latinHonorsLabel: z.string().default('Latin Honors'),
+	latinHonorsLabel: boundedText(MAX_LABEL).default('Latin Honors'),
 	latinHonorsTiers: z.array(HonorTierSchema).default([]),
 	latinHonorsNoFailPolicy: z.boolean().default(true)
 });

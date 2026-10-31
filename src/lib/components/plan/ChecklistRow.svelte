@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MAX_COURSE_NAME } from '$lib/schemas';
 	import { untrack } from 'svelte';
 	import type { ChecklistItem, CourseType, Term } from '$lib/schemas';
 	import type { ChecklistState } from '$lib/logic/checklist';
@@ -94,6 +95,7 @@
 				aria-label="Course name"
 				class="min-w-0 flex-1 border-b border-primary bg-transparent text-xs font-medium text-foreground focus:outline-none"
 				bind:value={editLabel}
+				maxlength={MAX_COURSE_NAME}
 				onkeydown={handleKeydown}
 				use:focusOnMount
 			/>

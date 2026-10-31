@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MAX_TERM_NAME } from '$lib/schemas';
 	import { CourseSchema, type CourseType, type Term } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
 	import {
@@ -144,6 +145,7 @@
 					<input
 						class="w-full border-b border-primary bg-transparent text-base font-semibold text-foreground focus:outline-none sm:text-lg"
 						bind:value={editName}
+						maxlength={MAX_TERM_NAME}
 						onblur={commitRename}
 						onkeydown={(e) => e.key === 'Enter' && commitRename()}
 						use:focusOnMount

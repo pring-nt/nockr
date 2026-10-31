@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MAX_COURSE_NAME } from '$lib/schemas';
 	import type { Course, CourseResult, CourseType, Term } from '$lib/schemas';
 	import { appStore } from '$lib/stores/appState';
 	import { Minus, Plus } from 'lucide-svelte';
@@ -165,6 +166,7 @@
 			'truncate pb-0.5 transition-colors focus:border-primary focus:outline-none'
 		)}
 		value={course.name}
+		maxlength={MAX_COURSE_NAME}
 		placeholder="Course name"
 		oninput={handleNameInput}
 		onkeydown={onNameKeydown}

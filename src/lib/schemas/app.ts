@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { TermSchema } from './term';
 import { ChecklistFilterSchema, ChecklistItemSchema, ChecklistSortSchema } from './checklist';
 import { UniversitySettingsSchema } from './university';
+import { MAX_PROGRAM_UNITS } from './limits';
 
 export const DEFAULT_PROGRAM_UNITS = 165;
 
@@ -20,7 +21,13 @@ export const AppStateSchema = z.object({
 	universitySettings: UniversitySettingsSchema.default(() => UniversitySettingsSchema.parse({})),
 	customSettingsCache: UniversitySettingsSchema.optional(),
 	ui: UISettingsSchema.default(() => UISettingsSchema.parse({})),
-	totalProgramUnits: z.number().int().default(DEFAULT_PROGRAM_UNITS),
+	totalProgramUnits: z
+		.number()
+		.int()
+		.min(1)
+		.max(MAX_PROGRAM_UNITS)
+		.default(DEFAULT_PROGRAM_UNITS)
+		.catch(DEFAULT_PROGRAM_UNITS),
 	version: z.string().default('1.3.0')
 });
 

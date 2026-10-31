@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { ShareConfigSchema, type ShareConfig, type ShareLayoutOptions } from '$lib/schemas';
+import { saveToStorage } from './persist';
 
 const SHARE_STORAGE_KEY = 'nockr_share';
 
@@ -27,13 +28,7 @@ function createShareStore() {
 	function update(fn: (state: ShareConfig) => ShareConfig) {
 		internalUpdate((current) => {
 			const next = fn(current);
-			if (typeof localStorage !== 'undefined') {
-				try {
-					localStorage.setItem(SHARE_STORAGE_KEY, JSON.stringify(next));
-				} catch (e) {
-					console.error('[Nockr] Failed to save export settings:', e);
-				}
-			}
+			saveToStorage(SHARE_STORAGE_KEY, next);
 			return next;
 		});
 	}

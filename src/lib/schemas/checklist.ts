@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import { CourseTypeSchema } from './course';
+import { boundedText, MAX_COURSE_NAME, MAX_COURSE_UNITS, MAX_ID } from './limits';
 
 export const ChecklistItemSchema = z.object({
-	id: z.string(),
-	label: z.string(),
-	units: z.number().int().min(0).max(12).default(3),
+	id: boundedText(MAX_ID),
+	label: boundedText(MAX_COURSE_NAME),
+	units: z.number().int().min(0).max(MAX_COURSE_UNITS).default(3),
 	type: CourseTypeSchema.default('graded'),
 	completed: z.boolean().default(false)
 });

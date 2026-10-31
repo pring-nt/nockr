@@ -26,6 +26,7 @@
 	let errorMessage = $state<string | null>(null);
 	let parsedTerms = $state<Term[]>([]);
 	let parsedChecklist = $state<ChecklistSeed[]>([]);
+	let skippedRows = $state(0);
 	let fileInputEl = $state<HTMLInputElement | null>(null);
 
 	let totalCoursesCount = $derived(parsedTerms.reduce((acc, term) => acc + term.courses.length, 0));
@@ -39,6 +40,7 @@
 		errorMessage = null;
 		parsedTerms = [];
 		parsedChecklist = [];
+		skippedRows = 0;
 		if (fileInputEl) fileInputEl.value = '';
 	}
 
@@ -71,6 +73,7 @@
 		if (result.status === 'ok') {
 			parsedTerms = result.terms;
 			parsedChecklist = result.checklist;
+			skippedRows = result.skipped;
 			step = 'confirm';
 		} else {
 			errorMessage = result.message;
@@ -178,6 +181,13 @@
 						<p class="mb-2 text-[11px] text-muted-foreground">
 							{nonGpaCoursesCount} of these are non-academic or credited, so they are not counted in your
 							GPA.
+						</p>
+					{/if}
+					{#if skippedRows > 0}
+						<p class="mb-2 text-[11px] text-destructive">
+							{skippedRows}
+							{skippedRows === 1 ? 'row was' : 'rows were'} left out because the units or grade didn't
+							look right. Add those courses yourself after importing.
 						</p>
 					{/if}
 					{#if parsedChecklist.length > 0}
