@@ -9,6 +9,23 @@
 
 	let { children } = $props();
 
+	let isTabbing = false;
+	let areTooltipsMuted = $state(false);
+
+	function trackTab(e: KeyboardEvent) {
+		if (e.key === 'Tab') isTabbing = e.type === 'keydown';
+	}
+
+	// Closing a dialog or menu hands focus back to its opener, and that shouldn't pop its tooltip.
+	// Stopping the event instead would hide it from the dialog, which then swallows the next click.
+	function muteRestoredFocus(e: FocusEvent) {
+		if (isTabbing || !(e.target instanceof Element)) return;
+		if (!e.target.closest('[data-tooltip-trigger]')) return;
+
+		areTooltipsMuted = true;
+		setTimeout(() => (areTooltipsMuted = false));
+	}
+
 	$effect(() => {
 		if ($themeStore) {
 			applyTheme($themeStore);
@@ -93,7 +110,9 @@
 
 <Toaster />
 
-<Tooltip.Provider delayDuration={300} disableHoverableContent>
+<svelte:window onkeydown={trackTab} onkeyup={trackTab} onfocuscapture={muteRestoredFocus} />
+
+<Tooltip.Provider delayDuration={300} disableHoverableContent disabled={areTooltipsMuted}>
 	<div class="aurora-bg" use:auroraDrift>
 		<div class="aurora-blob aurora-blob-primary"></div>
 		<div class="aurora-blob aurora-blob-secondary"></div>
