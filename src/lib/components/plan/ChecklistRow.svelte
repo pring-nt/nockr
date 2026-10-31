@@ -152,7 +152,7 @@
 						{...props}
 						variant="ghost"
 						size="icon"
-						class="h-6 w-6 shrink-0 text-muted-foreground/60 hover:text-foreground"
+						class="h-8 w-8 shrink-0 text-muted-foreground/60 hover:text-foreground md:h-6 md:w-6"
 						aria-label="Options for {item.label}"
 					>
 						<EllipsisVertical size={13} />

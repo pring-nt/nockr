@@ -52,10 +52,12 @@
 
 	let {
 		embedded = false,
-		onDragChange
+		onDragChange,
+		onPlace
 	}: {
 		embedded?: boolean;
 		onDragChange?: (isDragging: boolean) => void;
+		onPlace?: () => void;
 	} = $props();
 
 	let isOpen = $derived(embedded || ($appStore.ui?.checklistPanelOpen ?? true));
@@ -106,6 +108,9 @@
 		isDragging = false;
 		onDragChange?.(false);
 
+		// Only a drop on a term leaves this list short
+		if (e.detail.items.length < visibleItems.length) onPlace?.();
+
 		// A course dropped on a term leaves this list short, so only a drop back here is a reorder
 		if (isReorderable && e.detail.items.length === items.length) {
 			const order = e.detail.items.map((item) => item.id);
@@ -154,6 +159,7 @@
 			...state,
 			terms: placeChecklistItem(state.terms, item, termId, state.universitySettings)
 		}));
+		onPlace?.();
 	}
 
 	function addItem() {
@@ -288,7 +294,7 @@
 						aria-pressed={filter === option.value}
 						onclick={() => setView({ checklistFilter: option.value })}
 						class={cn(
-							'rounded px-1.5 py-1 text-[10px] font-medium whitespace-nowrap transition-colors',
+							'rounded px-2 py-2 text-[11px] font-medium whitespace-nowrap transition-colors md:px-1.5 md:py-1 md:text-[10px]',
 							filter === option.value
 								? 'bg-primary/15 text-primary'
 								: 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'

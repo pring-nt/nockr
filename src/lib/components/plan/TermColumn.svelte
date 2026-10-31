@@ -214,7 +214,7 @@
 								href="/export?termId={term.id}"
 								variant="ghost"
 								size="icon"
-								class="h-6 w-6 text-muted-foreground hover:text-foreground"
+								class="h-8 w-8 text-muted-foreground hover:text-foreground md:h-6 md:w-6"
 							>
 								<Share2 size={13} />
 							</Button>
@@ -233,7 +233,7 @@
 								variant="ghost"
 								size="icon"
 								onclick={deleteTerm}
-								class="h-6 w-6 text-muted-foreground hover:text-destructive"
+								class="h-8 w-8 text-muted-foreground hover:text-destructive md:h-6 md:w-6"
 							>
 								<Trash2 size={13} />
 							</Button>

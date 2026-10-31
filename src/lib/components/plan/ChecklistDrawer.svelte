@@ -26,6 +26,10 @@
 			isOpen && !isDragging ? 'h-[55dvh]' : 'h-0'
 		)}
 	>
-		<ChecklistPanel embedded onDragChange={(dragging) => (isDragging = dragging)} />
+		<ChecklistPanel
+			embedded
+			onDragChange={(dragging) => (isDragging = dragging)}
+			onPlace={() => (isOpen = false)}
+		/>
 	</div>
 </div>

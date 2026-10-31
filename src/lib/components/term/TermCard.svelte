@@ -9,6 +9,7 @@
 		computeTermUnitsEarned,
 		withCourseType
 	} from '$lib/logic/gpa';
+	import { moveCourse } from '$lib/logic/terms';
 	import { getDeansListTier } from '$lib/logic/honors';
 	import { Plus, Trash2, GraduationCap, Share2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -34,6 +35,7 @@
 	let attemptedUnits = $derived(computeTermAttemptedUnits(term));
 	let earnedUnits = $derived(computeTermUnitsEarned(term, settings));
 	let deansListTier = $derived(getDeansListTier(term, tgpa, settings));
+	let moveTargets = $derived($appStore.terms.filter((t) => t.id !== term.id));
 
 	let isEditing = $state(false);
 	let editName = $state('');
@@ -106,6 +108,13 @@
 						}
 					: t
 			)
+		}));
+	}
+
+	function moveCourseTo(courseId: string, targetTermId: string) {
+		appStore.update((state) => ({
+			...state,
+			terms: moveCourse(state.terms, courseId, term.id, targetTermId)
 		}));
 	}
 
@@ -214,7 +223,7 @@
 								href="/export?termId={term.id}"
 								variant="ghost"
 								size="icon"
-								class="h-7 w-7 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
+								class="h-9 w-9 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
 							>
 								<Share2 size={16} />
 							</Button>
@@ -233,7 +242,7 @@
 								variant="ghost"
 								size="icon"
 								onclick={onDelete}
-								class="h-7 w-7 text-muted-foreground hover:text-destructive sm:h-8 sm:w-8"
+								class="h-9 w-9 text-muted-foreground hover:text-destructive sm:h-8 sm:w-8"
 							>
 								<Trash2 size={16} />
 							</Button>
@@ -250,9 +259,9 @@
 	<CardContent class="space-y-2 p-3 pt-0 sm:p-6 sm:pt-0">
 		{#if term.courses.length > 0}
 			<div
-				class="mb-1 grid grid-cols-[1fr_60px_72px_28px] gap-1.5 px-0.5 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:px-1"
+				class="mb-1 grid grid-cols-[1fr_1fr_32px] gap-x-2 px-0.5 sm:grid-cols-[1fr_80px_100px_36px] sm:gap-2 sm:px-1"
 			>
-				<p class="text-[11px] text-muted-foreground sm:text-xs">Course</p>
+				<p class="hidden text-[11px] text-muted-foreground sm:block sm:text-xs">Course</p>
 				<p class="text-center text-[11px] text-muted-foreground sm:text-xs">Units</p>
 				<p class="text-center text-[11px] text-muted-foreground sm:text-xs">Grade</p>
 				<span></span>
@@ -262,9 +271,11 @@
 		{#each term.courses as course (course.id)}
 			<CourseRow
 				{course}
+				{moveTargets}
 				onDelete={() => deleteCourse(course.id)}
 				onUpdate={(field, value) => updateCourse(course.id, field, value)}
 				onTypeChange={(type) => changeCourseType(course.id, type)}
+				onMove={(termId) => moveCourseTo(course.id, termId)}
 				onNavigate={() => handleNavigate(course.id)}
 			/>
 		{/each}
