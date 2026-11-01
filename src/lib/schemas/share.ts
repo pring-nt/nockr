@@ -2,6 +2,9 @@
 import { z } from 'zod';
 import { ThemeNameSchema } from './theme';
 
+export const STICKER_MIN_SIZE = 50;
+export const STICKER_MAX_SIZE = 110;
+
 export const ShareLayoutSchema = z.enum(['stat-stack', 'honors-headline', 'scorecard']);
 
 export const ShareSubjectSchema = z.enum(['term', 'cumulative']);
@@ -57,6 +60,10 @@ export const ShareConfigSchema = z.object({
 	textWeight: ShareTextWeightSchema.default('regular'),
 	theme: ShareThemeSchema.default('site'),
 	shadowStrength: z.number().min(0).max(100).default(50),
+	// Only fixed formats have room to place it. 0 and 100 are the canvas edges, 50 is centered
+	stickerX: z.number().min(0).max(100).default(50).catch(50),
+	stickerY: z.number().min(0).max(100).default(50).catch(50),
+	stickerSize: z.number().min(STICKER_MIN_SIZE).max(STICKER_MAX_SIZE).default(100).catch(100),
 	background: z.enum(['transparent', 'theme', 'photo']).default('transparent'),
 	showWatermark: z.boolean().default(true),
 	layouts: z

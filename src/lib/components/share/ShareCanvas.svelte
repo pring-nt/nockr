@@ -11,6 +11,7 @@
 	import StatStack from './layouts/StatStack.svelte';
 
 	const PADDING = 40;
+	const STICKER_MARGIN = 16;
 	const INK_COLORS = { white: '#ffffff', black: '#111111', theme: 'var(--text)' };
 	const TEXT_WEIGHTS = {
 		light: { body: 300, hero: 400 },
@@ -28,12 +29,14 @@
 		config,
 		data,
 		photo,
-		canvasRef = $bindable()
+		canvasRef = $bindable(),
+		onMove
 	}: {
 		config: ShareConfig;
 		data: ShareData;
 		photo?: SharePhoto | null;
 		canvasRef?: HTMLElement;
+		onMove?: (stickerX: number, stickerY: number) => void;
 	} = $props();
 
 	let themeStyles = $state<Record<string, string>>({});
@@ -56,6 +59,61 @@
 	let fitScale = $derived(
 		height && contentHeight > height - PADDING * 2 ? (height - PADDING * 2) / contentHeight : 1
 	);
+
+	let contentWidth = SHARE_CANVAS_WIDTH - PADDING * 2;
+	// Never past the edges, since anything larger would cut off grades in the saved image
+	let contentScale = $derived(
+		Math.min(
+			fitScale * (config.stickerSize / 100),
+			contentHeight && height ? (height - STICKER_MARGIN * 2) / contentHeight : 1.1
+		)
+	);
+
+	// The room left around the sticker, which is what stickerX and stickerY divide up
+	let freeWidth = $derived(SHARE_CANVAS_WIDTH - STICKER_MARGIN * 2 - contentWidth * contentScale);
+	let freeHeight = $derived((height ?? 0) - STICKER_MARGIN * 2 - contentHeight * contentScale);
+
+	let contentStyle = $derived(
+		height
+			? `position: absolute; top: 0; left: 0; width: ${contentWidth}px; transform-origin: top left; transform: translate(${STICKER_MARGIN + (freeWidth * config.stickerX) / 100}px, ${STICKER_MARGIN + (freeHeight * config.stickerY) / 100}px) scale(${contentScale});`
+			: ''
+	);
+
+	let drag: { pointerX: number; pointerY: number; x: number; y: number; scale: number } | null =
+		null;
+
+	function clampPercent(value: number) {
+		return Math.round(Math.min(100, Math.max(0, value)) * 100) / 100;
+	}
+
+	function startDrag(e: PointerEvent) {
+		if (!onMove || !height || !canvasRef) return;
+		// The preview scales the canvas, so a screen pixel isn't a canvas pixel
+		const scale = canvasRef.getBoundingClientRect().width / SHARE_CANVAS_WIDTH;
+		drag = {
+			pointerX: e.clientX,
+			pointerY: e.clientY,
+			x: config.stickerX,
+			y: config.stickerY,
+			scale
+		};
+		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+	}
+
+	function moveDrag(e: PointerEvent) {
+		if (!drag || !onMove) return;
+		const percentOf = (distance: number, free: number) =>
+			Math.abs(free) < 1 ? 0 : (distance / drag!.scale / free) * 100;
+
+		onMove(
+			clampPercent(drag.x + percentOf(e.clientX - drag.pointerX, freeWidth)),
+			clampPercent(drag.y + percentOf(e.clientY - drag.pointerY, freeHeight))
+		);
+	}
+
+	function endDrag() {
+		drag = null;
+	}
 
 	let stickerTheme = $derived(config.theme === 'site' ? $themeStore.active : config.theme);
 	let isThemeDark = $derived(THEMES.find((t) => t.name === stickerTheme)?.isDark ?? true);
@@ -132,10 +190,15 @@
 		></div>
 	{/if}
 
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		bind:clientHeight={contentHeight}
-		class="relative shrink-0"
-		style="transform: scale({fitScale});"
+		class="relative shrink-0 {onMove && height ? 'cursor-move touch-none' : ''}"
+		style={contentStyle}
+		onpointerdown={startDrag}
+		onpointermove={moveDrag}
+		onpointerup={endDrag}
+		onpointercancel={endDrag}
 	>
 		<Layout {data} />
 

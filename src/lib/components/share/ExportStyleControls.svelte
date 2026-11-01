@@ -1,16 +1,19 @@
 <script lang="ts">
-	import type {
-		ShareConfig,
-		ShareFormat,
-		ShareHighlight,
-		ShareInk,
-		ShareLayoutOptions,
-		ShareTextWeight
+	import {
+		STICKER_MAX_SIZE,
+		STICKER_MIN_SIZE,
+		type ShareConfig,
+		type ShareFormat,
+		type ShareHighlight,
+		type ShareInk,
+		type ShareLayoutOptions,
+		type ShareTextWeight
 	} from '$lib/schemas';
 	import type { PreviewBackdrop } from '$lib/constants';
 	import { loadPhoto, PHOTO_DEFAULTS, type SharePhoto } from '$lib/logic/share';
 	import { shareStore } from '$lib/stores/shareState';
 	import { THEMES } from '$lib/themes';
+	import { Button } from '$lib/components/ui/button';
 	import * as Select from '$lib/components/ui/select';
 	import { toast } from 'svelte-sonner';
 	import ExportPhotoControls from './ExportPhotoControls.svelte';
@@ -207,6 +210,52 @@
 	{#if photo && background === 'photo'}
 		<ExportPhotoControls bind:photo onChangePhoto={() => photoInputEl?.click()} />
 	{/if}
+
+	<div>
+		<ShareControlLabel text="Sticker placement" />
+		{#if config.format === 'sticker'}
+			<p class="text-[11px] text-(--subtle)">
+				Pick 9:16, 3:4, or 1:1 above to move and resize your sticker.
+			</p>
+		{:else}
+			<div class="space-y-3 rounded-lg bg-muted/30 p-3">
+				<ShareSlider
+					label="Size"
+					value={Math.round(config.stickerSize)}
+					min={STICKER_MIN_SIZE}
+					max={STICKER_MAX_SIZE}
+					onChange={(stickerSize) => shareStore.setConfig({ stickerSize })}
+				/>
+				<ShareSlider
+					label="Across"
+					value={Math.round(config.stickerX)}
+					min={0}
+					max={100}
+					onChange={(stickerX) => shareStore.setConfig({ stickerX })}
+				/>
+				<ShareSlider
+					label="Up and down"
+					value={Math.round(config.stickerY)}
+					min={0}
+					max={100}
+					onChange={(stickerY) => shareStore.setConfig({ stickerY })}
+				/>
+				<div class="flex items-center justify-between gap-2">
+					<p class="hidden text-[11px] text-(--subtle) sm:block">
+						You can also drag it in the preview.
+					</p>
+					<Button
+						variant="ghost"
+						size="sm"
+						onclick={() => shareStore.setConfig({ stickerX: 50, stickerY: 50, stickerSize: 100 })}
+						class="ml-auto h-8 bg-(--highlight-low) text-xs hover:bg-(--highlight-med)"
+					>
+						Center
+					</Button>
+				</div>
+			</div>
+		{/if}
+	</div>
 </div>
 
 {#if background === 'transparent'}
