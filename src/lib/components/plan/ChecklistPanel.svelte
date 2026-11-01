@@ -226,9 +226,10 @@
 					<Popover.Content side="bottom" align="start" class="w-68 p-3 text-xs leading-relaxed">
 						<p class="font-semibold text-foreground">Your Curriculum</p>
 						<p class="text-[11px] leading-normal text-muted-foreground">
-							Drag a course onto a term to plan it. Checks update on their own from your grades, and
-							you can tick off anything you took elsewhere. Courses marked * are not counted in your
-							GPA. The default list is a general preset, so change it to match your program.
+							{embedded ? 'Hold a course and drag it' : 'Drag a course'} onto a term to plan it, or use
+							its menu. Checks update on their own from your grades, and you can tick off anything you
+							took elsewhere. Courses marked * are not counted in your GPA. The default list is a general
+							preset, so change it to match your program.
 						</p>
 					</Popover.Content>
 				</Popover.Root>
