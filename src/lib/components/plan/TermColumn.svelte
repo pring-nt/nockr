@@ -265,7 +265,8 @@
 		<p
 			class="pointer-events-none absolute inset-x-6 top-1/2 -translate-y-1/2 text-center text-[11px] text-muted-foreground"
 		>
-			Nothing planned yet. Drag a course here (・‿・)
+			Nothing planned yet. {deck ? 'Hold a checklist course to drag it here' : 'Drag a course here'}
+			<span class="whitespace-nowrap">(・‿・)</span>
 		</p>
 	{/if}
 
