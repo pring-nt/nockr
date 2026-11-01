@@ -33,10 +33,9 @@
 		)
 	);
 	let revealIndex = $derived(revealDirection === 0 ? -1 : activeIndex + revealDirection);
-	let revealTerm = $derived(terms[revealIndex]);
+	let previousTerm = $derived(terms[activeIndex - 1]);
+	let nextTerm = $derived(terms[activeIndex + 1]);
 	let tilt = $derived(width > 0 ? (dx / width) * MAX_TILT_DEG : 0);
-	// Fully visible by the point where letting go would commit the swipe
-	let labelOpacity = $derived(width > 0 ? Math.min(1, Math.abs(dx) / (width * COMMIT_RATIO)) : 0);
 
 	function handleMove(next: number) {
 		if (isSettling) return;
@@ -114,16 +113,19 @@
 	<div class="flex h-11 shrink-0 items-center gap-1 px-3">
 		<Button
 			variant="ghost"
-			size="icon"
-			class="h-9 w-9 shrink-0"
-			aria-label="Previous term"
-			disabled={activeIndex === 0}
+			size="sm"
+			class="h-9 min-w-0 flex-1 justify-start gap-1 px-1.5 text-xs"
+			aria-label={previousTerm ? `Previous term, ${previousTerm.name}` : 'Previous term'}
+			disabled={!previousTerm}
 			onclick={() => fling(-1)}
 		>
-			<ChevronLeft size={18} />
+			<ChevronLeft size={18} class="shrink-0" />
+			{#if previousTerm}
+				<span class="truncate">{previousTerm.name}</span>
+			{/if}
 		</Button>
 
-		<p class="min-w-0 flex-1 truncate text-center text-xs text-muted-foreground">
+		<p class="shrink-0 text-center text-xs text-muted-foreground">
 			{#if terms.length > 0}
 				{activeIndex + 1} of {terms.length}
 			{:else}
@@ -133,13 +135,16 @@
 
 		<Button
 			variant="ghost"
-			size="icon"
-			class="h-9 w-9 shrink-0"
-			aria-label="Next term"
-			disabled={activeIndex >= terms.length - 1}
+			size="sm"
+			class="h-9 min-w-0 flex-1 justify-end gap-1 px-1.5 text-xs"
+			aria-label={nextTerm ? `Next term, ${nextTerm.name}` : 'Next term'}
+			disabled={!nextTerm}
 			onclick={() => fling(1)}
 		>
-			<ChevronRight size={18} />
+			{#if nextTerm}
+				<span class="truncate">{nextTerm.name}</span>
+			{/if}
+			<ChevronRight size={18} class="shrink-0" />
 		</Button>
 
 		{#if terms.length > 1}
@@ -186,24 +191,6 @@
 				<TermColumn {term} deck />
 			</div>
 		{/each}
-
-		{#if revealTerm && !isSettling}
-			<div
-				aria-hidden="true"
-				class="pointer-events-none absolute top-1/2 z-20 flex max-w-[60%] -translate-y-1/2 items-center gap-1 rounded-sm border border-border bg-popover px-2 py-1 text-xs font-medium text-popover-foreground shadow-md"
-				class:right-3={revealDirection === 1}
-				class:left-3={revealDirection === -1}
-				style:opacity={labelOpacity}
-			>
-				{#if revealDirection === -1}
-					<ChevronLeft size={14} class="shrink-0" />
-				{/if}
-				<span class="truncate">{revealTerm.name}</span>
-				{#if revealDirection === 1}
-					<ChevronRight size={14} class="shrink-0" />
-				{/if}
-			</div>
-		{/if}
 
 		{#if terms.length === 0}
 			<div class="flex h-full items-center justify-center">
