@@ -7,6 +7,7 @@
 		type PreviewBackdrop
 	} from '$lib/constants';
 	import type { ShareData, SharePhoto } from '$lib/logic/share';
+	import { shareStore } from '$lib/stores/shareState';
 	import { Button } from '$lib/components/ui/button';
 	import { Maximize, RotateCcw, ZoomIn, ZoomOut } from 'lucide-svelte';
 	import ShareCanvas from './ShareCanvas.svelte';
@@ -86,7 +87,13 @@
 				style="width: {dimensions.width}px; transform: scale({effectiveScale}); transform-origin: top left;"
 				class="absolute top-0 left-0"
 			>
-				<ShareCanvas {config} {data} {photo} bind:canvasRef={canvasEl} />
+				<ShareCanvas
+					{config}
+					{data}
+					{photo}
+					bind:canvasRef={canvasEl}
+					onMove={(stickerX, stickerY) => shareStore.setConfig({ stickerX, stickerY })}
+				/>
 			</div>
 		</div>
 	</div>
