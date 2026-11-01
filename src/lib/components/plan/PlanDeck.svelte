@@ -94,8 +94,8 @@
 	}
 
 	// A held course needs its target under the finger right away, so this flip does not animate
-	function handleEdgeHold(direction: -1 | 1) {
-		const target = terms[activeIndex + direction];
+	function handleEdgeHold(edge: -1 | 1) {
+		const target = terms[activeIndex - edge];
 		if (target) activeId = target.id;
 	}
 
@@ -111,17 +111,18 @@
 
 <div class="flex min-h-0 flex-1 flex-col">
 	<div class="flex h-11 shrink-0 items-center gap-1 px-3">
+		<!-- Each term sits on the side a swipe toward it would go, so the left arrow moves forward -->
 		<Button
 			variant="ghost"
 			size="sm"
 			class="h-9 min-w-0 flex-1 justify-start gap-1 px-1.5 text-xs"
-			aria-label={previousTerm ? `Previous term, ${previousTerm.name}` : 'Previous term'}
-			disabled={!previousTerm}
-			onclick={() => fling(-1)}
+			aria-label={nextTerm ? `Next term, ${nextTerm.name}` : 'Next term'}
+			disabled={!nextTerm}
+			onclick={() => fling(1)}
 		>
 			<ChevronLeft size={18} class="shrink-0" />
-			{#if previousTerm}
-				<span class="truncate">{previousTerm.name}</span>
+			{#if nextTerm}
+				<span class="truncate">{nextTerm.name}</span>
 			{/if}
 		</Button>
 
@@ -137,12 +138,12 @@
 			variant="ghost"
 			size="sm"
 			class="h-9 min-w-0 flex-1 justify-end gap-1 px-1.5 text-xs"
-			aria-label={nextTerm ? `Next term, ${nextTerm.name}` : 'Next term'}
-			disabled={!nextTerm}
-			onclick={() => fling(1)}
+			aria-label={previousTerm ? `Previous term, ${previousTerm.name}` : 'Previous term'}
+			disabled={!previousTerm}
+			onclick={() => fling(-1)}
 		>
-			{#if nextTerm}
-				<span class="truncate">{nextTerm.name}</span>
+			{#if previousTerm}
+				<span class="truncate">{previousTerm.name}</span>
 			{/if}
 			<ChevronRight size={18} class="shrink-0" />
 		</Button>
