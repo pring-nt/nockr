@@ -33,7 +33,10 @@
 		)
 	);
 	let revealIndex = $derived(revealDirection === 0 ? -1 : activeIndex + revealDirection);
+	let revealTerm = $derived(terms[revealIndex]);
 	let tilt = $derived(width > 0 ? (dx / width) * MAX_TILT_DEG : 0);
+	// Fully visible by the point where letting go would commit the swipe
+	let labelOpacity = $derived(width > 0 ? Math.min(1, Math.abs(dx) / (width * COMMIT_RATIO)) : 0);
 
 	function handleMove(next: number) {
 		if (isSettling) return;
@@ -183,6 +186,24 @@
 				<TermColumn {term} deck />
 			</div>
 		{/each}
+
+		{#if revealTerm && !isSettling}
+			<div
+				aria-hidden="true"
+				class="pointer-events-none absolute top-1/2 z-20 flex max-w-[60%] -translate-y-1/2 items-center gap-1 rounded-sm border border-border bg-popover px-2 py-1 text-xs font-medium text-popover-foreground shadow-md"
+				class:right-3={revealDirection === 1}
+				class:left-3={revealDirection === -1}
+				style:opacity={labelOpacity}
+			>
+				{#if revealDirection === -1}
+					<ChevronLeft size={14} class="shrink-0" />
+				{/if}
+				<span class="truncate">{revealTerm.name}</span>
+				{#if revealDirection === 1}
+					<ChevronRight size={14} class="shrink-0" />
+				{/if}
+			</div>
+		{/if}
 
 		{#if terms.length === 0}
 			<div class="flex h-full items-center justify-center">
